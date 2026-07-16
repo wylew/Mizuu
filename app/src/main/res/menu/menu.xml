@@ -2,10 +2,27 @@
 
     <item
         android:id="@+id/search_textbox"
-        app:actionViewClass="android.support.v7.widget.SearchView"
+        app:actionViewClass="androidx.appcompat.widget.SearchView"
         android:icon="@drawable/ic_search_white_24dp"
         app:showAsAction="always|collapseActionView"
         android:title="@string/stringSearch">
+    </item>
+    <item
+        android:id="@+id/cover_size"
+        android:icon="@drawable/ic_view_module_white_24dp"
+        app:showAsAction="always"
+        android:title="@string/grid_item_size">
+        <menu>
+            <item
+                android:id="@+id/cover_size_small"
+                android:title="@string/small"/>
+            <item
+                android:id="@+id/cover_size_normal"
+                android:title="@string/normal"/>
+            <item
+                android:id="@+id/cover_size_large"
+                android:title="@string/large"/>
+        </menu>
     </item>
     <item
         android:id="@+id/sort"
@@ -34,46 +51,6 @@
         </menu>
     </item>
     <item
-        android:id="@+id/filters"
-        android:icon="@drawable/ic_filter_list_white_24dp"
-        app:showAsAction="ifRoom"
-        android:title="@string/filters">
-        <menu>
-            <item
-                android:id="@+id/certifications"
-                android:icon="@drawable/ic_flag_white_24dp"
-                android:title="@string/detailsCertification"/>
-            <item
-                android:id="@+id/fileSources"
-                android:icon="@drawable/ic_insert_drive_file_white_24dp"
-                android:title="@string/fileSources"/>
-            <item
-                android:id="@+id/folders"
-                android:icon="@drawable/ic_folder_open_white_24dp"
-                android:title="@string/folders"/>
-            <item
-                android:id="@+id/genres"
-                android:icon="@drawable/ic_label_white_24dp"
-                android:title="@string/choiceGenres"/>
-             <item
-                android:id="@+id/release_year"
-                android:icon="@drawable/ic_today_white_24dp"
-                android:title="@string/release_year"/>
-            <item
-                android:id="@+id/available_files"
-                android:icon="@drawable/ic_done_white_24dp"
-                android:title="@string/choiceAvailableFiles"/>
-            <item
-                android:id="@+id/offline_files"
-                android:icon="@drawable/ic_cloud_download_white_24dp"
-                android:title="@string/choiceOffline"/>
-            <item
-                android:id="@+id/clear_filters"
-                android:icon="@drawable/ic_close_white_24dp"
-                android:title="@string/clear_filters"/>
-        </menu>
-    </item>
-    <item
         android:id="@+id/update"
         android:icon="@drawable/ic_sync_white_24dp"
         app:showAsAction="ifRoom"
@@ -92,10 +69,6 @@
             android:title="@string/view_collection_online"
             android:visible="false">
         </item>
-        <item
-            android:id="@+id/unidentifiedFiles"
-            android:icon="@drawable/ic_folder_open_white_24dp"
-            android:title="@string/unidentifiedFiles"/>
     </group>
 
 </menu>

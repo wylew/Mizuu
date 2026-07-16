@@ -19,7 +19,7 @@ package com.miz.functions;
 
 import android.content.Context;
 import android.database.Cursor;
-import android.support.v4.content.AsyncTaskLoader;
+import androidx.loader.content.AsyncTaskLoader;
 
 abstract public class AbstractCursorLoader extends AsyncTaskLoader<Cursor> {
 	abstract protected Cursor buildCursor();

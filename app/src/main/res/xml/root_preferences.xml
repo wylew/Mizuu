@@ -1,0 +1,66 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.Prefs"
+        android:icon="@drawable/ic_settings_white_24dp"
+        android:key="general"
+        android:title="@string/prefsUIGeneral">
+        <extra
+            android:name="resource"
+            android:value="general_prefs" />
+    </Preference>
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.Prefs"
+        android:icon="@drawable/ic_search_white_24dp"
+        android:key="identification"
+        android:title="@string/prefsIdentificationAndSearch">
+        <extra
+            android:name="resource"
+            android:value="identification_search_prefs" />
+    </Preference>
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.ScheduledUpdatesFragment"
+        android:icon="@drawable/ic_sync_white_24dp"
+        android:key="scheduled_updates"
+        android:title="@string/scheduledUpdates" />
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.Prefs"
+        android:icon="@drawable/ic_palette_white_24dp"
+        android:key="ui"
+        android:title="@string/prefsUI">
+        <extra
+            android:name="resource"
+            android:value="user_interface_prefs" />
+    </Preference>
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.AccountsFragment"
+        android:icon="@drawable/ic_person_white_24dp"
+        android:key="social"
+        android:title="@string/social" />
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.Prefs"
+        android:icon="@drawable/ic_extension_white_24dp"
+        android:key="advanced"
+        android:title="@string/advanced">
+        <extra
+            android:name="resource"
+            android:value="advanced_prefs" />
+    </Preference>
+
+    <Preference
+        android:fragment="com.miz.mizuu.fragments.Prefs"
+        android:icon="@drawable/ic_info_outline_white_24dp"
+        android:key="other"
+        android:title="@string/other">
+        <extra
+            android:name="resource"
+            android:value="other_prefs" />
+    </Preference>
+
+</PreferenceScreen>

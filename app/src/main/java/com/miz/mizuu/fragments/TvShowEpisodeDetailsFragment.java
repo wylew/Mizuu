@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Michell Bak
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use this file except in compliance with the License.
+ * you may not use mContext file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -32,8 +32,8 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -50,7 +50,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.trakt.Trakt;
 import com.miz.db.DbAdapterTvShowEpisodes;
 import com.miz.functions.BlurTransformation;
@@ -161,7 +161,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
         if (!getArguments().getString("showId").isEmpty() && getArguments().getInt("season") >= 0 && getArguments().getInt("episode") >= 0) {
             Cursor cursor = mDatabaseHelper.getEpisode(getArguments().getString("showId"), getArguments().getInt("season"), getArguments().getInt("episode"));
 
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 mEpisode = new TvShowEpisode(getActivity(),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_SHOW_ID)),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_EPISODE_TITLE)),
@@ -183,7 +183,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_EPISODE))
                 ));
             }
-            cursor.close();
+            if (cursor != null) cursor.close();
         }
     }
 
@@ -195,6 +195,8 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     @Override
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
+
+        if (mEpisode == null) return;
 
         mBackdrop = (ImageView) view.findViewById(R.id.imageBackground);
         mEpisodePhoto = (ImageView) view.findViewById(R.id.episodePhoto);
@@ -223,10 +225,8 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
                 });
             }
         });
-        if (MizLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
 
-        final int height = MizLib.getActionBarAndStatusBarHeight(getActivity());
+        final int height = MizLib.getActionBarAndStatusBarOffset(getActivity());
 
         mScrollView = (ObservableScrollView) view.findViewById(R.id.observableScrollView);
         mScrollView.setOnScrollChangedListener(new OnScrollChangedListener() {
@@ -256,7 +256,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
         mPicasso.load(mEpisode.getEpisodePhoto()).placeholder(R.drawable.bg).config(MizuuApplication.getBitmapConfig()).into(mEpisodePhoto, new Callback() {
             @Override
-            public void onError() {
+            public void onError(Exception e) {
                 if (!isAdded())
                     return;
                 int width = getActivity().getResources().getDimensionPixelSize(R.dimen.episode_details_background_overlay_width);
@@ -294,13 +294,13 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
         if (!MizLib.isPortrait(getActivity()))
             mPicasso.load(mEpisode.getEpisodePhoto()).placeholder(R.drawable.bg).error(R.drawable.bg).transform(new BlurTransformation(getActivity().getApplicationContext(), mEpisode.getEpisodePhoto().getAbsolutePath() + "-blur", 4)).into(mBackdrop, new Callback() {
-                @Override public void onError() {
+                @Override public void onError(Exception e) {
                     if (!isAdded())
                         return;
 
                     mPicasso.load(mEpisode.getTvShowBackdrop()).placeholder(R.drawable.bg).error(R.drawable.nobackdrop).transform(new BlurTransformation(getActivity().getApplicationContext(), mEpisode.getTvShowBackdrop().getAbsolutePath() + "-blur", 4)).into(mBackdrop, new Callback() {
                         @Override
-                        public void onError() {}
+                        public void onError(Exception e) {}
 
                         @Override
                         public void onSuccess() {
@@ -321,6 +321,8 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     }
 
     private void loadData() {
+        if (mEpisode == null) return;
+
         // Set the episode title
         mTitle.setVisibility(View.VISIBLE);
         mTitle.setText(mEpisode.getTitle());
@@ -465,6 +467,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (mEpisode == null) return;
         inflater.inflate(R.menu.episode_details, menu);
 
         try {

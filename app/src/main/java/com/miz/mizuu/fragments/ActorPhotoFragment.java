@@ -17,7 +17,7 @@
 package com.miz.mizuu.fragments;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.View.OnClickListener;
@@ -89,7 +89,7 @@ public class ActorPhotoFragment extends Fragment {
 		mPicasso.load(mPhotoUrl).error(R.drawable.noactor).into(img, new Callback() {
 
 			@Override
-			public void onError() {
+			public void onError(Exception e) {
 				pbar.setVisibility(View.GONE);
 			}
 

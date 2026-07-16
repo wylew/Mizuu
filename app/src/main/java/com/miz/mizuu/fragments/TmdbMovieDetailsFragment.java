@@ -23,9 +23,9 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -41,7 +41,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.tmdb.Movie;
 import com.miz.apis.tmdb.TMDbMovieService;
 import com.miz.apis.trakt.Trakt;
@@ -124,7 +124,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -159,13 +159,11 @@ public class TmdbMovieDetailsFragment extends Fragment {
                 });
             }
         });
-        if (MizLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
 
         // Get rid of these...
         v.findViewById(R.id.textView3).setVisibility(View.GONE); // File
 
-        final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
+        final int height = MizLib.getActionBarAndStatusBarOffset(mContext);
 
         mScrollView.setOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
@@ -391,7 +389,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
                 }
 
                 @Override
-                public void onError() {}
+                public void onError(Exception e) {}
             });
         else
             mCover.setImageResource(R.drawable.gray);
@@ -399,7 +397,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
         if (!mMovie.getBackdrop().isEmpty())
             mPicasso.load(mMovie.getBackdrop()).placeholder(R.drawable.gray).error(R.drawable.bg).into(mBackground, new Callback() {
                 @Override
-                public void onError() {
+                public void onError(Exception e) {
                     if (!isAdded())
                         return;
 

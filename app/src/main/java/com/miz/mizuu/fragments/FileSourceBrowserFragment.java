@@ -30,9 +30,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.IBinder;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -45,7 +45,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.ExtendedFloatingActionButton;
 import com.miz.abstractclasses.AbstractFileSourceBrowser;
 import com.miz.db.DbAdapterSources;
 import com.miz.filesources.BrowserFile;
@@ -104,7 +104,7 @@ public class FileSourceBrowserFragment extends Fragment {
 	private boolean mLoading = false, mIsMovie = false;
 	private AndroidUpnpService upnpService;
 	private ArrayAdapter<ContentItem> contentListAdapter;
-    private FloatingActionButton mFab;
+    private ExtendedFloatingActionButton mFab;
 
 	/**
 	 * Empty constructor as per the Fragment documentation
@@ -221,7 +221,7 @@ public class FileSourceBrowserFragment extends Fragment {
 	public void onViewCreated(View v, Bundle savedInstanceState) {
 		super.onViewCreated(v, savedInstanceState);
 
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+        mFab = (ExtendedFloatingActionButton) v.findViewById(R.id.fab);
         mFab.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -575,7 +575,7 @@ public class FileSourceBrowserFragment extends Fragment {
 	}
 
 	private void updateSubtitle() {
-		((ActionBarActivity) getActivity()).getSupportActionBar().setSubtitle(mBrowser.getSubtitle());
+		((AppCompatActivity) getActivity()).getSupportActionBar().setSubtitle(mBrowser.getSubtitle());
 	}
 
 	private ServiceConnection serviceConnection = new ServiceConnection() {

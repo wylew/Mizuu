@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+    <item
+        android:id="@+id/update"
+        android:icon="@drawable/ic_sync_white_24dp"
+        android:title="@string/menuUpdateTitle"
+        app:showAsAction="always" />
+    <item
+        android:id="@+id/fileSources"
+        android:title="@string/fileSources"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/unidentified_files"
+        android:title="@string/unidentifiedFiles"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/settings"
+        android:icon="@drawable/ic_settings_white_24dp"
+        android:title="@string/settings_name"
+        app:showAsAction="never" />
+</menu>

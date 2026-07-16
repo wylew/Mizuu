@@ -20,10 +20,10 @@ import android.content.Context;
 import android.graphics.Bitmap.Config;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
-import android.support.v7.widget.SwitchCompat;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.widget.SwitchCompat;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -231,11 +231,13 @@ public class ActorMoviesFragment extends Fragment {
             mMovies = new ArrayList<WebMovie>();
 
             // Go through all movies
-            for (WebMovie movie : mActor.getMovies()) {
-                if (mChecked && !movie.isInLibrary())
-                    continue;
+            if (mActor != null && mActor.getMovies() != null) {
+                for (WebMovie movie : mActor.getMovies()) {
+                    if (mChecked && !movie.isInLibrary())
+                        continue;
 
-                mMovies.add(movie);
+                    mMovies.add(movie);
+                }
             }
 
             super.notifyDataSetChanged();
@@ -261,9 +263,11 @@ public class ActorMoviesFragment extends Fragment {
 		protected Void doInBackground(Void... params) {
 			mActor = TMDbMovieService.getInstance(mContext).getCompleteActorDetails(mActorId);
 
-			for (int i = 0; i < mActor.getMovies().size(); i++) {
-				String id = mActor.getMovies().get(i).getId();
-				mActor.getMovies().get(i).setInLibrary(MizuuApplication.getMovieAdapter().movieExists(id));
+			if (mActor != null && mActor.getMovies() != null) {
+				for (int i = 0; i < mActor.getMovies().size(); i++) {
+					String id = mActor.getMovies().get(i).getId();
+					mActor.getMovies().get(i).setInLibrary(MizuuApplication.getMovieAdapter().movieExists(id));
+				}
 			}
 
 			return null;

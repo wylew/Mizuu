@@ -26,24 +26,25 @@
                     android:layout_height="@dimen/backdrop_portrait_height"
                     android:src="@drawable/bg" />
 
-                <com.melnykov.fab.FloatingActionButton
+                <com.google.android.material.floatingactionbutton.FloatingActionButton
                     android:id="@+id/fab"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:src="@drawable/ic_play_arrow_white_36dp"
                     android:layout_alignParentRight="true"
-                    android:layout_alignParentEnd="false"
+                    android:layout_alignParentEnd="true"
                     android:layout_marginRight="@dimen/content_details_baseline_margin"
                     android:layout_marginTop="@dimen/content_details_fab_negative_margin"
                     android:layout_below="@+id/episodePhoto"
-                    app:fab_colorNormal="#666"
-                    app:fab_type="mini"/>
+                    app:tint="?attr/colorOnPrimaryContainer"
+                    app:backgroundTint="?attr/colorPrimaryContainer"
+                    app:elevation="6dp" />
 
                 <LinearLayout
                     android:orientation="vertical"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_below="@+id/fab"
+                    android:layout_below="@+id/episodePhoto"
                     android:layout_toLeftOf="@+id/fab"
                     android:layout_marginTop="@dimen/content_details_title_margin_top"
                     android:layout_marginLeft="@dimen/content_details_baseline_margin"

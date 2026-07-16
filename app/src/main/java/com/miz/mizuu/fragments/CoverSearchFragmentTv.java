@@ -20,8 +20,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap.Config;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v7.app.ActionBarActivity;
+import androidx.fragment.app.Fragment;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -141,7 +141,7 @@ public class CoverSearchFragmentTv extends Fragment {
 	@Override
 	public void onStart() {
 		super.onStart();
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	private class ImageAdapter extends BaseAdapter {
@@ -170,10 +170,10 @@ public class CoverSearchFragmentTv extends Fragment {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup container) {
+		public View getView(int position, View convertView, ViewGroup parent) {
 			CoverItem holder;
 			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
+				convertView = inflater.inflate(R.layout.grid_portrait_photo, parent, false);
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);

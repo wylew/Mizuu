@@ -20,7 +20,8 @@ import android.app.Activity;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
+import androidx.preference.PreferenceManager;
+import androidx.core.content.FileProvider;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -55,7 +56,24 @@ public class VideoUtils {
 			playbackStarted = playNetworkFile(activity, filepath, videoObject);
 		} else {
 			try { // Attempt to launch intent with the video MIME wildcard
-				activity.startActivity(getVideoIntent(filepath, videoObject));
+				activity.startActivity(getVideoIntent(activity, filepath, videoObject));
+			} catch (Exception e) {
+				playbackStarted = false;
+				Toast.makeText(activity, activity.getString(R.string.noVideoPlayerFound), Toast.LENGTH_LONG).show();
+			}
+		}
+
+		return playbackStarted;
+	}
+
+	public static boolean playVideo(Activity activity, Uri uri, int filetype, Object videoObject) {
+		boolean playbackStarted = true;
+
+		if (filetype == FileSource.SMB) {
+			playbackStarted = playNetworkFile(activity, uri.toString(), videoObject);
+		} else {
+			try { // Attempt to launch intent with the video MIME wildcard
+				activity.startActivity(getVideoIntent(uri, videoObject));
 			} catch (Exception e) {
 				playbackStarted = false;
 				Toast.makeText(activity, activity.getString(R.string.noVideoPlayerFound), Toast.LENGTH_LONG).show();
@@ -183,7 +201,7 @@ public class VideoUtils {
 
 		if (!TextUtils.isEmpty(localTrailer)) {
 			try { // Attempt to launch intent based on the MIME type
-				activity.startActivity(getVideoIntent(localTrailer, movie.getTitle() + " " + activity.getString(R.string.detailsTrailer)));
+				activity.startActivity(getVideoIntent(activity, localTrailer, movie.getTitle() + " " + activity.getString(R.string.detailsTrailer)));
 			} catch (Exception e) {
 				Toast.makeText(activity, activity.getString(R.string.noVideoPlayerFound), Toast.LENGTH_LONG).show();
 			}
@@ -198,12 +216,16 @@ public class VideoUtils {
 		}
 	}
 
-	public static Intent getVideoIntent(String fileUrl, Object videoObject) {
+	public static Intent getVideoIntent(Activity activity, String fileUrl, Object videoObject) {
 		if (fileUrl.startsWith("http"))
 			return getVideoIntent(Uri.parse(fileUrl), videoObject);
 
+		File file = new File(fileUrl);
+		Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
+
 		Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-		videoIntent.setDataAndType(Uri.fromFile(new File(fileUrl)), "video/*");
+		videoIntent.setDataAndType(uri, "video/*");
+		videoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		videoIntent.putExtras(getVideoIntentBundle(videoObject));
 
 		return videoIntent;
@@ -212,17 +234,22 @@ public class VideoUtils {
 	public static Intent getVideoIntent(Uri file, Object videoObject) {
 		Intent videoIntent = new Intent(Intent.ACTION_VIEW);
 		videoIntent.setDataAndType(file, "video/*");
+		videoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		videoIntent.putExtras(getVideoIntentBundle(videoObject));
 
 		return videoIntent;
 	}
 
-	public static Intent getVideoIntent(String fileUrl, String mimeType, Object videoObject) {
+	public static Intent getVideoIntent(Activity activity, String fileUrl, String mimeType, Object videoObject) {
 		if (fileUrl.startsWith("http"))
 			return getVideoIntent(Uri.parse(fileUrl), mimeType, videoObject);
 
+		File file = new File(fileUrl);
+		Uri uri = FileProvider.getUriForFile(activity, activity.getPackageName() + ".fileprovider", file);
+
 		Intent videoIntent = new Intent(Intent.ACTION_VIEW);
-		videoIntent.setDataAndType(Uri.fromFile(new File(fileUrl)), mimeType);
+		videoIntent.setDataAndType(uri, mimeType);
+		videoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		videoIntent.putExtras(getVideoIntentBundle(videoObject));
 
 		return videoIntent;
@@ -231,6 +258,7 @@ public class VideoUtils {
 	public static Intent getVideoIntent(Uri file, String mimeType, Object videoObject) {
 		Intent videoIntent = new Intent(Intent.ACTION_VIEW);
 		videoIntent.setDataAndType(file, mimeType);
+		videoIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION);
 		videoIntent.putExtras(getVideoIntentBundle(videoObject));
 
 		return videoIntent;
@@ -254,7 +282,7 @@ public class VideoUtils {
 			b.putString("cover", ((TvShowEpisode) videoObject).getEpisodePhoto().getAbsolutePath());
 			b.putString("episode", ((TvShowEpisode) videoObject).getEpisode());
 			b.putString("season", ((TvShowEpisode) videoObject).getSeason());
-		} else {
+		} else if (videoObject instanceof String) {
 			title = (String) videoObject;
 		}
 		b.putString("title", title);

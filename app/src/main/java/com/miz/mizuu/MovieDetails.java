@@ -19,8 +19,8 @@ package com.miz.mizuu;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.view.KeyEvent;
 import android.view.MenuItem;
 import android.widget.Toast;
@@ -38,9 +38,6 @@ public class MovieDetails extends MizActivity {
 	public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        // Set theme
-        setTheme(R.style.Mizuu_Theme_NoBackground);
-
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
 
 		setTitle(null);
@@ -48,7 +45,7 @@ public class MovieDetails extends MizActivity {
 		// Fetch the database ID of the movie to view
 		if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
 			mMovieId = getIntent().getStringExtra(SearchManager.EXTRA_DATA_KEY);
-		} else {
+		} else if (getIntent().getExtras() != null) {
 			mMovieId = getIntent().getExtras().getString("tmdbId");
 		}
 
@@ -72,9 +69,10 @@ public class MovieDetails extends MizActivity {
 	}
 
 	@Override
-	public void onStart() {
+	protected void onStart() {
 		super.onStart();
-		getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+		if (getSupportActionBar() != null)
+			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 	}
 
 	@Override
@@ -102,7 +100,10 @@ public class MovieDetails extends MizActivity {
 		case KeyEvent.KEYCODE_MEDIA_PLAY:
 		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
 			// Nasty...
-			((MovieDetailsFragment) getSupportFragmentManager().findFragmentByTag(TAG)).onKeyDown(keyCode, event);
+			Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+			if (frag instanceof MovieDetailsFragment) {
+				((MovieDetailsFragment) frag).onKeyDown(keyCode, event);
+			}
 		}
 		return super.onKeyDown(keyCode, event);
 	}

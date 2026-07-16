@@ -34,6 +34,7 @@ import com.miz.functions.TvShowLibraryUpdateCallback;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.utils.FileUtils;
 import com.miz.utils.LocalBroadcastUtils;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -254,7 +255,7 @@ public class TvShowIdentification {
 
         try {
             mCallback.onTvShowAdded(show.getId(), show.getTitle(), mPicasso.load(coverFile).resize(getNotificationImageSizeSmall(), (int) (getNotificationImageSizeSmall() * 1.5)).get(),
-                    mPicasso.load(backdropFile).skipMemoryCache().resize(getNotificationImageWidth(), (getNotificationImageWidth() / 16) * 9).get(), episodeCount);
+                    mPicasso.load(backdropFile).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).resize(getNotificationImageWidth(), (getNotificationImageWidth() / 16) * 9).get(), episodeCount);
         } catch (IOException e) {
             mCallback.onTvShowAdded(show.getId(), show.getTitle(), null, null, episodeCount);
         }
@@ -367,7 +368,7 @@ public class TvShowIdentification {
         try {
             mCallback.onEpisodeAdded(thisShow.getId(), thisShow.getId().equals(DbAdapterTvShows.UNIDENTIFIED_ID) ? filepath : thisShow.getTitle() + " S" + MizLib.addIndexZero(ep.getSeason()) + "E" + MizLib.addIndexZero(ep.getEpisode()),
                     mPicasso.load(coverFile).resize(getNotificationImageSizeSmall(), (int) (getNotificationImageSizeSmall() * 1.5)).get(),
-                    mPicasso.load(backdropFile).skipMemoryCache().get());
+                    mPicasso.load(backdropFile).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).get());
         } catch (IOException e) {
             mCallback.onEpisodeAdded(thisShow.getId(), thisShow.getId().equals(DbAdapterTvShows.UNIDENTIFIED_ID) ? filepath : thisShow.getTitle() + " S" + MizLib.addIndexZero(ep.getSeason()) + "E" + MizLib.addIndexZero(ep.getEpisode()),
                     null, null);

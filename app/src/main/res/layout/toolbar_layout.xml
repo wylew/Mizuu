@@ -1,15 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
-<android.support.v7.widget.Toolbar
+<com.google.android.material.appbar.MaterialToolbar
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="?attr/colorPrimary"
-    android:elevation="1dp"
-    android:fitsSystemWindows="true" />
-
-    <!--
-    fitsSystemWindows="true" adds status bar padding to the Toolbar,
-    meaning that the status bar won't overlay the content of the Toolbar.
-    The Toolbar background, however, will continue to fill the status bar area.
-    -->
+    android:background="?attr/colorSurface"
+    app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
+    app:titleTextColor="?attr/colorOnSurface" />

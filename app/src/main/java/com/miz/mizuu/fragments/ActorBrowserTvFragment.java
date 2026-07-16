@@ -20,9 +20,9 @@ import android.content.Context;
 import android.graphics.Bitmap.Config;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -108,10 +108,12 @@ public class ActorBrowserTvFragment extends Fragment {
 				new ViewTreeObserver.OnGlobalLayoutListener() {
 					@Override
 					public void onGlobalLayout() {
-						final int numColumns = (int) Math.floor(
-								mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-						if (numColumns > 0) {
-							mGridView.setNumColumns(numColumns);
+						if (mGridView != null && mGridView.getWidth() > 0) {
+							final int numColumns = (int) Math.floor(
+									mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+							if (numColumns > 0) {
+								mGridView.setNumColumns(numColumns);
+							}
 						}
 					}
 				});
@@ -179,13 +181,13 @@ public class ActorBrowserTvFragment extends Fragment {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup container) {
+		public View getView(int position, View convertView, ViewGroup parent) {
 			CoverItem holder;
 			
 			final Actor actor = mActors.get(position);
 
 			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.grid_cover_two_line, container, false);
+				convertView = inflater.inflate(R.layout.grid_cover_two_line, parent, false);
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);

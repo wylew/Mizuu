@@ -1,17 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen xmlns:android="http://schemas.android.com/apk/res/android" >
 
     <PreferenceCategory android:title="@string/prefsUIGeneral" >
+        <ListPreference
+            android:defaultValue="light"
+            android:entries="@array/theme_entries"
+            android:entryValues="@array/theme_values"
+            android:icon="@drawable/ic_settings_white_24dp"
+            android:key="prefsTheme"
+            android:summary="@string/prefsThemeDescription"
+            android:title="@string/prefsThemeTitle" />
+
         <CheckBoxPreference
             android:defaultValue="false"
-            android:icon="@drawable/ic_format_quote_white_24dp"
-            android:key="prefsShowGridTitles"
-            android:summary="@string/prefsShowGridTitles"
-            android:title="@string/prefsShowGridTitlesTitle" />
+            android:icon="@drawable/ic_palette_white_24dp"
+            android:key="prefsColorMatchingTheme"
+            android:summary="@string/prefsDynamicColorsSummary"
+            android:title="@string/prefsDynamicColorsTitle" />
 
         <ListPreference
-            android:defaultValue="@string/normal"
+            android:defaultValue="3"
             android:entries="@array/grid_item_size"
-            android:entryValues="@array/grid_item_size"
+            android:entryValues="@array/grid_item_size_values"
             android:icon="@drawable/ic_view_module_white_24dp"
             android:key="prefsGridItemSize"
             android:summary="@string/overviewGridItemSizeDescription"
@@ -36,7 +46,6 @@
 
         <ListPreference
             android:defaultValue="@string/oldestFirst"
-            android:dialogTitle="@string/tvShowEpisodesOrderType"
             android:entries="@array/episodesOrder"
             android:entryValues="@array/episodesOrder"
             android:icon="@drawable/ic_sort_white_24dp"
@@ -46,7 +55,6 @@
 
         <ListPreference
             android:defaultValue="@string/oldestFirst"
-            android:dialogTitle="@string/tvShowSeasonsOrderType"
             android:entries="@array/episodesOrder"
             android:entryValues="@array/episodesOrder"
             android:icon="@drawable/ic_sort_white_24dp"

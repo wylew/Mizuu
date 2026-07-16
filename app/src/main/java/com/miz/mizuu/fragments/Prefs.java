@@ -20,10 +20,11 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.Bundle;
-import android.preference.Preference;
-import android.preference.Preference.OnPreferenceClickListener;
-import android.preference.PreferenceFragment;
-import android.preference.PreferenceManager;
+import androidx.annotation.Nullable;
+import androidx.preference.Preference;
+import androidx.preference.Preference.OnPreferenceClickListener;
+import androidx.preference.PreferenceFragmentCompat;
+import androidx.preference.PreferenceManager;
 import android.text.TextUtils;
 import android.widget.Toast;
 
@@ -37,38 +38,44 @@ import java.util.Locale;
 
 import static com.miz.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 
-public class Prefs extends PreferenceFragment {
+public class Prefs extends PreferenceFragmentCompat {
 
-	private Preference mLanguagePref, mCopyDatabase;
 	private Locale[] mSystemLocales;
 
 	@Override
-	public void onCreate(Bundle savedInstanceState) {
-		super.onCreate(savedInstanceState);
+	public void onCreatePreferences(@Nullable Bundle savedInstanceState, @Nullable String rootKey) {
+		String resource = "root_preferences";
+		if (getArguments() != null && getArguments().containsKey("resource")) {
+			resource = getArguments().getString("resource");
+		}
+		
+		int res = requireContext().getResources().getIdentifier(resource, "xml", requireContext().getPackageName());
+		if (res > 0) {
+			setPreferencesFromResource(res, rootKey);
+		} else {
+			setPreferencesFromResource(R.xml.root_preferences, rootKey);
+		}
 
-		int res=getActivity().getResources().getIdentifier(getArguments().getString("resource"), "xml", getActivity().getPackageName());
-		addPreferencesFromResource(res);
+		Preference copyDatabase = findPreference("prefsCopyDatabase");
+		if (copyDatabase != null)
+			copyDatabase.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+				@Override
+				public boolean onPreferenceClick(Preference preference) {
+					String path = FileUtils.copyDatabase(requireActivity());
 
-        mCopyDatabase = getPreferenceScreen().findPreference("prefsCopyDatabase");
-        if (mCopyDatabase != null)
-            mCopyDatabase.setOnPreferenceClickListener(new OnPreferenceClickListener() {
-                @Override
-                public boolean onPreferenceClick(Preference preference) {
-                    String path = FileUtils.copyDatabase(getActivity());
+					if (!TextUtils.isEmpty(path)) {
+						Toast.makeText(requireActivity(), getString(R.string.database_copied) + "\n(" + path + ")", Toast.LENGTH_LONG).show();
+					} else {
+						Toast.makeText(requireActivity(), R.string.errorSomethingWentWrong, Toast.LENGTH_SHORT).show();
+					}
 
-                    if (!TextUtils.isEmpty(path)) {
-                        Toast.makeText(getActivity(), getString(R.string.database_copied) + "\n(" + path + ")", Toast.LENGTH_LONG).show();
-                    } else {
-                        Toast.makeText(getActivity(), R.string.errorSomethingWentWrong, Toast.LENGTH_SHORT).show();
-                    }
+					return true;
+				}
+			});
 
-                    return true;
-                }
-            });
-
-		mLanguagePref = getPreferenceScreen().findPreference(LANGUAGE_PREFERENCE);
-		if (mLanguagePref != null)
-			mLanguagePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
+		Preference languagePref = findPreference(LANGUAGE_PREFERENCE);
+		if (languagePref != null)
+			languagePref.setOnPreferenceClickListener(new OnPreferenceClickListener() {
 
 				@Override
 				public boolean onPreferenceClick(Preference preference) {
@@ -76,37 +83,37 @@ public class Prefs extends PreferenceFragment {
 					mSystemLocales = Locale.getAvailableLocales();
 					String[] languageCodes = Locale.getISOLanguages();
 
-					final ArrayList<Locale> mTemp = new ArrayList<Locale>();
+					final ArrayList<Locale> temp = new ArrayList<Locale>();
 					for (String code : languageCodes) {
 						if (code.length() == 2) { // We're only interested in two character codes
 							Locale l = new Locale(code);
 							if (hasLocale(l))
-								mTemp.add(l);
+								temp.add(l);
 						}
 					}
 
-					Collections.sort(mTemp, new Comparator<Locale>() {
+					Collections.sort(temp, new Comparator<Locale>() {
 						@Override
 						public int compare(Locale lhs, Locale rhs) {
 							return lhs.getDisplayLanguage(Locale.getDefault()).compareToIgnoreCase(rhs.getDisplayLanguage(Locale.getDefault()));
 						}
 					});
 
-					String[] items = new String[mTemp.size()];
-					for (int i = 0; i < mTemp.size(); i++)
-						items[i] = mTemp.get(i).getDisplayLanguage(Locale.getDefault());
+					String[] items = new String[temp.size()];
+					for (int i = 0; i < temp.size(); i++)
+						items[i] = temp.get(i).getDisplayLanguage(Locale.getDefault());
 					
-					final String[] codes = new String[mTemp.size()];
-					for (int i = 0; i < mTemp.size(); i++)
-						codes[i] = mTemp.get(i).getLanguage();
+					final String[] codes = new String[temp.size()];
+					for (int i = 0; i < temp.size(); i++)
+						codes[i] = temp.get(i).getLanguage();
 					
-					mTemp.clear();
+					temp.clear();
 					
-					int checkedItem = getIndexForLocale(codes, PreferenceManager.getDefaultSharedPreferences(getActivity()).getString(LANGUAGE_PREFERENCE, "en"));
+					int checkedItem = getIndexForLocale(codes, PreferenceManager.getDefaultSharedPreferences(requireActivity()).getString(LANGUAGE_PREFERENCE, "en"));
 					if (checkedItem == -1)
 						checkedItem = getIndexForLocale(codes, "en"); // "en" by default
 					
-					AlertDialog.Builder bldr = new AlertDialog.Builder(getActivity());
+					AlertDialog.Builder bldr = new AlertDialog.Builder(requireActivity());
 					bldr.setTitle(R.string.set_pref_language_title);
 					bldr.setSingleChoiceItems(items, checkedItem, new OnClickListener() {
 						@Override
@@ -123,7 +130,7 @@ public class Prefs extends PreferenceFragment {
 	}
 	
 	private void savePreference(String key, String value) {
-		PreferenceManager.getDefaultSharedPreferences(getActivity()).edit().putString(key, value).commit();
+		PreferenceManager.getDefaultSharedPreferences(requireActivity()).edit().putString(key, value).apply();
 	}
 	
 	private boolean hasLocale(Locale l) {

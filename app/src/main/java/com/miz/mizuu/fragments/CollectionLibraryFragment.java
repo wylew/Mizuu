@@ -27,10 +27,10 @@ import android.graphics.Bitmap.Config;
 import android.net.Uri;
 import android.os.Bundle;
 import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.LoaderManager.LoaderCallbacks;
-import android.support.v4.content.Loader;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.fragment.app.Fragment;
+import androidx.loader.app.LoaderManager.LoaderCallbacks;
+import androidx.loader.content.Loader;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -451,7 +451,7 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         menu.removeItem(R.id.search_textbox);
         menu.removeItem(R.id.filters);
         menu.removeItem(R.id.sort);
-        menu.removeItem(R.id.unidentifiedFiles);
+        menu.removeItem(R.id.unidentified_files);
 
         menu.findItem(R.id.view_collection_online).setVisible(true);
     }
@@ -519,11 +519,8 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
     }
 
     private void forceLoaderLoad() {
-        if (isAdded())
-            if (getLoaderManager().getLoader(0) == null) {
-                getLoaderManager().initLoader(0, null, loaderCallbacks);
-            } else {
-                getLoaderManager().restartLoader(0, null, loaderCallbacks);
-            }
+        if (isAdded()) {
+            androidx.loader.app.LoaderManager.getInstance(this).restartLoader(0, null, loaderCallbacks);
+        }
     }
 }

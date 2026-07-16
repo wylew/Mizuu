@@ -19,12 +19,12 @@ package com.miz.mizuu;
 import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.os.Handler;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v4.view.ViewPager.SimpleOnPageChangeListener;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.viewpager.widget.ViewPager.SimpleOnPageChangeListener;
+import androidx.appcompat.widget.Toolbar;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnSystemUiVisibilityChangeListener;
@@ -55,11 +55,7 @@ public class ImageViewer extends MizActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        if (MizLib.hasKitKat()) {
-            setTheme(R.style.Mizuu_Theme_Translucent_FullScreen);
-        } else {
-            setTheme(R.style.Mizuu_Theme_Transparent_FullScreen);
-        }
+        setTheme(R.style.Mizuu_Theme_Translucent_FullScreen);
 
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
 
@@ -80,7 +76,7 @@ public class ImageViewer extends MizActivity {
         mViewPager = (ViewPager) findViewById(R.id.awesomepager);
         mViewPager.setPageMargin(MizLib.convertDpToPixels(getApplicationContext(), 16));
         mViewPager.setAdapter(new ActorPhotosAdapter(getSupportFragmentManager()));
-        mViewPager.setOnPageChangeListener(new SimpleOnPageChangeListener() {
+        mViewPager.addOnPageChangeListener(new SimpleOnPageChangeListener() {
             @Override
             public void onPageSelected(int arg0) {
                 getSupportActionBar().setTitle((arg0 + 1) + " " + getString(R.string.of) + " " + mPhotos.length);
@@ -156,7 +152,7 @@ public class ImageViewer extends MizActivity {
     private class ActorPhotosAdapter extends FragmentPagerAdapter {
 
         public ActorPhotosAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @Override

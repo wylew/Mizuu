@@ -22,7 +22,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.database.Cursor;
 import android.os.Bundle;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -30,6 +30,7 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ListView;
@@ -60,6 +61,20 @@ public class FileSources extends MizActivity {
 		mAdapter = new ListAdapter();
 		mListView.setAdapter(mAdapter);
 		mListView.setEmptyView(mEmptyView);
+
+		findViewById(R.id.add_local_folder).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				addFileSource();
+			}
+		});
+
+		findViewById(R.id.add_network_source).setOnClickListener(new OnClickListener() {
+			@Override
+			public void onClick(View v) {
+				addFileSource();
+			}
+		});
 
 		loadSources();
 
@@ -134,7 +149,8 @@ public class FileSources extends MizActivity {
 			}
 		} catch (Exception ignored) {
 		} finally {
-			cursor.close();
+			if (cursor != null)
+				cursor.close();
 		}
 
 		mItems.clear();

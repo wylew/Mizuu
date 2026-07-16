@@ -17,6 +17,7 @@
 package com.miz.functions;
 
 import android.annotation.SuppressLint;
+import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.ActivityManager.RunningServiceInfo;
 import android.app.AlertDialog;
@@ -45,12 +46,13 @@ import android.os.Build;
 import android.os.Environment;
 import android.os.Looper;
 import android.os.StatFs;
-import android.preference.PreferenceManager;
-import android.support.v8.renderscript.Allocation;
-import android.support.v8.renderscript.Element;
-import android.support.v8.renderscript.RenderScript;
-import android.support.v8.renderscript.ScriptIntrinsicBlur;
+import androidx.preference.PreferenceManager;
+import android.renderscript.Allocation;
+import android.renderscript.Element;
+import android.renderscript.RenderScript;
+import android.renderscript.ScriptIntrinsicBlur;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.TypedValue;
 import android.view.Display;
 import android.view.View;
@@ -73,11 +75,11 @@ import com.miz.service.MovieLibraryUpdate;
 import com.miz.service.TvShowsLibraryUpdate;
 import com.miz.utils.FileUtils;
 import com.miz.utils.ViewUtils;
-import com.squareup.okhttp.MediaType;
-import com.squareup.okhttp.OkHttpClient;
-import com.squareup.okhttp.Request;
-import com.squareup.okhttp.RequestBody;
-import com.squareup.okhttp.Response;
+import okhttp3.MediaType;
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.RequestBody;
+import okhttp3.Response;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -116,6 +118,8 @@ import static com.miz.functions.PreferenceKeys.SCHEDULED_UPDATES_TVSHOWS;
 import static com.miz.functions.PreferenceKeys.TMDB_BASE_URL;
 import static com.miz.functions.PreferenceKeys.TMDB_BASE_URL_TIME;
 import static com.miz.functions.PreferenceKeys.TRAKT_USERNAME;
+import static com.miz.functions.PreferenceKeys.TMDB_API_KEY;
+import static com.miz.functions.PreferenceKeys.TVDB_API_KEY;
 
 @SuppressLint("NewApi")
 public class MizLib {
@@ -130,7 +134,7 @@ public class MizLib {
     public static final String SERVER = "server";
     public static final String SERIAL_NUMBER = "serial_number";
 
-    public static final String allFileTypes = ".3gp.aaf.mp4.ts.webm.m4v.mkv.divx.xvid.rec.avi.flv.f4v.moi.mpeg.mpg.mts.m2ts.ogv.rm.rmvb.mov.wmv.iso.vob.ifo.wtv.pyv.ogm.img";
+    public static final String allFileTypes = "3gp.aaf.mp4.ts.webm.m4v.mkv.divx.xvid.rec.avi.flv.f4v.moi.mpeg.mpg.mts.m2ts.ogv.rm.rmvb.mov.wmv.iso.vob.ifo.wtv.pyv.ogm.img";
     public static final String IMAGE_CACHE_DIR = "thumbs";
     public static final String CHARACTER_REGEX = "[^\\w\\s]";
     public static final String[] prefixes = new String[]{"the ", "a ", "an "};
@@ -143,26 +147,45 @@ public class MizLib {
 
     private MizLib() {} // No instantiation
 
+    public static boolean isTmdbApiKeySet(Context context) {
+        String key = PreferenceManager.getDefaultSharedPreferences(context).getString(TMDB_API_KEY, "");
+        if (TextUtils.isEmpty(key))
+            key = context.getString(R.string.tmdb_api_key);
+        return !TextUtils.isEmpty(key) && !key.equals("add_your_own");
+    }
+
+    public static boolean isTvdbApiKeySet(Context context) {
+        String key = PreferenceManager.getDefaultSharedPreferences(context).getString(TVDB_API_KEY, "");
+        if (TextUtils.isEmpty(key))
+            key = context.getString(R.string.tvdb_api_key);
+        return !TextUtils.isEmpty(key) && !key.equals("add_your_own");
+    }
+
     public static String getTmdbApiKey(Context context) {
-        String key = context.getString(R.string.tmdb_api_key);
+        String key = PreferenceManager.getDefaultSharedPreferences(context).getString(TMDB_API_KEY, "");
+        if (TextUtils.isEmpty(key))
+            key = context.getString(R.string.tmdb_api_key);
         if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
             throw new RuntimeException("You need to add a TMDb API key!");
         return key;
     }
 
     public static String getTvdbApiKey(Context context) {
-        String key = context.getString(R.string.tvdb_api_key);
+        String key = PreferenceManager.getDefaultSharedPreferences(context).getString(TVDB_API_KEY, "");
+        if (TextUtils.isEmpty(key))
+            key = context.getString(R.string.tvdb_api_key);
         if (TextUtils.isEmpty(key) || key.equals("add_your_own"))
             throw new RuntimeException("You need to add a TVDb API key!");
         return key;
     }
 
     public static boolean isVideoFile(String s) {
-        String[] fileTypes = new String[]{".3gp",".aaf.","mp4",".ts",".webm",".m4v",".mkv",".divx",".xvid",".rec",".avi",".flv",".f4v",".moi",".mpeg",".mpg",".mts",".m2ts",".ogv",".rm",".rmvb",".mov",".wmv",".iso",".vob",".ifo",".wtv",".pyv",".ogm",".img"};
-        int count = fileTypes.length;
-        for (int i = 0; i < count; i++)
-            if (s.endsWith(fileTypes[i]))
+        String sLower = s.toLowerCase(Locale.ENGLISH);
+        String[] fileTypes = allFileTypes.split("\\.");
+        for (String type : fileTypes) {
+            if (!type.isEmpty() && sLower.endsWith("." + type))
                 return true;
+        }
         return false;
     }
 
@@ -366,7 +389,7 @@ public class MizLib {
     public static void addActionBarPadding(Context c, View v) {
         int mActionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -382,7 +405,7 @@ public class MizLib {
     public static void addActionBarAndStatusBarPadding(Context c, View v) {
         int mActionBarHeight = 0, mStatusBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -401,7 +424,7 @@ public class MizLib {
     public static void addActionBarPaddingBottom(Context c, View v) {
         int mActionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -417,7 +440,7 @@ public class MizLib {
     public static void addActionBarMargin(Context c, View v) {
         int mActionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -435,7 +458,7 @@ public class MizLib {
     public static void addActionBarAndStatusBarMargin(Context c, View v) {
         int mActionBarHeight = 0, mStatusBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -457,7 +480,7 @@ public class MizLib {
     public static void addActionBarAndStatusBarMargin(Context c, View v, FrameLayout.LayoutParams layoutParams) {
         int mActionBarHeight = 0, mStatusBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -479,7 +502,7 @@ public class MizLib {
     public static void addActionBarMarginBottom(Context c, View v) {
         int mActionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(android.R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             mActionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             mActionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -545,7 +568,7 @@ public class MizLib {
     public static int getActionBarHeight(Context c) {
         int actionBarHeight = 0;
         TypedValue tv = new TypedValue();
-        if (c.getTheme().resolveAttribute(R.attr.actionBarSize, tv, true))
+        if (c.getTheme().resolveAttribute(androidx.appcompat.R.attr.actionBarSize, tv, true))
             actionBarHeight = TypedValue.complexToDimensionPixelSize(tv.data, c.getResources().getDisplayMetrics());
         else
             actionBarHeight = 0; // No ActionBar style (pre-Honeycomb or ActionBar not in theme)
@@ -561,6 +584,14 @@ public class MizLib {
         // height, if we're running on KitKat or above
         return hasKitKat() ?
                 actionBarHeight + statusBarHeight : actionBarHeight;
+    }
+
+    public static int getActionBarAndStatusBarOffset(Activity activity) {
+        return getActionBarAndStatusBarHeight(activity);
+    }
+
+    public static String getNotificationChannelId(Context context) {
+        return "mizuu_notifications";
     }
 
     public static String md5(final String s) {
@@ -735,16 +766,22 @@ public class MizLib {
 
     public static boolean checkFileTypes(String file) {
         // We don't want to include files that start with ._ or .DS_Store
-        if (file.matches("(?i).*[/][\\.](?:_|DS_Store).*[\\.].*$"))
+        if (file.matches("(?i).*[/][\\.](?:_|DS_Store).*[\\.].*$")) {
+            Log.d("MizLib", "checkFileTypes: skipping system file: " + file);
             return false;
+        }
 
         if (file.contains(".")) { // Must have a file type
-            String type = file.substring(file.lastIndexOf("."));
+            String type = file.substring(file.lastIndexOf(".") + 1);
             String[] filetypes = allFileTypes.split("\\.");
             int count = filetypes.length;
             for (int i = 0; i < count; i++)
-                if (type.toLowerCase(Locale.ENGLISH).equals("." + filetypes[i]))
+                if (type.equalsIgnoreCase(filetypes[i]))
                     return true;
+            
+            Log.d("MizLib", "checkFileTypes: unsupported file type: " + type + " for file: " + file);
+        } else {
+            Log.d("MizLib", "checkFileTypes: no dot found in filename: " + file);
         }
         return false;
     }
@@ -812,8 +849,7 @@ public class MizLib {
             fileos = new BufferedOutputStream(new FileOutputStream(savePath));
             in = new BufferedInputStream(response.body().byteStream(), bufferSize);
 
-            retVal = new byte[bufferSize];
-            int length = 0;
+            retVal = new byte[bufferSize]; int length = 0;
             while((length = in.read(retVal)) > -1) {
                 fileos.write(retVal, 0, length);
             }
@@ -963,7 +999,8 @@ public class MizLib {
             }
         } catch (Exception e) {
         } finally {
-            c.close();
+            if (c != null)
+                c.close();
             cache.clear();
         }
 
@@ -1287,7 +1324,7 @@ public class MizLib {
         return new Request.Builder()
                 .url(url)
                 .addHeader("Content-type", "application/json")
-                .post(RequestBody.create(MediaType.parse("application/json"), holder.toString()))
+                .post(RequestBody.create(holder.toString(), MediaType.parse("application/json")))
                 .build();
     }
 
@@ -1299,7 +1336,7 @@ public class MizLib {
         return new Request.Builder()
                 .url(url)
                 .addHeader("Content-type", "application/json")
-                .post(RequestBody.create(MediaType.parse("application/json"), holder.toString()))
+                .post(RequestBody.create(holder.toString(), MediaType.parse("application/json")))
                 .build();
     }
 
@@ -1341,7 +1378,7 @@ public class MizLib {
     }
 
     public static int getFileSizeLimit(Context c) {
-        return 25 * 1024 * 1024; // 25 MB
+        return 500 * 1024; // 500 KB - allow smaller test videos
     }
 
     public static String getTraktUserName(Context c) {
@@ -1835,7 +1872,8 @@ public class MizLib {
         } catch (IOException e) {
             return -1;
         } finally {
-            conn.disconnect();
+            if (conn != null)
+                conn.disconnect();
         }
     }
 

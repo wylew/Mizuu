@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="prefsThemeTitle">Theme</string>
+    <string name="prefsThemeDescription">Select application theme</string>
+    <string name="theme_light">Material Light</string>
+    <string name="theme_dark">Material Dark</string>
+    <string name="theme_color_matching">Color Matching</string>
+</resources>

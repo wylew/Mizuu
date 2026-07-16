@@ -19,6 +19,7 @@ package com.miz.identification;
 import android.content.Context;
 import android.preference.PreferenceManager;
 import android.text.TextUtils;
+import android.util.Log;
 import android.util.SparseBooleanArray;
 
 import com.miz.abstractclasses.MovieApiService;
@@ -31,11 +32,19 @@ import com.miz.mizuu.MizuuApplication;
 import com.miz.utils.FileUtils;
 import com.miz.utils.LocalBroadcastUtils;
 import com.miz.utils.MovieDatabaseUtils;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import okhttp3.OkHttpClient;
+import okhttp3.Request;
+import okhttp3.Response;
 
 import static com.miz.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 
@@ -56,7 +65,7 @@ public class MovieIdentification {
         mCallback = callback;
         mMovieStructures = new ArrayList<MovieStructure>(files);
 
-        mPicasso = Picasso.with(mContext);
+        mPicasso = Picasso.get();
 
         // Get the language preference
         getLanguagePreference();
@@ -155,6 +164,11 @@ public class MovieIdentification {
                 // If there's still no results, search based on the parent folder name only
                 if (results.size() == 0)
                     results = service.search(ms.getDecryptedParentFolderName(), null);
+                
+                // If there's STILL no results, try scraping IMDb as a fallback
+                if (results.size() == 0 && ms.hasImdbId()) {
+                    movie = scrapeImdb(ms.getImdbId());
+                }
             } else {
                 movie = service.get(getMovieId(), mLocale);
             }
@@ -172,6 +186,64 @@ public class MovieIdentification {
         }
     }
 
+    /**
+     * Fallback method to scrape basic information from IMDb if TMDb fails.
+     * This is a simple implementation that extracts the title and plot.
+     */
+    private Movie scrapeImdb(String imdbId) {
+        Log.d("MovieIdentification", "TMDb failed. Attempting to scrape IMDb fallback for: " + imdbId);
+        Movie movie = new Movie();
+        movie.setImdbId(imdbId);
+        movie.setId("imdb_" + imdbId); // Use a prefixed ID to avoid conflicts
+
+        OkHttpClient client = MizuuApplication.getOkHttpClient();
+        Request request = new Request.Builder()
+                .url("https://www.imdb.com/title/" + imdbId + "/")
+                .addHeader("User-Agent", "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36")
+                .build();
+
+        try (Response response = client.newCall(request).execute()) {
+            if (response.isSuccessful() && response.body() != null) {
+                String html = response.body().string();
+                
+                // Extract Title
+                Pattern titlePattern = Pattern.compile("<title>(.*?) \\(\\d{4}\\) - IMDb</title>");
+                Matcher titleMatcher = titlePattern.matcher(html);
+                if (titleMatcher.find()) {
+                    movie.setTitle(titleMatcher.group(1));
+                } else {
+                    // Fallback title regex
+                    Pattern altTitlePattern = Pattern.compile("<h1 .*?>(.*?)</h1>");
+                    Matcher altMatcher = altTitlePattern.matcher(html);
+                    if (altMatcher.find()) {
+                        movie.setTitle(altMatcher.group(1).replaceAll("<[^>]*>", ""));
+                    }
+                }
+
+                // Extract Plot
+                Pattern plotPattern = Pattern.compile("\"description\":\"(.*?)\"");
+                Matcher plotMatcher = plotPattern.matcher(html);
+                if (plotMatcher.find()) {
+                    movie.setPlot(plotMatcher.group(1));
+                }
+
+                // Extract Year
+                Pattern yearPattern = Pattern.compile("\\((\\d{4})\\)");
+                Matcher yearMatcher = yearPattern.matcher(html);
+                if (yearMatcher.find()) {
+                    movie.setReleasedate(yearMatcher.group(1));
+                }
+
+                Log.d("MovieIdentification", "IMDb Scraping succeeded for: " + movie.getTitle());
+                return movie;
+            }
+        } catch (IOException e) {
+            Log.e("MovieIdentification", "IMDb Scraping failed: " + e.getMessage());
+        }
+
+        return null;
+    }
+
     private void createMovie(MovieStructure ms, Movie movie) {
         boolean downloadCovers = true;
 
@@ -183,8 +255,10 @@ public class MovieIdentification {
             String thumb_filepath = FileUtils.getMovieThumb(mContext, movie.getId()).getAbsolutePath();
 
             // Download the cover image and try again if it fails
-            if (!MizLib.downloadFile(movie.getCover(), thumb_filepath))
-                MizLib.downloadFile(movie.getCover(), thumb_filepath);
+            if (!TextUtils.isEmpty(movie.getCover())) {
+                if (!MizLib.downloadFile(movie.getCover(), thumb_filepath))
+                    MizLib.downloadFile(movie.getCover(), thumb_filepath);
+            }
 
             // Download the backdrop image and try again if it fails
             if (!TextUtils.isEmpty(movie.getBackdrop())) {
@@ -265,7 +339,7 @@ public class MovieIdentification {
             try {
                 mCallback.onMovieAdded(movie.getTitle(),
                         mPicasso.load(FileUtils.getMovieThumb(mContext, movie.getId())).resize(getNotificationImageSizeSmall(), (int) (getNotificationImageSizeSmall() * 1.5)).get(),
-                        mPicasso.load(backdropFile).resize(getNotificationImageWidth(), getNotificationImageHeight()).skipMemoryCache().get(), mCount);
+                        mPicasso.load(backdropFile).resize(getNotificationImageWidth(), getNotificationImageHeight()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).get(), mCount);
             } catch (Exception e) {
                 mCallback.onMovieAdded(movie.getTitle(), null, null, mCount);
             }

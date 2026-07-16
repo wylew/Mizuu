@@ -1,66 +1,68 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:padding="@dimen/content_details_baseline_margin" >
+    android:orientation="vertical">
 
-    <FrameLayout
+    <ListView
+        android:id="@+id/listView1"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1" >
+        android:layout_weight="1"
+        android:divider="@null"
+        android:dividerHeight="0dp" />
 
-        <ListView
-            android:id="@+id/listView1"
-            android:divider="@null"
-            android:dividerHeight="0dp"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            tools:listitem="@layout/filesource_list" >
-
-        </ListView>
-
-        <LinearLayout
-            android:id="@+id/noFileSources"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:gravity="center"
-            android:orientation="vertical" >
-
-            <TextView
-                android:id="@+id/noFileSourcesTitle"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="@string/noFileSources"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="@dimen/large_text_size"
-                android:textStyle="bold" />
-
-            <TextView
-                android:id="@+id/textView2"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:gravity="center_horizontal"
-                android:paddingTop="@dimen/movie_details_padding"
-                android:text="@string/addFileSourcesAbove"
-                android:textAppearance="?android:attr/textAppearanceMedium"
-                android:textSize="@dimen/details_text_size" />
-
-        </LinearLayout>
-
-    </FrameLayout>
-
-    <TextView
-        android:id="@+id/overviewMessage"
+    <LinearLayout
+        android:id="@+id/noFileSources"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:background="#80000000"
+        android:layout_height="match_parent"
         android:gravity="center"
-        android:padding="8dp"
-        android:text="@string/filesourcesDescription"
-        android:textAllCaps="false"
-        android:textAppearance="?android:attr/textAppearanceSmall" />
+        android:orientation="vertical"
+        android:padding="32dp"
+        android:visibility="gone">
+
+        <ImageView
+            android:layout_width="80dp"
+            android:layout_height="80dp"
+            android:alpha="0.5"
+            android:src="@drawable/ic_folder_open_white_24dp"
+            app:tint="?attr/colorOnSurface" />
+
+        <TextView
+            android:id="@+id/noFileSourcesTitle"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="16dp"
+            android:text="@string/noFileSources"
+            android:textAppearance="?android:attr/textAppearanceLarge" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/addFileSourcesAbove"
+            android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            android:id="@+id/add_local_folder"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/contentLocationDevice"
+            app:icon="@drawable/ic_add_white_24dp" />
+
+        <Button
+            android:id="@+id/add_network_source"
+            style="@style/Widget.Material3.Button.TextButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:text="@string/network"
+            app:icon="@drawable/ic_language_white_24dp" />
+
+    </LinearLayout>
 
 </LinearLayout>

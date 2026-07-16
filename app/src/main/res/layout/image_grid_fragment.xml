@@ -60,6 +60,25 @@
             android:layout_marginTop="16dp"
             android:gravity="center_horizontal"
             android:textAppearance="?android:attr/textAppearanceMedium" />
+
+        <Button
+            android:id="@+id/add_file_source_button"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/addFileSource"
+            android:visibility="gone" />
+
+        <Button
+            android:id="@+id/update_library_button"
+            style="@style/Widget.Material3.Button.TonalButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="24dp"
+            android:text="@string/menuUpdateTitle"
+            android:visibility="gone" />
+
     </LinearLayout>
 
 </FrameLayout>

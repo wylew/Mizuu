@@ -48,10 +48,10 @@ public enum MovieLibraryType {
                     return WATCHLIST;
                 case MovieLoader.WATCHED:
                     return WATCHED;
-                case MovieLoader.UNWATCHED:
-                    return UNWATCHED;
-                default:
+                case MovieLoader.COLLECTIONS:
                     return COLLECTIONS;
+                default:
+                    return UNWATCHED;
             }
         }
     }

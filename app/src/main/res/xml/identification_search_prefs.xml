@@ -7,6 +7,25 @@
             android:summary="@string/set_pref_language_description"
             android:title="@string/set_pref_language_title" />
     </PreferenceCategory>
+
+    <PreferenceCategory android:title="API keys" >
+        <EditTextPreference
+            android:key="tmdbApiKey"
+            android:title="@string/tmdb_api_key_title"
+            android:summary="@string/api_key_summary"
+            android:dialogTitle="@string/tmdb_api_key_title" />
+        <EditTextPreference
+            android:key="tvdbApiKey"
+            android:title="@string/tvdb_api_key_title"
+            android:summary="@string/api_key_summary"
+            android:dialogTitle="@string/tvdb_api_key_title" />
+        <EditTextPreference
+            android:key="traktApiKey"
+            android:title="@string/trakt_api_key_title"
+            android:summary="@string/api_key_summary"
+            android:dialogTitle="@string/trakt_api_key_title" />
+    </PreferenceCategory>
+
     <PreferenceCategory android:title="@string/chooserMovies" >
         <CheckBoxPreference
             android:defaultValue="false"

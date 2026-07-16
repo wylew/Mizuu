@@ -1,184 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-
-    <plurals name="moviesInLibrary">
-        <item quantity="one">movie</item>
-        <item quantity="other">movies</item>
-    </plurals>
-    <plurals name="showsInLibrary">
-        <item quantity="one">show</item>
-        <item quantity="other">shows</item>
-    </plurals>
-    <plurals name="episodes">
-        <item quantity="one">episode</item>
-        <item quantity="other">episodes</item>
-    </plurals>
-    <plurals name="seasons">
-        <item quantity="one">season</item>
-        <item quantity="other">seasons</item>
-    </plurals>
-    <plurals name="day">
-        <item quantity="one">day</item>
-        <item quantity="other">days</item>
-    </plurals>
-    <plurals name="hour">
-        <item quantity="one">hour</item>
-        <item quantity="other">hours</item>
-    </plurals>
-    <plurals name="hour_short">
-        <item quantity="one">hr</item>
-        <item quantity="other">hrs</item>
-    </plurals>
-    <plurals name="minute">
-        <item quantity="one">minute</item>
-        <item quantity="other">minutes</item>
-    </plurals>
-    <plurals name="minute_short">
-        <item quantity="one">min</item>
-        <item quantity="other">mins</item>
-    </plurals>
-    <plurals name="seasons_selected">
-        <item quantity="one">season selected</item>
-        <item quantity="other">seasons selected</item>
-    </plurals>
-    <plurals name="episodes_selected">
-        <item quantity="one">episode selected</item>
-        <item quantity="other">episodes selected</item>
-    </plurals>
-    <plurals name="files">
-        <item quantity="one">file</item>
-        <item quantity="other">files</item>
-    </plurals>
-
-    <!-- APP STRINGS -->
     <string name="app_name">Mizuu</string>
-    <string name="app_name_movies">Mizuu - movies</string>
-    <string name="app_name_tvshows">Mizuu - TV shows</string>
-    <string name="settings_name">Settings</string>
-    <string name="newuser_btStartSearch">Start update</string>
-    <string name="detailsReleaseDate">Release date</string>
-    <string name="detailsGenre">Genres (comma-separated)</string>
-    <string name="detailsRunTime">Runtime</string>
-    <string name="detailsRating">Rating</string>
-    <string name="detailsCertification">Certification</string>
-    <string name="noInternet">No active Internet connection</string>
-    <string name="errorOccured">An error occurred</string>
-    <string name="updatingMovieInfo">Updating movie information…</string>
-    <string name="updatingShowInfo">Updating show information…</string>
-    <string name="stringNA">N/A</string>
-    <string name="minutes">minutes</string>
-    <string name="removeMovie">Remove movie</string>
-    <string name="removeEpisode">Remove episode</string>
-    <string name="removeShow">Remove TV show</string>
-    <string name="failedToRemoveShow">Could not remove show!</string>
-    <string name="failedToRemoveEpisode">Could not remove episode!</string>
-    <string name="identifyMovieTitle">Identify movie</string>
-    <string name="identifyEpisodeTitle">Identify episode</string>
-    <string name="identifyShow">Identify show</string>
-    <string name="prefsIdentification">Identification</string>
-    <string name="stringSort">Sort</string>
-    <string name="prefsSearchNavTitle">Search</string>
-    <string name="prefsUI">User Interface</string>
-    <string name="prefsUIGeneral">General</string>
-    <string name="prefsIdentificationAndSearch">Identification &amp; search</string>
-    <string name="shareWith">Share with…</string>
-    <string name="addedToFavs">Added to favorites!</string>
-    <string name="removedFromFavs">Removed from favorites!</string>
-    <string name="addedToWatchList">Added to Watchlist!</string>
-    <string name="removedFromWatchList">Removed from Watchlist!</string>
-    <string name="unknownYear">(unknown)</string>
-    <string name="addingCover">Downloading new cover art…</string>
-    <string name="coverSearchFailed">Cover art search failed!</string>
-    <string name="updateCheckBox">Clear library on update</string>
-    <string name="stringSearch">Search</string>
-    <string name="stringNoPlot">Plot not available.</string>
-    <string name="txtSelectFileSources">Select file sources</string>
-    <string name="menuFavouriteTitle">Add favorite</string>
-    <string name="menuFavouriteTitleRemove">Remove favorite</string>
-    <string name="menuShareTitle">Share</string>
-    <string name="menuRemoveTitle">Remove</string>
-    <string name="menuUpdateTitle">Update library</string>
-    <string name="prefsFileSourcesDescription">Configure the file sources to include in library updates.</string>
-    <string name="actorsShowAllPhotos">Photos</string>
-    <string name="actorsTaggedPhotos">Tagged photos</string>
-    <string name="detailsActors">Actors</string>
-    <string name="chooserMovies">Movies</string>
-    <string name="chooserTVShows">TV shows</string>
-    <string name="showGuestStars">Guest stars</string>
-    <string name="showWriter">Writer</string>
-    <string name="showDirector">Director</string>
-    <string name="showSeason">Season</string>
-    <string name="showEpisode">Episode</string>
-    <string name="mainWebLoading">Loading…</string>
-    <string name="chooserWebVideos">Web videos</string>
-    <string name="fileSources">File sources</string>
-    <string name="updateTvShowsTitle">Update TV shows</string>
-    <string name="updateMoviesTitle">Update Movies</string>
-    <string name="updateThirdStepDescription">The update process runs in the background and may take up to several minutes. It can be cancelled from the notification drawer.</string>
-    <string name="options">Options</string>
-    <string name="cancel">Cancel</string>
-    <string name="selectGenre">Select genre</string>
-    <string name="prefsShowGridTitlesTitle">Show titles in overview</string>
-    <string name="prefsShowGridTitles">Enable movie and show titles in library overview.</string>
-    <string name="prefsCredits">Data sources</string>
-    <string name="prefsCreditsTmdbTitle">The open movie database</string>
-    <string name="prefsCreditsTmdbDescription">www.themoviedb.org</string>
-    <string name="prefsCreditsTraktTitle">Trakt.tv</string>
-    <string name="prefsCreditsTraktDescription">www.trakt.tv</string>
-    <string name="prefsCreditsTvDb">Online TV Database</string>
-    <string name="prefsCreditsTvDbDescription">www.thetvdb.com</string>
-    <string name="prefsCreditsTvRage">TV Rage</string>
-    <string name="prefsCreditsTvRageDescription">www.tvrage.com</string>
-    <string name="prefsCreditsWikipedia">Wikipedia</string>
-    <string name="prefsCreditsWikipediaDescription">www.wikipedia.org</string>
-    <string name="addFileSourceTitle">Add file source</string>
-    <string name="errorSomethingWentWrong">Something went wrong - please try again!</string>
-    <string name="updatedMovie">Successfully updated movie!</string>
-    <string name="updatedTvShow">Successfully updated TV show!</string>
-    <string name="updatingMovies">Updating Movies</string>
-    <string name="updatingTvShows">Updating TV Shows</string>
-    <string name="analyzing_files">Analyzing files…</string>
-    <string name="editMovieTitle">Title</string>
-    <string name="editMovieTagline">Tagline</string>
-    <string name="editMoviePlot">Description</string>
-    <string name="filesourcesDescription">These folders will be indexed for content</string>
-    <string name="addCurrentFolderAsFileSource">Add folder as file source</string>
-    <string name="widgetsMizuuMovies">Mizuu - Movies</string>
-    <string name="widgetsMizuuShows">Mizuu - TV shows</string>
-    <string name="detailsTrailer">Trailer</string>
-    <string name="networkIpAddress">IP address or host name</string>
-    <string name="enterNetworkAddress">No IP address or host name!</string>
-    <string name="networkUsername">Username</string>
-    <string name="networkPassword">Password</string>
-    <string name="networkDomain">Domain name</string>
-    <string name="networkLogin">Log in to Samba server</string>
-    <string name="noConnection">"Connection failed. Make sure you're connected to a network!"</string>
-    <string name="sortTitle">Sort by title</string>
-    <string name="sortNewestEpisode">Sort by newest episode</string>
-    <string name="sortRelease">Sort by release</string>
-    <string name="sortFirstAired">Sort by first air date</string>
-    <string name="sortRating">Sort by rating</string>
-    <string name="sortWeightedRating">Sort by weighted rating</string>
-    <string name="sortAdded">Sort by date added</string>
-    <string name="sortDuration">Sort by duration</string>
-    <string name="choiceAllMovies">All movies</string>
-    <string name="choiceOffline">Offline copies</string>
-    <string name="choiceFavorites">Favorites</string>
-    <string name="choiceGenres">Genres</string>
-    <string name="choiceCollections">Collections</string>
-    <string name="choiceAvailableFiles">Available files</string>
-    <string name="choiceAllShows">All shows</string>
-    <string name="choiceYouTube">YouTube</string>
-    <string name="choiceReddit">Reddit</string>
-    <string name="choiceTedTalks">TED Talks</string>
-    <string name="stringJustAdded">Added</string>
-    <string name="stringCancelUpdate">Stop update</string>
-    <string name="stringUpdateCancelled">Update stopped!</string>
-    <string name="areYouSure">Are you sure?</string>
-    <string name="stringShowAllLanguages">Show all languages</string>
-    <string name="stringMarkAsWatched">Mark as watched</string>
     <string name="markedAsWatched">Marked as watched!</string>
-    <string name="stringMarkAsUnwatched">Mark as unwatched</string>
     <string name="markedAsUnwatched">Marked as unwatched!</string>
     <string name="chooserWatchList">Watchlist</string>
     <string name="stringEditMovie">Edit movie</string>
@@ -192,6 +15,13 @@
     <string name="stringUpcoming">Upcoming</string>
     <string name="stringNowPlaying">In theaters</string>
     <string name="stringPopular">Popular</string>
+    <string name="fileSources">File sources</string>
+    <string name="filesourcesDescription">Manage your file sources.</string>
+    <string name="prefsFileSourcesDescription">Manage the file sources for your media.</string>
+    <string name="txtSelectFileSources">Select file sources</string>
+    <string name="updateMoviesTitle">Update movies</string>
+    <string name="updateTvShowsTitle">Update TV shows</string>
+    <string name="options">Options</string>
     <string name="addFileSource">Add file source</string>
     <string name="done">Done</string>
     <string name="other">Other</string>
@@ -225,6 +55,7 @@
     <string name="failedToLogin">Failed to log in!</string>
     <string name="loginSucceeded">Log in succeeded!</string>
     <string name="logIn">Log in</string>
+    <string name="networkLogin">Network login</string>
     <string name="removedAccount">Removed account details!</string>
     <string name="removeAccount">Remove account</string>
     <string name="automaticallyShareSocialUpdates">Automatically share social updates when you watch a movie or TV show.</string>
@@ -242,6 +73,7 @@
     <string name="unidentified">Unidentified</string>
     <string name="translations">Translations</string>
     <string name="gridView">Grid view</string>
+    <string name="grid_item_size">Cover size</string>
     <string name="listView">List view</string>
     <string name="deleteFile">Delete file</string>
     <string name="filters">Filters</string>
@@ -344,6 +176,7 @@
     <string name="select_upnp_server">Select UPnP server</string>
     <string name="browser_help_message">Press the Back-button to navigate up the file system</string>
     <string name="unknown_size">Unknown size</string>
+    <string name="unknownYear">Unknown year</string>
     <string name="compatibility">compatibility</string>
     <string name="no_results_found">No results found</string>
     <string name="check_in">Check in on Trakt</string>
@@ -429,4 +262,127 @@
     <string name="database_dump_description">Creates a copy of the database in the application folder.</string>
     <string name="database_copied">Database copied!</string>
 
+    <string name="settings_name">Settings</string>
+    <string name="identifyMovieTitle">Identify movie</string>
+    <string name="identifyShow">Identify TV show</string>
+    <string name="identifyEpisodeTitle">Identify TV show episode</string>
+    <string name="addFileSourceTitle">Add file source</string>
+    <string name="chooserMovies">Movies</string>
+    <string name="chooserTVShows">TV shows</string>
+    <string name="actorsShowAllPhotos">Show all photos</string>
+    <string name="actorsTaggedPhotos">Tagged photos</string>
+    <string name="detailsActors">Actors</string>
+
+    <string name="prefsCreditsTraktTitle">Trakt.tv</string>
+    <string name="networkUsername">Username</string>
+    <string name="networkPassword">Password</string>
+    <string name="networkIpAddress">Server address (IP)</string>
+    <string name="networkDomain">Domain (optional)</string>
+    <string name="areYouSure">Are you sure?</string>
+    <string name="editMovieTitle">Title</string>
+    <string name="editMoviePlot">Plot</string>
+    <string name="stringNoPlot">No plot available.</string>
+    <string name="stringNA">N/A</string>
+    <string name="showSeason">Season</string>
+    <string name="showEpisode">Episode</string>
+    <string name="noConnection">No connection!</string>
+    <string name="errorOccured">An error occurred!</string>
+    <string name="addedToFavs">Added to favorites!</string>
+    <string name="removedFromFavs">Removed from favorites!</string>
+    <string name="addedToWatchList">Added to watchlist!</string>
+    <string name="removedFromWatchList">Removed from watchlist!</string>
+    <string name="failedToRemoveShow">Failed to remove show!</string>
+    <string name="addCurrentFolderAsFileSource">Add current folder as file source</string>
+    <string name="errorSomethingWentWrong">Something went wrong!</string>
+    <string name="choiceAllShows">All shows</string>
+    <string name="choiceFavorites">Favorites</string>
+    <string name="choiceAllMovies">All movies</string>
+    <string name="choiceCollections">Collections</string>
+    <string name="removeMovie">Remove movie</string>
+    <string name="coverSearchFailed">Cover search failed!</string>
+    <string name="noInternet">No internet connection!</string>
+    <string name="updatingMovieInfo">Updating movie information…</string>
+    <string name="updatingShowInfo">Updating show information…</string>
+    <string name="stringShowAllLanguages">Show all languages</string>
+    <string name="shareWith">Share with</string>
+    <string name="selectGenre">Select genre</string>
+    <string name="updatedMovie">Updated movie!</string>
+    <string name="updatedTvShow">Updated TV show!</string>
+    <string name="enterNetworkAddress">Please enter a network address!</string>
+    <string name="stringCancelUpdate">Cancel update</string>
+    <string name="stringJustAdded">Just added</string>
+    <string name="addingCover">Adding cover…</string>
+    <string name="updatingTvShows">Updating TV shows…</string>
+    <string name="analyzing_files">Analyzing files…</string>
+    <string name="stringUpdateCancelled">Update cancelled</string>
+    <string name="updatingMovies">Updating movies…</string>
+
+    <string name="showDirector">Director</string>
+    <string name="showWriter">Writer</string>
+    <string name="showGuestStars">Guest stars</string>
+    <string name="detailsReleaseDate">Release date</string>
+    <string name="detailsRating">Rating</string>
+    <string name="detailsCertification">Certification</string>
+    <string name="editMovieTagline">Tagline</string>
+    <string name="detailsGenre">Genre</string>
+    <string name="detailsRunTime">Runtime</string>
+
+    <string name="trakt_api_key">add_your_own</string>
+    <string name="tmdb_api_key">53cec0593be2a5063c555256dd38a7be</string>
+    <string name="tvdb_api_key">add_your_own</string>
+    <string name="all_files_permission_required">All files access permission is required to search for videos on your device.</string>
+
+    <string name="tmdb_api_key_title">TMDb API key</string>
+    <string name="tvdb_api_key_title">TVDb API key</string>
+    <string name="trakt_api_key_title">Trakt.tv API key</string>
+    <string name="api_key_summary">Enter your personal API key here.</string>
+
+    <string name="minutes">minutes</string>
+
+    <string name="updateCheckBox">Clear library before update</string>
+    <string name="menuUpdateTitle">Update library</string>
+    <string name="updateThirdStepDescription">When you are ready, click the button below to start updating your library.</string>
+    <string name="newuser_btStartSearch">Start update</string>
+    <string name="mainWebLoading">Loading…</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="stringMarkAsWatched">Mark as watched</string>
+    <string name="stringMarkAsUnwatched">Mark as unwatched</string>
+    <string name="menuFavouriteTitle">Add to favorites</string>
+    <string name="menuFavouriteTitleRemove">Remove from favorites</string>
+    <string name="menuShareTitle">Share</string>
+    <string name="menuRemoveTitle">Remove</string>
+    <string name="detailsTrailer">Trailer</string>
+    <string name="removeEpisode">Remove episode</string>
+
+    <string name="stringSort">Sort</string>
+    <string name="stringSearch">Search</string>
+    <string name="sortTitle">Title</string>
+    <string name="sortRelease">Release</string>
+    <string name="sortDuration">Duration</string>
+    <string name="sortRating">Rating</string>
+    <string name="sortWeightedRating">Weighted rating</string>
+    <string name="sortAdded">Date added</string>
+    <string name="choiceGenres">Genres</string>
+    <string name="choiceAvailableFiles">Available files</string>
+    <string name="choiceOffline">Offline</string>
+    <string name="sortFirstAired">First aired</string>
+    <string name="sortNewestEpisode">Newest episode</string>
+
+    <string name="removeShow">Remove show</string>
+    <string name="prefsUIGeneral">General</string>
+    <string name="prefsIdentification">Identification</string>
+    <string name="prefsCredits">Credits</string>
+    <string name="prefsCreditsTmdbDescription">TMDb</string>
+    <string name="prefsCreditsTmdbTitle">TMDb</string>
+    <string name="prefsIdentificationAndSearch">Identification and search</string>
+    <string name="prefsUI">User interface</string>
+    <string name="prefsSearchNavTitle">Search</string>
+    <string name="app_name_movies">Movies</string>
+    <string name="app_name_tvshows">TV shows</string>
+    <string name="prefsShowGridTitles">Show grid titles</string>
+    <string name="prefsShowGridTitlesTitle">Show grid titles</string>
+
+    <string name="prefsDynamicColorsTitle">Use dynamic colors</string>
+    <string name="prefsDynamicColorsSummary">Apply colors matching your wallpaper.</string>
 </resources>

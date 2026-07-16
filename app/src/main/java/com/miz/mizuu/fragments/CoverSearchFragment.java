@@ -20,7 +20,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.graphics.Bitmap.Config;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
+import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -183,10 +183,10 @@ public class CoverSearchFragment extends Fragment {
 		}
 
 		@Override
-		public View getView(int position, View convertView, ViewGroup container) {
+		public View getView(int position, View convertView, ViewGroup parent) {
 			CoverItem holder;
 			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.grid_portrait_photo, container, false);
+				convertView = inflater.inflate(R.layout.grid_portrait_photo, parent, false);
 				holder = new CoverItem();
 				
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);

@@ -32,9 +32,14 @@
         <item>@string/scheduledEveryWeek</item>
     </string-array>
     <string-array name="grid_item_size">
-        <item>@string/large</item>
-        <item>@string/normal</item>
-        <item>@string/small</item>
+        <item>3 posters across</item>
+        <item>4 posters across</item>
+        <item>5 posters across</item>
+    </string-array>
+    <string-array name="grid_item_size_values">
+        <item>3</item>
+        <item>4</item>
+        <item>5</item>
     </string-array>
 
 </resources>

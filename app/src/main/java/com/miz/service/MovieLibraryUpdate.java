@@ -18,6 +18,7 @@ package com.miz.service;
 
 import android.app.IntentService;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
@@ -28,9 +29,10 @@ import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
 import android.database.Cursor;
 import android.graphics.Bitmap;
-import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.LocalBroadcastManager;
+import android.os.Build;
+import androidx.preference.PreferenceManager;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.util.Log;
 
 import com.miz.abstractclasses.MovieFileSource;
@@ -62,6 +64,7 @@ import static com.miz.functions.PreferenceKeys.SYNC_WITH_TRAKT;
 public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpdateCallback {
 
 	public static final String STOP_MOVIE_LIBRARY_UPDATE = "mizuu-stop-movie-library-update";
+	public static final String CHANNEL_ID = "movie_library_update";
 	private ArrayList<FileSource> mFileSources;
 	private ArrayList<MovieFileSource<?>> mMovieFileSources;
 	private ArrayList<MovieStructure> mMovieQueue = new ArrayList<MovieStructure>();
@@ -216,7 +219,8 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 			}
 		} catch (Exception e) {
 		} finally {
-			c.close();
+			if (c != null)
+				c.close();
 		}
 	}
 
@@ -276,15 +280,28 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 	private void setup() {
 		LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiver, new IntentFilter(STOP_MOVIE_LIBRARY_UPDATE));
 
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel channel = new NotificationChannel(CHANNEL_ID, getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
+			mNotificationManager.createNotificationChannel(channel);
+		}
+
 		// Set up cancel dialog intent
 		Intent notificationIntent = new Intent(this, CancelLibraryUpdate.class);
 		notificationIntent.putExtra("isMovie", true);
 		notificationIntent.setAction(Intent.ACTION_MAIN);
 		notificationIntent.addCategory(Intent.CATEGORY_LAUNCHER);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, 0);
+		
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			flags |= PendingIntent.FLAG_IMMUTABLE;
+		}
+		
+		PendingIntent contentIntent = PendingIntent.getActivity(this, NOTIFICATION_ID, notificationIntent, flags);
 
 		// Setup up notification
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setPriority(NotificationCompat.PRIORITY_MAX);
 		mBuilder.setSmallIcon(R.drawable.ic_sync_white_24dp);
@@ -300,7 +317,6 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		Notification updateNotification = mBuilder.build();
 
 		// Show the notification
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		mNotificationManager.notify(NOTIFICATION_ID, updateNotification);
 
 		// Tell the system that this is an ongoing notification, so it shouldn't be killed
@@ -387,10 +403,16 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		notificationIntent.putExtra("fromUpdate", true);
 		notificationIntent.putExtra("startup", "1");
 		notificationIntent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TASK|Intent.FLAG_ACTIVITY_NEW_TASK);
-		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, 0);
+		
+		int flags = PendingIntent.FLAG_UPDATE_CURRENT;
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
+			flags |= PendingIntent.FLAG_IMMUTABLE;
+		}
+		
+		PendingIntent contentIntent = PendingIntent.getActivity(this, 0, notificationIntent, flags);
 
 		// Setup up notification
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), CHANNEL_ID);
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		if (!mStopUpdate) {
 			mBuilder.setSmallIcon(R.drawable.ic_done_white_24dp);

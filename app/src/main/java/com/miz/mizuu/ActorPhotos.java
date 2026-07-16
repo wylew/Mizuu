@@ -17,8 +17,8 @@
 package com.miz.mizuu;
 
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 import android.view.MenuItem;
 
 import com.miz.base.MizActivity;
@@ -44,7 +44,7 @@ public class ActorPhotos extends MizActivity {
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.content, ActorPhotosFragment.newInstance(actorId), TAG);
+			ft.replace(R.id.settings_content, ActorPhotosFragment.newInstance(actorId), TAG);
 			ft.commit();
 		}
 	}

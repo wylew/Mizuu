@@ -101,7 +101,7 @@ public class MovieLoader {
     /**
      * Get movie library type. Can be either <code>ALL_MOVIES</code>,
      * <code>FAVORITES</code>, <code>NEW_RELEASES</code>, <code>WATCHLIST</code>,
-     * <code>WATCHED</code>, <code>UNWATCHED</code> or <code>COLLECTIONS</code>.
+     * <code>WATCHED</code> or <code>UNWATCHED</code>.
      * @return Movie library type
      */
     public MovieLibraryType getType() {
@@ -151,7 +151,7 @@ public class MovieLoader {
     /**
      * Get the movie sort type. Can be either <code>TITLE</code>,
      * <code>RELEASE</code>, <code>DURATION</code>, <code>RATING</code>,
-     * <code>WEIGHTED_RATING</code>, <code>DATE_ADDED</code> or <code>COLLECTION_TITLE</code>.
+     * <code>WEIGHTED_RATING</code> or <code>DATE_ADDED</code>.
      * @return Movie sort type
      */
     public MovieSortType getSortType() {
@@ -251,7 +251,6 @@ public class MovieLoader {
             }
         }
 
-        HashMap<String, String> collectionsMap = MizuuApplication.getCollectionsAdapter().getCollectionsMap();
         ArrayList<MediumMovie> list = new ArrayList<MediumMovie>();
 
         if (cursor != null) {
@@ -267,7 +266,7 @@ public class MovieLoader {
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_GENRES)),
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_FAVOURITE)),
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_ACTORS)),
-                            collectionsMap.get(cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID))),
+                            "",
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_COLLECTION_ID)),
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_TO_WATCH)),
                             cursor.getString(cache.getColumnIndex(cursor, DbAdapterMovies.KEY_HAS_WATCHED)),
@@ -317,9 +316,6 @@ public class MovieLoader {
             switch (mLibraryType) {
                 case ALL_MOVIES:
                     mMovieList.addAll(listFromCursor(mDatabase.getAllMovies()));
-                    break;
-                case COLLECTIONS:
-                    mMovieList.addAll(listFromCursor(mDatabase.getCollections()));
                     break;
                 case FAVORITES:
                     mMovieList.addAll(listFromCursor(mDatabase.getFavorites()));
@@ -511,9 +507,7 @@ public class MovieLoader {
                         if (isCancelled())
                             return null;
 
-                        String lowerCaseTitle = (getType() == MovieLibraryType.COLLECTIONS) ?
-                                mMovieList.get(i).getCollection().toLowerCase(Locale.ENGLISH) :
-                                mMovieList.get(i).getTitle().toLowerCase(Locale.ENGLISH);
+                        String lowerCaseTitle = mMovieList.get(i).getTitle().toLowerCase(Locale.ENGLISH);
 
                         boolean foundInTitle = false;
 
@@ -712,12 +706,10 @@ public class MovieLoader {
 
     /**
      * Sets the sort type depending on the movie
-     * library type. The collections library will
-     * always be sorted by collection title, the
-     * "New releases" library will be sorted by
-     * release date and the "All movies" library
-     * will be sorted by the user's preference, if
-     * such exists. If not, it'll sort by movie title
+     * library type. The "New releases" library will
+     * be sorted by release date and the "All movies"
+     * library will be sorted by the user's preference,
+     * if such exists. If not, it'll sort by movie title
      * like the other library types do by default.
      */
     private void setupSortType() {
@@ -746,8 +738,6 @@ public class MovieLoader {
                     setSortType(MovieSortType.DURATION);
                     break;
             }
-        } else if (getType() == MovieLibraryType.COLLECTIONS) {
-            setSortType(MovieSortType.COLLECTION_TITLE);
         } else if (getType() == MovieLibraryType.NEW_RELEASES) {
             setSortType(MovieSortType.RELEASE);
         } else {

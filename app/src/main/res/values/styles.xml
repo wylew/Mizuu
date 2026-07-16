@@ -1,53 +1,86 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources xmlns:android="http://schemas.android.com/apk/res/android">
 
-    <style name="Mizuu.Theme.NoBackground" parent="@style/Mizuu.Theme">
-        <item name="android:windowBackground">@null</item>
-        <item name="android:windowContentOverlay">@null</item>
-    </style>
-
-    <style name="Mizuu.Theme.Transparent" parent="@style/Mizuu.Theme">
-    </style>
-
-    <style name="Mizuu.Theme.Transparent.FullScreen" parent="@style/Mizuu.Theme.Transparent">
-        <item name="android:windowFullscreen">true</item>
-    </style>
-
-    <style name="Mizuu.Theme.Translucent" parent="@style/Mizuu.Theme">
-    </style>
-
-    <style name="Mizuu.Theme.Translucent.FullScreen" parent="@style/Mizuu.Theme.Translucent">
-        <item name="android:windowFullscreen">true</item>
-    </style>
-
-    <style name="Mizuu.Theme.Base" parent="Theme.AppCompat">
+    <!-- Base theme for all Mizuu themes -->
+    <style name="Mizuu.Theme.Base" parent="Theme.Material3.DayNight.NoActionBar">
         <item name="android:listSelector">@drawable/list_selector</item>
-        <item name="android:windowBackground">@drawable/bg</item>
         <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
         <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
         <item name="android:checkboxStyle">@style/CheckBoxAppTheme</item>
-        <item name="actionOverflowButtonStyle">@style/Mizuu.Theme.ActionButton.Overflow</item>
-        <item name="colorPrimary">@color/color_primary</item>
-        <item name="colorAccent">@color/color_accent</item>
-        <item name="colorPrimaryDark">@color/color_primary_dark</item>
-        <item name="windowActionBar">false</item>
         <item name="windowActionModeOverlay">true</item>
-        <item name="colorControlNormal">#aaffffff</item>
-        <item name="colorControlActivated">#fff</item>
-        <item name="colorControlHighlight">#fff</item>
-        <item name="colorSwitchThumbNormal">#b0b0b0</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
+
+        <!-- M3 Expressive values -->
+        <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
+        <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
     </style>
 
-    <style name="Mizuu.Theme.Overview" parent="Mizuu.Theme" >
+    <!-- Light Theme -->
+    <style name="Mizuu.Theme.Light" parent="Theme.Material3.Light.NoActionBar">
+        <item name="android:listSelector">@drawable/list_selector</item>
+        <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
+        <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
+        <item name="android:checkboxStyle">@style/CheckBoxAppTheme</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
 
+        <!-- Material 3 Color Roles -->
+        <item name="colorPrimary">#6750A4</item>
+        <item name="colorOnPrimary">#FFFFFF</item>
+        <item name="colorPrimaryContainer">#EADDFF</item>
+        <item name="colorOnPrimaryContainer">#21005D</item>
+        <item name="colorSecondary">#625B71</item>
+        <item name="colorOnSecondary">#FFFFFF</item>
+        <item name="colorSecondaryContainer">#E8DEF8</item>
+        <item name="colorOnSecondaryContainer">#1D192B</item>
+        <item name="colorTertiary">#7D5260</item>
+        <item name="colorOnTertiary">#FFFFFF</item>
+        <item name="colorTertiaryContainer">#FFD8E4</item>
+        <item name="colorOnTertiaryContainer">#31111D</item>
+        <item name="colorSurface">#FFFBFE</item>
+        <item name="colorOnSurface">#1C1B1F</item>
+        <item name="colorSurfaceVariant">#E7E0EC</item>
+        <item name="colorOnSurfaceVariant">#49454F</item>
+        <item name="android:windowBackground">#FFFBFE</item>
     </style>
 
-    <style name="Mizuu.Theme" parent="Mizuu.Theme.Base">
+    <!-- Dark Theme -->
+    <style name="Mizuu.Theme.Dark" parent="Theme.Material3.Dark.NoActionBar">
+        <item name="android:listSelector">@drawable/list_selector</item>
+        <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
+        <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
+        <item name="android:checkboxStyle">@style/CheckBoxAppTheme</item>
+        <item name="windowActionModeOverlay">true</item>
+        <item name="preferenceTheme">@style/PreferenceThemeOverlay</item>
 
+        <!-- Material 3 Color Roles -->
+        <item name="colorPrimary">#D0BCFF</item>
+        <item name="colorOnPrimary">#381E72</item>
+        <item name="colorPrimaryContainer">#4F378B</item>
+        <item name="colorOnPrimaryContainer">#EADDFF</item>
+        <item name="colorSecondary">#CCC2DC</item>
+        <item name="colorOnSecondary">#332D41</item>
+        <item name="colorSecondaryContainer">#4A4458</item>
+        <item name="colorOnSecondaryContainer">#E8DEF8</item>
+        <item name="colorTertiary">#EFB8C8</item>
+        <item name="colorOnTertiary">#492532</item>
+        <item name="colorTertiaryContainer">#633B48</item>
+        <item name="colorOnTertiaryContainer">#FFD8E4</item>
+        <item name="colorSurface">#1C1B1F</item>
+        <item name="colorOnSurface">#E6E1E5</item>
+        <item name="colorSurfaceVariant">#49454F</item>
+        <item name="colorOnSurfaceVariant">#CAC4D0</item>
+        <item name="android:windowBackground">#1C1B1F</item>
     </style>
 
-    <style name="Mizuu.Theme.ActionButton.Overflow" parent="@style/Widget.AppCompat.ActionButton.Overflow">
-        <item name="android:src">@drawable/ic_more_vert_white_24dp</item>
+    <!-- System Theme -->
+    <style name="Mizuu.Theme.System" parent="Mizuu.Theme.Base" />
+
+    <!-- Default Theme -->
+    <style name="Mizuu.Theme" parent="Mizuu.Theme.Light" />
+
+    <style name="Mizuu.Theme.Overview" parent="Mizuu.Theme">
+        <item name="colorSurface">?android:attr/windowBackground</item>
     </style>
 
     <style name="RobotoTextViewStyle" parent="android:Widget.TextView">
@@ -62,37 +95,27 @@
         <item name="android:fontFamily">sans-serif-light</item>
     </style>
 
-    <!-- Theme for cancel library update dialog and such -->
-    <style name="Mizuu.Theme.Transparent.Dialog" parent="android:Theme.Holo">
+    <style name="Mizuu.Theme.Transparent.Dialog" parent="Theme.Material3.DayNight.Dialog">
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
-        <item name="android:windowContentOverlay">@null</item>
         <item name="android:windowNoTitle">true</item>
-        <item name="android:windowIsFloating">true</item>
-        <item name="android:backgroundDimEnabled">false</item>
+        <item name="android:backgroundDimEnabled">true</item>
     </style>
 
-    <style name="Mizuu.Theme.Preference" parent="android:Theme.Holo">
-        <item name="android:listSelector">@drawable/list_selector</item>
+    <style name="Mizuu.Theme.NoBackground" parent="Mizuu.Theme">
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="Mizuu.Theme.Translucent.FullScreen" parent="Mizuu.Theme">
+        <item name="android:windowNoTitle">true</item>
+        <item name="android:windowFullscreen">true</item>
+        <item name="android:windowContentOverlay">@null</item>
+        <item name="android:windowIsTranslucent">true</item>
+        <item name="android:windowBackground">@android:color/transparent</item>
+    </style>
+
+    <style name="Mizuu.Theme.Preference" parent="Mizuu.Theme">
         <item name="android:windowBackground">@drawable/bg</item>
-        <item name="android:editTextStyle">@style/RobotoEditTextStyle</item>
-        <item name="android:textViewStyle">@style/RobotoTextViewStyle</item>
-        <item name="android:checkboxStyle">@style/CheckBoxAppTheme</item>
-        <item name="android:actionOverflowButtonStyle">@style/Mizuu.Theme.ActionButton.Overflow</item>
-        <item name="android:actionBarStyle">@style/Mizuu.Theme.Preference.ActionBar</item>
     </style>
-
-    <style name="Mizuu.Theme.Preference.ActionBar" parent="@android:style/Widget.Holo.ActionBar">
-        <item name="android:background">#aa000000</item>
-    </style>
-
-    <style name="Button.RightAligned" parent="android:style/Widget.Holo.Button">
-        <item name="android:layout_marginTop">12dp</item>
-        <item name="android:paddingLeft">16dp</item>
-        <item name="android:paddingRight">16dp</item>
-        <item name="android:layout_gravity">right</item>
-    </style>
-
-    <style name="Mizuu.Theme.Dialog" parent="android:style/Theme.Holo.Dialog" />
 
 </resources>

@@ -2,7 +2,7 @@
  * Copyright (C) 2014 Michell Bak
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
- * you may not use mContext file except in compliance with the License.
+ * you may not use this file except in compliance with the License.
  * You may obtain a copy of the License at
  *
  *      http://www.apache.org/licenses/LICENSE-2.0
@@ -33,11 +33,11 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.preference.PreferenceManager;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.KeyEvent;
@@ -55,7 +55,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.abstractclasses.MovieApiService;
 import com.miz.apis.trakt.Trakt;
 import com.miz.base.MizActivity;
@@ -85,6 +85,7 @@ import com.miz.views.HorizontalCardLayout;
 import com.miz.views.ObservableScrollView;
 import com.miz.views.ObservableScrollView.OnScrollChangedListener;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -109,7 +110,6 @@ public class MovieDetailsFragment extends Fragment {
     private Picasso mPicasso;
     private Typeface mLight, mMediumItalic, mMedium, mBold, mCondensedRegular;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
-    private long mVideoPlaybackStarted, mVideoPlaybackEnded;
     private Toolbar mToolbar;
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
@@ -150,48 +150,40 @@ public class MovieDetailsFragment extends Fragment {
 
         Cursor cursor = mDatabase.fetchMovie(getArguments().getString("tmdbId"));
         try {
-            mMovie = new Movie(mContext,
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TITLE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_PLOT)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TAGLINE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TMDB_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_IMDB_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RATING)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RELEASEDATE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_CERTIFICATION)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RUNTIME)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TRAILER)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_GENRES)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_FAVOURITE)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_ACTORS)),
-                    MizuuApplication.getCollectionsAdapter().getCollection(cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID))),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TO_WATCH)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_HAS_WATCHED)),
-                    cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED))
-            );
+            if (cursor != null && cursor.moveToFirst()) {
+                mMovie = new Movie(mContext,
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TITLE)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_PLOT)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TAGLINE)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TMDB_ID)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_IMDB_ID)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RATING)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RELEASEDATE)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_CERTIFICATION)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_RUNTIME)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TRAILER)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_GENRES)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_FAVOURITE)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_ACTORS)),
+                        MizuuApplication.getCollectionsAdapter().getCollection(cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID))),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_COLLECTION_ID)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_TO_WATCH)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_HAS_WATCHED)),
+                        cursor.getString(cursor.getColumnIndex(DbAdapterMovies.KEY_DATE_ADDED))
+                );
+            }
         } catch (Exception e) {} finally {
             if (cursor != null) {
                 cursor.close();
-            } else { // Cursor is null, yikes!
-                getActivity().finish();
-                return;
             }
         }
 
-        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        mVideoPlaybackEnded = System.currentTimeMillis();
-
-        if (mVideoPlaybackStarted > 0 && mVideoPlaybackEnded - mVideoPlaybackStarted > (1000 * 60 * 5)) {
-            if (!mMovie.hasWatched())
-                watched(false); // Mark it as watched
+        if (mMovie == null) {
+            getActivity().finish();
+            return;
         }
+
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -206,7 +198,8 @@ public class MovieDetailsFragment extends Fragment {
         super.onDestroy();
 
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
+        if (mContext != null)
+            LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
     }
 
     @Override
@@ -218,12 +211,15 @@ public class MovieDetailsFragment extends Fragment {
     public void onViewCreated(final View view, Bundle savedInstanceState) {
         super.onViewCreated(view, savedInstanceState);
 
+        if (mMovie == null)
+            return;
+
         mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -256,8 +252,6 @@ public class MovieDetailsFragment extends Fragment {
                 });
             }
         });
-        if (MizLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
 
         final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
 
@@ -412,12 +406,16 @@ public class MovieDetailsFragment extends Fragment {
 
             @Override
             protected void onPostExecute(Void result) {
-                mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                if (isAdded())
+                    mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
             }
         }.execute();
     }
 
     private void loadImages() {
+        if (mMovie == null)
+            return;
+
         // Cover image
         mPicasso.load(mMovie.getThumbnail()).error(R.drawable.loading_image).placeholder(R.drawable.loading_image).into(mCover, new Callback() {
             @Override
@@ -450,18 +448,18 @@ public class MovieDetailsFragment extends Fragment {
             }
 
             @Override
-            public void onError() {}
+            public void onError(Exception e) {}
         });
 
         if (!MizLib.isPortrait(mContext)) {
-            mPicasso.load(mMovie.getBackdrop()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).into(mBackground);
+            mPicasso.load(mMovie.getBackdrop()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).error(R.drawable.bg).placeholder(R.drawable.bg).into(mBackground);
         } else {
-            mPicasso.load(mMovie.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(mBackground, new Callback() {
+            mPicasso.load(mMovie.getBackdrop()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).into(mBackground, new Callback() {
                 @Override
-                public void onError() {
+                public void onError(Exception e) {
                     if (!isAdded())
                         return;
-                    mPicasso.load(mMovie.getThumbnail()).skipMemoryCache().placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
+                    mPicasso.load(mMovie.getThumbnail()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).error(R.drawable.bg).into(mBackground);
                 }
 
                 @Override
@@ -472,33 +470,35 @@ public class MovieDetailsFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (mMovie == null)
+            return;
+
         inflater.inflate(R.menu.movie_details, menu);
 
         // If this is a tablet, we have more room to display icons
         if (MizLib.isTablet(mContext)) {
-            menu.findItem(R.id.movie_fav).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-            menu.findItem(R.id.watch_list).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            MenuItem favItem = menu.findItem(R.id.movie_fav);
+            if (favItem != null)
+                favItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+
+            MenuItem shareItem = menu.findItem(R.id.share);
+            if (shareItem != null)
+                shareItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         }
 
         // Favourite
-        menu.findItem(R.id.movie_fav).setIcon(mMovie.isFavourite() ?
-                R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
-                .setTitle(mMovie.isFavourite() ?
-                        R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
-
-        // Watchlist
-        menu.findItem(R.id.watch_list).setIcon(mMovie.toWatch() ?
-                R.drawable.ic_video_collection_white_24dp : R.drawable.ic_queue_white_24dp)
-                .setTitle(mMovie.toWatch() ?
-                        R.string.removeFromWatchlist : R.string.watchLater);
-
-        // Watched / unwatched
-        menu.findItem(R.id.watched).setTitle(mMovie.hasWatched() ?
-                R.string.stringMarkAsUnwatched : R.string.stringMarkAsWatched);
+        MenuItem favItem = menu.findItem(R.id.movie_fav);
+        if (favItem != null) {
+            favItem.setIcon(mMovie.isFavourite() ?
+                    R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
+                    .setTitle(mMovie.isFavourite() ?
+                            R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+        }
 
         // Only allow the user to browse artwork if it's a valid TMDb movie
-        menu.findItem(R.id.change_cover).setVisible(MizLib.isValidTmdbId(mMovie.getTmdbId()));
+        MenuItem coverItem = menu.findItem(R.id.change_cover);
+        if (coverItem != null)
+            coverItem.setVisible(MizLib.isValidTmdbId(mMovie.getTmdbId()));
     }
 
     @Override
@@ -530,14 +530,8 @@ public class MovieDetailsFragment extends Fragment {
             case R.id.identify:
                 identifyMovie();
                 return true;
-            case R.id.watched:
-                watched(true);
-                return true;
             case R.id.trailer:
                 VideoUtils.playTrailer(getActivity(), mMovie);
-                return true;
-            case R.id.watch_list:
-                watchList();
                 return true;
             case R.id.movie_fav:
                 favAction();
@@ -670,86 +664,6 @@ public class MovieDetailsFragment extends Fragment {
         }.start();
     }
 
-    private void watched(boolean showToast) {
-        mMovie.setHasWatched(!mMovie.hasWatched()); // Reverse the hasWatched boolean
-
-        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_HAS_WATCHED, mMovie.getHasWatched());
-
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-
-            if (showToast)
-                if (mMovie.hasWatched()) {
-                    Toast.makeText(mContext, getString(R.string.markedAsWatched), Toast.LENGTH_SHORT).show();
-                } else {
-                    Toast.makeText(mContext, getString(R.string.markedAsUnwatched), Toast.LENGTH_SHORT).show();
-                }
-
-            notifyDatasetChanges();
-
-        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
-
-        // Remove from watchlist when watched
-        removeFromWatchlist();
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchedMovies = new ArrayList<Movie>();
-                watchedMovies.add(mMovie);
-                Trakt.markMovieAsWatched(watchedMovies, mContext);
-            }
-        }.start();
-    }
-
-    public void watchList() {
-        mMovie.setToWatch(!mMovie.toWatch()); // Reverse the toWatch boolean
-
-        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_TO_WATCH, mMovie.getToWatch());
-
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-
-            if (mMovie.toWatch()) {
-                Toast.makeText(mContext, getString(R.string.addedToWatchList), Toast.LENGTH_SHORT).show();
-            } else {
-                Toast.makeText(mContext, getString(R.string.removedFromWatchList), Toast.LENGTH_SHORT).show();
-            }
-
-            notifyDatasetChanges();
-
-        } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchlist = new ArrayList<Movie>();
-                watchlist.add(mMovie);
-                Trakt.movieWatchlist(watchlist, mContext);
-            }
-        }.start();
-    }
-
-    public void removeFromWatchlist() {
-        mMovie.setToWatch(false); // Remove it
-
-        boolean success = mDatabase.updateMovieSingleItem(mMovie.getTmdbId(), DbAdapterMovies.KEY_TO_WATCH, mMovie.getToWatch());
-
-        if (success) {
-            getActivity().invalidateOptionsMenu();
-            notifyDatasetChanges();
-        }
-
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<Movie> watchlist = new ArrayList<Movie>();
-                watchlist.add(mMovie);
-                Trakt.movieWatchlist(watchlist, mContext);
-            }
-        }.start();
-    }
-
     public void searchCover() {
         if (MizLib.isOnline(mContext)) { // Make sure that the device is connected to the web
             Intent intent = new Intent(mContext, MovieCoverFanartBrowser.class);
@@ -783,7 +697,6 @@ public class MovieDetailsFragment extends Fragment {
             if (mMovie.hasOfflineCopy(path)) {
                 boolean playbackStarted = VideoUtils.playVideo(getActivity(), mMovie.getOfflineCopyUri(path), FileSource.FILE, mMovie);
                 if (playbackStarted) {
-                    mVideoPlaybackStarted = System.currentTimeMillis();
                     checkIn();
                 }
             } else {
@@ -795,7 +708,6 @@ public class MovieDetailsFragment extends Fragment {
                 if (mMovie.hasOfflineCopy(path)) {
                     boolean playbackStarted = VideoUtils.playVideo(getActivity(), mMovie.getOfflineCopyUri(path), FileSource.FILE, mMovie);
                     if (playbackStarted) {
-                        mVideoPlaybackStarted = System.currentTimeMillis();
                         checkIn();
                     }
 
@@ -820,7 +732,6 @@ public class MovieDetailsFragment extends Fragment {
         if (filepath.toLowerCase(Locale.getDefault()).matches(".*(cd1|part1).*")) {
             new GetSplitFiles(filepath, filetype).execute();
         } else {
-            mVideoPlaybackStarted = System.currentTimeMillis();
             boolean playbackStarted = VideoUtils.playVideo(getActivity(), filepath, filetype, mMovie);
             if (playbackStarted)
                 checkIn();
@@ -884,9 +795,6 @@ public class MovieDetailsFragment extends Fragment {
         @Override
         protected void onPostExecute(final List<SplitFile> result) {
             progress.dismiss();
-
-            if (result.size() > 0)
-                mVideoPlaybackStarted = System.currentTimeMillis();
 
             if (result.size() > 1) {
                 AlertDialog.Builder builder = new AlertDialog.Builder(mContext);

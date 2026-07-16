@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <group android:checkableBehavior="single">
+        <item
+            android:id="@+id/movies"
+            android:icon="@drawable/ic_movie_grey600_24dp"
+            android:title="@string/drawerMyMovies" />
+        <item
+            android:id="@+id/shows"
+            android:icon="@drawable/ic_tv_grey600_24dp"
+            android:title="@string/drawerMyTvShows" />
+    </group>
+    <item android:title="@string/options">
+        <menu>
+            <item
+                android:id="@+id/settings"
+                android:icon="@drawable/ic_settings_grey600_24dp"
+                android:title="@string/settings_name" />
+        </menu>
+    </item>
+</menu>

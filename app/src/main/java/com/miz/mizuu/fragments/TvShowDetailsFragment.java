@@ -30,10 +30,10 @@ import android.graphics.Typeface;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -49,7 +49,7 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.melnykov.fab.FloatingActionButton;
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.tmdb.TMDbTvShowService;
 import com.miz.apis.trakt.Trakt;
 import com.miz.base.MizActivity;
@@ -83,6 +83,7 @@ import com.miz.views.ObservableScrollView;
 import com.miz.views.ObservableScrollView.OnScrollChangedListener;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Callback;
+import com.squareup.picasso.MemoryPolicy;
 import com.squareup.picasso.Picasso;
 
 import java.io.File;
@@ -143,7 +144,7 @@ public class TvShowDetailsFragment extends Fragment {
 
         Cursor cursor = dbHelper.getShow(getArguments().getString("showId"));
         try {
-            if (cursor.moveToFirst()) {
+            if (cursor != null && cursor.moveToFirst()) {
                 thisShow = new TvShow(getActivity(),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_ID)),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_TITLE)),
@@ -160,7 +161,13 @@ public class TvShowDetailsFragment extends Fragment {
             }
         } catch (Exception e) {
         } finally {
-            cursor.close();
+            if (cursor != null)
+                cursor.close();
+        }
+
+        if (thisShow == null) {
+            getActivity().finish();
+            return;
         }
 
         mPicasso = MizuuApplication.getPicasso(getActivity());
@@ -185,7 +192,8 @@ public class TvShowDetailsFragment extends Fragment {
     @Override
     public void onDestroy() {
         super.onDestroy();
-        LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
+        if (getActivity() != null)
+            LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mMessageReceiver);
     }
 
     @Override
@@ -196,12 +204,15 @@ public class TvShowDetailsFragment extends Fragment {
     public void onViewCreated(final View v, Bundle savedInstanceState) {
         super.onViewCreated(v, savedInstanceState);
 
+        if (thisShow == null)
+            return;
+
         mToolbar = (Toolbar) v.findViewById(R.id.toolbar);
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((ActionBarActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -235,12 +246,12 @@ public class TvShowDetailsFragment extends Fragment {
                 });
             }
         });
-        if (MizLib.isTablet(mContext))
-            mFab.setType(FloatingActionButton.TYPE_NORMAL);
 
         // Get rid of these...
-        v.findViewById(R.id.textView3).setVisibility(View.GONE); // File
-        v.findViewById(R.id.textView6).setVisibility(View.GONE); // Tagline
+        View fileView = v.findViewById(R.id.textView3);
+        if (fileView != null) fileView.setVisibility(View.GONE); // File
+        View taglineView = v.findViewById(R.id.textView6);
+        if (taglineView != null) taglineView.setVisibility(View.GONE); // Tagline
 
         final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
 
@@ -344,9 +355,9 @@ public class TvShowDetailsFragment extends Fragment {
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        if (mActorsLayout.getWidth() > 0) {
-                            final int numColumns = (int) Math.floor(mActorsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-                            mImageThumbSize = (mActorsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
+                        if (mSeasonsLayout.getWidth() > 0) {
+                            final int numColumns = (int) Math.floor(mSeasonsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            mImageThumbSize = (mSeasonsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
                             loadSeasons(numColumns);
                             MizLib.removeViewTreeObserver(mSeasonsLayout.getViewTreeObserver(), this);
@@ -388,11 +399,14 @@ public class TvShowDetailsFragment extends Fragment {
     }
 
     private void loadImages() {
+        if (thisShow == null)
+            return;
+
         mPicasso.load(thisShow.getCoverPhoto()).error(R.drawable.loading_image).placeholder(R.drawable.loading_image).into(cover, new Callback() {
             @Override
             public void onSuccess() {
                 if (mPaletteLoader == null) {
-                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(thisShow.getCoverPhoto().toString()), new PaletteLoader.OnPaletteLoadedCallback() {
+                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.fromFile(thisShow.getCoverPhoto()), new PaletteLoader.OnPaletteLoadedCallback() {
                         @Override
                         public void onPaletteLoaded(int swatchColor) {
                             mToolbarColor = swatchColor;
@@ -422,20 +436,20 @@ public class TvShowDetailsFragment extends Fragment {
             }
 
             @Override
-            public void onError() {
+            public void onError(Exception e) {
             }
         });
 
         if (!MizLib.isPortrait(getActivity())) {
-            mPicasso.load(thisShow.getBackdrop()).skipMemoryCache().error(R.drawable.bg).placeholder(R.drawable.bg).into(background);
+            mPicasso.load(new File(thisShow.getBackdrop())).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).error(R.drawable.bg).placeholder(R.drawable.bg).into(background);
         } else {
-            mPicasso.load(thisShow.getBackdrop()).skipMemoryCache().placeholder(R.drawable.bg).into(background, new Callback() {
+            mPicasso.load(new File(thisShow.getBackdrop())).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).into(background, new Callback() {
                 @Override
-                public void onError() {
+                public void onError(Exception e) {
                     if (!isAdded())
                         return;
 
-                    mPicasso.load(thisShow.getThumbnail()).skipMemoryCache().placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
+                    mPicasso.load(thisShow.getThumbnail()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
                 }
 
                 @Override
@@ -459,7 +473,8 @@ public class TvShowDetailsFragment extends Fragment {
 
             @Override
             protected void onPostExecute(Void result) {
-                mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                if (isAdded())
+                    mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
             }
         }.execute();
     }
@@ -490,25 +505,36 @@ public class TvShowDetailsFragment extends Fragment {
 
             @Override
             protected void onPostExecute(Void result) {
-                mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSeasons, HorizontalCardLayout.SEASONS, mToolbarColor);
-                mSeasonsLayout.setSeeMoreVisibility(true);
+                if (isAdded()) {
+                    mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSeasons, HorizontalCardLayout.SEASONS, mToolbarColor);
+                    mSeasonsLayout.setSeeMoreVisibility(true);
+                }
             }
         }.execute();
     }
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        if (thisShow == null)
+            return;
+
         inflater.inflate(R.menu.tv_show_details, menu);
 
         // If this is a tablet, we have more room to display icons
-        if (MizLib.isTablet(mContext))
-            menu.findItem(R.id.share).setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        if (MizLib.isTablet(mContext)) {
+            MenuItem shareItem = menu.findItem(R.id.share);
+            if (shareItem != null)
+                shareItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+        }
 
         // Favourite
-        menu.findItem(R.id.show_fav).setIcon(thisShow.isFavorite() ?
-                R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
-                .setTitle(thisShow.isFavorite() ?
-                        R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+        MenuItem favItem = menu.findItem(R.id.show_fav);
+        if (favItem != null) {
+            favItem.setIcon(thisShow.isFavorite() ?
+                    R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
+                    .setTitle(thisShow.isFavorite() ?
+                            R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+        }
     }
 
     @Override
@@ -544,10 +570,12 @@ public class TvShowDetailsFragment extends Fragment {
         ArrayList<String> files = new ArrayList<String>();
 
         Cursor cursor = MizuuApplication.getTvShowEpisodeMappingsDbAdapter().getAllFilepaths(thisShow.getId());
-        while (cursor.moveToNext())
-            files.add(cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodeMappings.KEY_FILEPATH)));
+        if (cursor != null) {
+            while (cursor.moveToNext())
+                files.add(cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodeMappings.KEY_FILEPATH)));
 
-        cursor.close();
+            cursor.close();
+        }
 
         Intent i = new Intent();
         i.setClass(mContext, IdentifyTvShow.class);

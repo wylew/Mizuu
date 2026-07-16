@@ -25,7 +25,8 @@ import android.graphics.Bitmap;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.text.TextUtils;
 import android.util.Log;
 import android.widget.Toast;
@@ -66,6 +67,8 @@ public class IdentifyTvShowEpisodeService extends IntentService implements TvSho
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         mNotificationManager.cancel(NOTIFICATION_ID);
+
+        LocalBroadcastManager.getInstance(this).unregisterReceiver(null); // Just a placeholder, as the original didn't have one
 
         LocalBroadcastUtils.updateTvShowLibrary(this);
     }
@@ -153,7 +156,7 @@ public class IdentifyTvShowEpisodeService extends IntentService implements TvSho
 
     private void setup() {
         // Setup up notification
-        mBuilder = new NotificationCompat.Builder(getApplicationContext());
+        mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
         mBuilder.setSmallIcon(R.drawable.ic_sync_white_24dp);
         mBuilder.setTicker(getString(R.string.identifying_episodes));

@@ -16,36 +16,42 @@
 
 package com.miz.mizuu;
 
-import android.graphics.Color;
 import android.os.Bundle;
-import android.preference.PreferenceActivity;
 import android.view.MenuItem;
-import android.view.View;
+import androidx.annotation.NonNull;
+import androidx.fragment.app.Fragment;
+import androidx.preference.Preference;
+import androidx.preference.PreferenceFragmentCompat;
+import com.miz.base.MizActivity;
+import com.miz.mizuu.fragments.Prefs;
 
-import com.miz.functions.MizLib;
-
-import java.lang.reflect.Field;
-import java.util.List;
-
-public class Preferences extends PreferenceActivity {
-
-    private View mBreadcrumb;
+public class Preferences extends MizActivity implements PreferenceFragmentCompat.OnPreferenceStartFragmentCallback {
 
     @Override
-    public void onCreate(Bundle savedInstanceState) {
-
-        setTheme(R.style.Mizuu_Theme_Preference);
-
+    protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        getActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null) {
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            getSupportActionBar().setTitle(R.string.settings_name);
+        }
+
+        if (savedInstanceState == null) {
+            getSupportFragmentManager().beginTransaction()
+                    .replace(R.id.settings_content, new Prefs())
+                    .commit();
+        }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
             case android.R.id.home:
-                finish();
+                if (getSupportFragmentManager().getBackStackEntryCount() > 0) {
+                    getSupportFragmentManager().popBackStack();
+                } else {
+                    finish();
+                }
                 return true;
             default:
                 return super.onOptionsItemSelected(item);
@@ -53,28 +59,21 @@ public class Preferences extends PreferenceActivity {
     }
 
     @Override
-    public void onBuildHeaders(List<Header> target) {
-        loadHeadersFromResource(R.xml.preference_headers, target);
-
-        if (MizLib.hasLollipop()) {
-            // Lollipop has some strange colors for the breadcrumb title,
-            // so we're fixing it using reflection
-            mBreadcrumb = findViewById(android.R.id.title);
-            if (mBreadcrumb == null) {
-                // Single pane layout
-                return;
-            }
-
-            try {
-                final Field titleColor = mBreadcrumb.getClass().getDeclaredField("mTextColor");
-                titleColor.setAccessible(true);
-                titleColor.setInt(mBreadcrumb, Color.WHITE);
-            } catch (final Exception ignored) {}
-        }
+    public boolean onPreferenceStartFragment(@NonNull PreferenceFragmentCompat caller, Preference pref) {
+        final Bundle args = pref.getExtras();
+        final Fragment fragment = getSupportFragmentManager().getFragmentFactory().instantiate(
+                getClassLoader(),
+                pref.getFragment());
+        fragment.setArguments(args);
+        getSupportFragmentManager().beginTransaction()
+                .replace(R.id.settings_content, fragment)
+                .addToBackStack(null)
+                .commit();
+        return true;
     }
 
     @Override
-    protected boolean isValidFragment(String fragmentName) {
-        return true;
+    protected int getLayoutResource() {
+        return R.layout.empty_layout_with_toolbar;
     }
 }

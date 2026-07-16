@@ -19,7 +19,7 @@ package com.miz.functions;
 import android.animation.ObjectAnimator;
 import android.graphics.Bitmap;
 import android.graphics.drawable.Drawable;
-import android.support.v7.widget.CardView;
+import androidx.cardview.widget.CardView;
 import android.widget.ImageView;
 import android.widget.RelativeLayout;
 import android.widget.TextView;
@@ -37,11 +37,11 @@ public class CoverItem implements Target {
     private int animationDuration = 200;
 
     @Override
-    public void onBitmapFailed(Drawable arg0) {
+    public void onBitmapFailed(Exception e, Drawable errorDrawable) {
         cover.setImageResource(R.drawable.loading_image);
         try {
             ObjectAnimator.ofFloat(cover, "alpha", 0f, 1f).setDuration(animationDuration).start();
-        } catch (Exception e) {
+        } catch (Exception ex) {
             // Some devices crash at runtime when using the ObjectAnimator
             cover.setAlpha(1f);
         }

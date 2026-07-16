@@ -16,20 +16,34 @@
 
 package com.miz.base;
 
+import android.graphics.Color;
 import android.os.Bundle;
-import android.support.v7.app.ActionBarActivity;
-import android.support.v7.widget.Toolbar;
+import android.view.View;
+import android.view.ViewGroup;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowCompat;
+import androidx.core.view.WindowInsetsCompat;
 
 import com.miz.functions.MizLib;
+import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
 
-public abstract class MizActivity extends ActionBarActivity {
+public abstract class MizActivity extends AppCompatActivity {
 
     public Toolbar mToolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
+        MizuuApplication.setupTheme(this);
         super.onCreate(savedInstanceState);
+
+        // Enable edge-to-edge
+        WindowCompat.setDecorFitsSystemWindows(getWindow(), false);
+        getWindow().setStatusBarColor(Color.TRANSPARENT);
+        getWindow().setNavigationBarColor(Color.TRANSPARENT);
 
         if (getLayoutResource() > 0) {
             setContentView(getLayoutResource());
@@ -37,6 +51,35 @@ public abstract class MizActivity extends ActionBarActivity {
             mToolbar = (Toolbar) findViewById(R.id.toolbar);
             if (mToolbar != null) {
                 setSupportActionBar(mToolbar);
+                
+                // Handle insets for the toolbar
+                ViewCompat.setOnApplyWindowInsetsListener(mToolbar, (v, windowInsets) -> {
+                    Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    v.setPadding(v.getPaddingLeft(), insets.top, v.getPaddingRight(), v.getPaddingBottom());
+                    
+                    // Adjust height to include inset
+                    ViewGroup.LayoutParams lp = v.getLayoutParams();
+                    if (lp != null) {
+                        int actionBarHeight = MizLib.getActionBarHeight(this);
+                        if (actionBarHeight > 0) {
+                            lp.height = actionBarHeight + insets.top;
+                            v.setLayoutParams(lp);
+                        }
+                    }
+                    
+                    return windowInsets;
+                });
+            }
+            
+            // Handle insets for the root view to avoid overlap with navigation bar if needed
+            View rootView = findViewById(android.R.id.content);
+            if (rootView != null) {
+                ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, windowInsets) -> {
+                    Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+                    // Apply bottom insets to the root view or specific containers like BottomNavigationView
+                    // For now, just return to allow children to handle their own insets
+                    return windowInsets;
+                });
             }
         }
     }
@@ -44,9 +87,8 @@ public abstract class MizActivity extends ActionBarActivity {
     @Override
     public void setSupportActionBar(Toolbar toolbar) {
         try {
-            if (MizLib.hasLollipop())
-                toolbar.setElevation(1f);
-
+            // Remove manual elevation as M3 uses surface color/tonal palettes
+            toolbar.setElevation(0f);
             super.setSupportActionBar(toolbar);
         } catch (Throwable t) {
             // Samsung pls...

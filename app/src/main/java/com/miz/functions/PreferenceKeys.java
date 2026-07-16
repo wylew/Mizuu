@@ -55,5 +55,10 @@ public class PreferenceKeys {
 	public static final String HAS_SHOWN_FILEBROWSER_MESSAGE = "hasShownBrowserHelpMessage";
 	public static final String SHOW_FILE_LOCATION = "prefsShowFileLocation";
 	public static final String LANGUAGE_PREFERENCE = "prefsLanguagePreference";
+	public static final String TMDB_API_KEY = "tmdbApiKey";
+	public static final String TVDB_API_KEY = "tvdbApiKey";
+	public static final String TRAKT_API_KEY = "traktApiKey";
+	public static final String APP_THEME = "prefsTheme";
+	public static final String COLOR_MATCHING_THEME = "prefsColorMatchingTheme";
 
 }

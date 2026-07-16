@@ -1,4 +1,4 @@
-package com.miz.mizuu.fragments;/*
+/*
  * Copyright (C) 2014 Michell Bak
  *
  * Licensed under the Apache License, Version 2.0 (the "License");
@@ -14,17 +14,19 @@ package com.miz.mizuu.fragments;/*
  * limitations under the License.
  */
 
+package com.miz.mizuu.fragments;
+
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
-import android.support.v7.app.ActionBarActivity;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
+import androidx.appcompat.app.AppCompatActivity;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 
-import com.astuetz.PagerSlidingTabStrip;
+import com.google.android.material.tabs.TabLayout;
 import com.miz.functions.MizLib;
 import com.miz.loader.TvShowLoader;
 import com.miz.mizuu.R;
@@ -32,7 +34,7 @@ import com.miz.mizuu.R;
 public class TvShowLibraryOverviewFragment extends Fragment {
 
     private ViewPager mViewPager;
-    private PagerSlidingTabStrip mTabs;
+    private TabLayout mTabs;
 
     public TvShowLibraryOverviewFragment() {} // Empty constructor
 
@@ -44,23 +46,13 @@ public class TvShowLibraryOverviewFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View v = inflater.inflate(R.layout.viewpager_with_tabs, container, false);
 
-        if (MizLib.hasLollipop())
-            ((ActionBarActivity) getActivity()).getSupportActionBar().setElevation(0);
-
         mViewPager = (ViewPager) v.findViewById(R.id.awesomepager);
         mViewPager.setPageMargin(MizLib.convertDpToPixels(getActivity(), 16));
 
-        mTabs = (PagerSlidingTabStrip) v.findViewById(R.id.tabs);
+        mTabs = (TabLayout) v.findViewById(R.id.tabs);
 
         mViewPager.setAdapter(new PagerAdapter(getChildFragmentManager()));
-        mTabs.setViewPager(mViewPager);
-        mTabs.setVisibility(View.VISIBLE);
-
-        // Work-around a bug that sometimes happens with the tabs
-        mViewPager.setCurrentItem(0);
-
-        if (MizLib.hasLollipop())
-            mTabs.setElevation(1f);
+        mTabs.setupWithViewPager(mViewPager);
 
         return v;
     }
@@ -71,7 +63,7 @@ public class TvShowLibraryOverviewFragment extends Fragment {
                 getString(R.string.watched_tv_shows), getString(R.string.unwatched_tv_shows)};
 
         public PagerAdapter(FragmentManager fm) {
-            super(fm);
+            super(fm, BEHAVIOR_RESUME_ONLY_CURRENT_FRAGMENT);
         }
 
         @Override

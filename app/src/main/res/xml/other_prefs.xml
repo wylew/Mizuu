@@ -38,14 +38,6 @@
         <Preference
             android:icon="@drawable/ic_extension_white_24dp"
             android:summary="Apache License, Version 2.0"
-            android:title="FloatingActionButton by Melnykov Oleksandr" >
-            <intent
-                android:action="android.intent.action.VIEW"
-                android:data="https://github.com/makovkastar/FloatingActionButton" />
-        </Preference>
-        <Preference
-            android:icon="@drawable/ic_extension_white_24dp"
-            android:summary="Apache License, Version 2.0"
             android:title="Guava collection libraries by Google" >
             <intent
                 android:action="android.intent.action.VIEW"

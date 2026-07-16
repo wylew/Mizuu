@@ -13,19 +13,8 @@
         android:icon="@drawable/ic_share_white_24dp"
         android:title="@string/menuShareTitle"/>
     <item
-        android:id="@+id/watch_list"
-        app:showAsAction="ifRoom"
-        android:icon="@drawable/ic_queue_white_24dp"
-        android:title="@string/watchLater">
-    </item>
-    <item
         android:id="@+id/trailer"
         android:title="@string/detailsTrailer">
-    </item>
-    <item
-        android:id="@+id/watched"
-        android:icon="@drawable/ic_visibility_white_24dp"
-        android:title="@string/stringMarkAsWatched">
     </item>
     <item
         android:id="@+id/identify"

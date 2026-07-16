@@ -24,7 +24,7 @@ import android.content.Intent;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 import android.widget.Toast;
 
 import com.miz.functions.MizLib;
@@ -141,7 +141,7 @@ public class DownloadImageService extends IntentService {
 
 	private void showNotification() {
 		// Setup up notification
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
 		mBuilder.setTicker(getString(R.string.addingCover));

@@ -20,9 +20,10 @@ import android.app.Application;
 import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.Typeface;
-import android.preference.PreferenceManager;
-import android.support.v7.graphics.Palette;
+import androidx.preference.PreferenceManager;
+import androidx.palette.graphics.Palette;
 
+import com.google.android.material.color.DynamicColors;
 import com.google.common.collect.ArrayListMultimap;
 import com.miz.abstractclasses.MovieApiService;
 import com.miz.abstractclasses.TvShowApiService;
@@ -35,8 +36,7 @@ import com.miz.db.DbAdapterSources;
 import com.miz.db.DbAdapterTvShowEpisodeMappings;
 import com.miz.db.DbAdapterTvShowEpisodes;
 import com.miz.db.DbAdapterTvShows;
-import com.squareup.okhttp.Cache;
-import com.squareup.okhttp.OkHttpClient;
+import com.miz.functions.PreferenceKeys;
 import com.squareup.otto.Bus;
 import com.squareup.picasso.Picasso;
 import com.squareup.picasso.PicassoTools;
@@ -45,6 +45,9 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
+
+import okhttp3.Cache;
+import okhttp3.OkHttpClient;
 
 import static com.miz.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
 
@@ -77,6 +80,11 @@ public class MizuuApplication extends Application {
 
 		// Initialize the preferences
 		initializePreferences();
+
+		// Apply dynamic colors if enabled
+		if (PreferenceManager.getDefaultSharedPreferences(this).getBoolean(PreferenceKeys.COLOR_MATCHING_THEME, false)) {
+			DynamicColors.applyToActivitiesIfAvailable(this);
+		}
 
 		// Database setup
 		sDbMovies = new DbAdapterMovies(this);
@@ -175,7 +183,7 @@ public class MizuuApplication extends Application {
 
 	public static Picasso getPicasso(Context context) {
 		if (sPicasso == null)
-			sPicasso = Picasso.with(context);
+			sPicasso = Picasso.get();
 		return sPicasso;
 	}
 
@@ -198,7 +206,14 @@ public class MizuuApplication extends Application {
 	}
 
 	public static void setupTheme(Context context) {
-		context.setTheme(R.style.Mizuu_Theme);
+		String theme = PreferenceManager.getDefaultSharedPreferences(context).getString(PreferenceKeys.APP_THEME, "light");
+		if (theme.equals("light")) {
+			context.setTheme(R.style.Mizuu_Theme_Light);
+		} else if (theme.equals("dark")) {
+			context.setTheme(R.style.Mizuu_Theme_Dark);
+		} else {
+			context.setTheme(R.style.Mizuu_Theme_System);
+		}
 	}
 
 	public static Bus getBus() {
@@ -335,11 +350,12 @@ public class MizuuApplication extends Application {
 	 */
 	public static OkHttpClient getOkHttpClient() {
 		if (mOkHttpClient == null) {
-			mOkHttpClient = new OkHttpClient();
-
 			File cacheDir = getContext().getCacheDir();
 			Cache cache = new Cache(cacheDir, 2 * 1024 * 1024);
-			mOkHttpClient.setCache(cache);
+
+			mOkHttpClient = new OkHttpClient.Builder()
+					.cache(cache)
+					.build();
 		}
 
 		return mOkHttpClient;

@@ -19,10 +19,10 @@ package com.miz.mizuu;
 import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentManager;
-import android.support.v4.app.FragmentPagerAdapter;
-import android.support.v4.view.ViewPager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentPagerAdapter;
+import androidx.viewpager.widget.ViewPager;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.Toast;
@@ -31,14 +31,13 @@ import com.astuetz.PagerSlidingTabStrip;
 import com.miz.base.MizActivity;
 import com.miz.functions.IntentKeys;
 import com.miz.functions.MizLib;
-import com.miz.mizuu.fragments.CollectionCoverSearchFragment;
 import com.miz.mizuu.fragments.CoverSearchFragment;
 import com.miz.mizuu.fragments.FanartSearchFragment;
 import com.miz.utils.ViewUtils;
 
 public class MovieCoverFanartBrowser extends MizActivity  {
 
-	private String mTmdbId, mCollectionId, mBaseUrl = "", mJson = "", mCollection = "", mTmdbApiKey;
+	private String mTmdbId, mBaseUrl = "", mJson = "", mTmdbApiKey;
 	private ViewPager mViewPager;
 	private ProgressBar mProgressBar;
     private PagerSlidingTabStrip mTabs;
@@ -59,7 +58,6 @@ public class MovieCoverFanartBrowser extends MizActivity  {
             getSupportActionBar().setElevation(0);
 
         mTmdbId = getIntent().getExtras().getString("tmdbId");
-        mCollectionId = getIntent().getExtras().getString("collectionId");
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 		mTmdbApiKey = MizLib.getTmdbApiKey(this);
 
@@ -76,12 +74,11 @@ public class MovieCoverFanartBrowser extends MizActivity  {
 		if (savedInstanceState != null) {
             mJson = savedInstanceState.getString("json", "");
             mBaseUrl = savedInstanceState.getString("baseUrl");
-            mCollection = savedInstanceState.getString("collection");
 			setupActionBarStuff();
 
             mViewPager.setCurrentItem(savedInstanceState.getInt("tab", 0));
 		} else {
-			new MovieLoader(getApplicationContext()).execute(mTmdbId, mCollectionId);
+			new MovieLoader(getApplicationContext()).execute(mTmdbId);
 		}
 	}
 
@@ -100,12 +97,11 @@ public class MovieCoverFanartBrowser extends MizActivity  {
 		outState.putInt("tab", mViewPager.getCurrentItem());
 		outState.putString("json", mJson);
 		outState.putString("baseUrl", mBaseUrl);
-		outState.putString("collection", mCollection);
 	}
 
 	private class PagerAdapter extends FragmentPagerAdapter {
 
-        private final String[] TITLES = {getString(R.string.coverart), getString(R.string.backdrop), getString(R.string.collectionart)};
+        private final String[] TITLES = {getString(R.string.coverart), getString(R.string.backdrop)};
 
 		public PagerAdapter(FragmentManager fm) {
 			super(fm);
@@ -122,17 +118,14 @@ public class MovieCoverFanartBrowser extends MizActivity  {
 			case 0:
 				return CoverSearchFragment.newInstance(mTmdbId, mJson, mBaseUrl);
 			case 1:
-				return FanartSearchFragment.newInstance(mTmdbId, mJson, mBaseUrl);
 			default:
-				return CollectionCoverSearchFragment.newInstance(mCollectionId, mCollection, mBaseUrl);
+				return FanartSearchFragment.newInstance(mTmdbId, mJson, mBaseUrl);
 			}
 		}  
 
 		@Override  
 		public int getCount() {
-			if (!MizLib.isValidTmdbId(mCollectionId))
-				return 2;
-			return 3;  
+			return 2;  
 		}
 	}
 
@@ -150,10 +143,6 @@ public class MovieCoverFanartBrowser extends MizActivity  {
                 mBaseUrl = MizLib.getTmdbImageBaseUrl(mContext);
 
                 mJson = MizLib.getJSONObject(mContext, "https://api.themoviedb.org/3/movie/" + params[0] + "/images?api_key=" + mTmdbApiKey).toString();
-
-				if (MizLib.isValidTmdbId(mCollectionId)) {
-                    mCollection = MizLib.getJSONObject(mContext, "https://api.themoviedb.org/3/collection/" + params[1] + "/images?api_key=" + mTmdbApiKey).toString();
-				}
 
 				return mJson;
 			} catch (Exception e) {} // If the fragment is no longer attached to the Activity

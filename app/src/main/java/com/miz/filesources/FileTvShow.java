@@ -18,6 +18,7 @@ package com.miz.filesources;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.util.Log;
 
 import com.miz.abstractclasses.TvShowFileSource;
 import com.miz.db.DbAdapterTvShowEpisodeMappings;
@@ -150,27 +151,35 @@ public class FileTvShow extends TvShowFileSource<File> {
     public void recursiveSearch(File folder, TreeSet<String> results) {
         try {
             if (folder.isDirectory()) {
-                String[] childs = folder.list();
-                for (int i = 0; i < childs.length; i++) {
-                    tempFile = new File(folder.getAbsolutePath() + "/" + childs[i]);
-                    recursiveSearch(tempFile, results);
+                File[] childs = folder.listFiles();
+                if (childs != null) {
+                    for (int i = 0; i < childs.length; i++) {
+                        recursiveSearch(childs[i], results);
+                    }
+                } else {
+                    Log.d("FileTvShow", "listFiles() returned null for: " + folder.getAbsolutePath());
                 }
             } else {
                 addToResults(folder, results);
             }
-        } catch (Exception e) {}
+        } catch (Exception e) {
+            Log.e("FileTvShow", "Error during recursiveSearch: " + e.getMessage());
+        }
     }
 
     @Override
     public void addToResults(File file, TreeSet<String> results) {
         if (MizLib.checkFileTypes(file.getAbsolutePath())) {
-            if (file.length() < getFileSizeLimit())
+            if (file.length() < getFileSizeLimit()) {
+                Log.d("FileTvShow", "Skipping file due to size limit: " + file.getAbsolutePath() + " (size: " + file.length() + ")");
                 return;
+            }
 
             if (!clearLibrary())
                 if (existingEpisodes.get(file.getAbsolutePath()) != null) return;
 
             //Add the file if it reaches this point
+            Log.d("FileTvShow", "Adding file to results: " + file.getAbsolutePath());
             results.add(file.getAbsolutePath());
         }
     }

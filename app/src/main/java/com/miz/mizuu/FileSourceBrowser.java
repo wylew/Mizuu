@@ -19,10 +19,10 @@ package com.miz.mizuu;
 import android.content.Intent;
 import android.content.SharedPreferences.Editor;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.Fragment;
-import android.support.v4.app.FragmentTransaction;
-import android.support.v4.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import android.view.MenuItem;
 import android.widget.Toast;
 
@@ -62,13 +62,13 @@ public class FileSourceBrowser extends MizActivity {
 			ft.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 			switch (mFilesource) {
 			case FileSource.FILE:
-				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceFile(isMovie), TAG);
+				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceFile(isMovie), TAG);
 				break;
 			case FileSource.SMB:
-				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceSmbFile(extras.getString(SERVER), extras.getString(USER), extras.getString(PASSWORD), extras.getString(DOMAIN), isMovie), TAG);
+				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceSmbFile(extras.getString(SERVER), extras.getString(USER), extras.getString(PASSWORD), extras.getString(DOMAIN), isMovie), TAG);
 				break;
 			case FileSource.UPNP:
-				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceUpnp(extras.getString(SERVER), extras.getString(SERIAL_NUMBER), isMovie), TAG);
+				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceUpnp(extras.getString(SERVER), extras.getString(SERIAL_NUMBER), isMovie), TAG);
 				break;
 			}
 			ft.commit();

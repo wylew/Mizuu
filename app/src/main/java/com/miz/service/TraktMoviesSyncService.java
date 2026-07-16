@@ -22,7 +22,7 @@ import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
 import android.database.Cursor;
-import android.support.v4.app.NotificationCompat;
+import androidx.core.app.NotificationCompat;
 
 import com.miz.apis.trakt.Trakt;
 import com.miz.db.DbAdapterMovies;
@@ -134,7 +134,7 @@ public class TraktMoviesSyncService extends IntentService {
 
 	private void setupNotification() {
 		// Setup up notification
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setSmallIcon(R.drawable.ic_tv_white_24dp);
 		mBuilder.setTicker(getString(R.string.syncMovies));
@@ -335,7 +335,7 @@ public class TraktMoviesSyncService extends IntentService {
 		// Remove the old one
 		mNotificationManager.cancel(NOTIFICATION_ID);
 
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setTicker(getString(R.string.finishedTraktMovieSync));
 		mBuilder.setContentTitle(getString(R.string.finishedTraktMovieSync));
@@ -356,7 +356,7 @@ public class TraktMoviesSyncService extends IntentService {
 		// Remove the old one
 		mNotificationManager.cancel(NOTIFICATION_ID);
 
-		mBuilder = new NotificationCompat.Builder(getApplicationContext());
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setTicker(getString(R.string.traktSyncFailed));
 		mBuilder.setContentTitle(getString(R.string.traktSyncFailed));

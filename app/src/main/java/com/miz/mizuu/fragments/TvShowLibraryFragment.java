@@ -26,17 +26,15 @@ import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
 import android.graphics.Typeface;
 import android.os.Bundle;
-import android.preference.PreferenceManager;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.ActivityOptionsCompat;
-import android.support.v4.app.Fragment;
-import android.support.v4.content.LocalBroadcastManager;
-import android.support.v4.util.Pair;
-import android.support.v4.view.MenuItemCompat;
-import android.support.v4.view.MenuItemCompat.OnActionExpandListener;
-import android.support.v7.widget.CardView;
-import android.support.v7.widget.SearchView;
-import android.support.v7.widget.SearchView.OnQueryTextListener;
+import androidx.preference.PreferenceManager;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.ActivityOptionsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.core.util.Pair;
+import androidx.appcompat.widget.SearchView;
+import androidx.appcompat.widget.SearchView.OnQueryTextListener;
+import androidx.cardview.widget.CardView;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -52,6 +50,7 @@ import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Button;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
 import com.miz.functions.CoverItem;
@@ -61,6 +60,7 @@ import com.miz.loader.TvShowFilter;
 import com.miz.loader.TvShowLibraryType;
 import com.miz.loader.TvShowLoader;
 import com.miz.loader.TvShowSortType;
+import com.miz.mizuu.AddFileSource;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
 import com.miz.mizuu.TvShow;
@@ -87,7 +87,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
     private Context mContext;
     private SharedPreferences mSharedPreferences;
-    private int mImageThumbSize, mImageThumbSpacing;
+    private int mImageThumbSize;
     private LoaderAdapter mAdapter;
     private ObservableGridView mGridView;
     private ProgressBar mProgressBar;
@@ -98,6 +98,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
     private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private Button mAddFileSourceButton, mUpdateLibraryButton;
 
     /**
      * Empty constructor as per the Fragment documentation
@@ -118,18 +119,15 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
         setHasOptionsMenu(true);
 
-        mContext = getActivity().getApplicationContext();
-
-        // Set OnSharedPreferenceChange listener
-        PreferenceManager.getDefaultSharedPreferences(mContext).registerOnSharedPreferenceChangeListener(this);
+        mContext = getActivity();
 
         // Initialize the PreferenceManager variable and preference variable(s)
-        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
+        mSharedPreferences = PreferenceManager.getDefaultSharedPreferences(mContext);
+        mSharedPreferences.registerOnSharedPreferenceChangeListener(this);
 
         mShowTitles = mSharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
 
         mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
-        mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
 
         mPicasso = MizuuApplication.getPicasso(mContext);
         mConfig = MizuuApplication.getBitmapConfig();
@@ -146,7 +144,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
         // Unregister since the activity is about to be closed.
         LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
-        PreferenceManager.getDefaultSharedPreferences(mContext).unregisterOnSharedPreferenceChangeListener(this);
+        mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -182,11 +180,33 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         mEmptyLibraryDescription = (TextView) v.findViewById(R.id.empty_library_description);
         mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
 
+        mAddFileSourceButton = (Button) v.findViewById(R.id.add_file_source_button);
+        mAddFileSourceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getActivity(), AddFileSource.class);
+                i.putExtra("isMovie", false);
+                startActivity(i);
+            }
+        });
+
+        mUpdateLibraryButton = (Button) v.findViewById(R.id.update_library_button);
+        mUpdateLibraryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), Update.class);
+                intent.putExtra("isMovie", false);
+                startActivityForResult(intent, 0);
+            }
+        });
+
         mAdapter = new LoaderAdapter(mContext);
 
         mGridView = (ObservableGridView) v.findViewById(R.id.gridView);
         mGridView.setAdapter(mAdapter);
-        mGridView.setColumnWidth(mImageThumbSize);
+        updateGridViewColumns();
+
         mGridView.setOnItemClickListener(new OnItemClickListener() {
             @Override
             public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
@@ -257,10 +277,17 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         return v;
     }
 
+    private void updateGridViewColumns() {
+        if (mGridView != null) {
+            mGridView.setNumColumns(ViewUtils.getGridViewNumColumns(mContext));
+            mGridView.setColumnWidth(ViewUtils.getGridViewThumbSize(mContext));
+        }
+    }
+
     private void viewTvShowDetails(int position, View view) {
         Intent intent = new Intent();
         intent.putExtra("showId", mAdapter.getItem(position).getId());
-        intent.setClass(mContext, TvShowDetails.class);
+        intent.setClass(getActivity(), TvShowDetails.class);
 
         if (view != null) {
             Pair<View, String> pair = new Pair<>(view.findViewById(R.id.cover), "cover");
@@ -276,12 +303,10 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         private Set<Integer> mChecked = new HashSet<>();
         private LayoutInflater mInflater;
         private final Context mContext;
-        private Typeface mTypeface;
 
         public LoaderAdapter(Context context) {
             mContext = context;
             mInflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
-            mTypeface = TypefaceUtils.getRobotoMedium(mContext);
         }
 
         public void setItemChecked(int index, boolean checked) {
@@ -343,7 +368,6 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                 holder.cardview = (CardView) convertView.findViewById(R.id.card);
                 holder.cover = (ImageView) convertView.findViewById(R.id.cover);
                 holder.text = (TextView) convertView.findViewById(R.id.text);
-                holder.text.setTypeface(mTypeface);
 
                 convertView.setTag(holder);
             } else {
@@ -394,38 +418,46 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.menutv, menu);
 
-        MenuItemCompat.setOnActionExpandListener(menu.findItem(R.id.search_textbox), new OnActionExpandListener() {
-            @Override
-            public boolean onMenuItemActionExpand(MenuItem item) {
-                return true;
-            }
-
-            @Override
-            public boolean onMenuItemActionCollapse(MenuItem item) {
-                onSearchViewCollapsed();
-                return true;
-            }
-        });
-
-        mSearchView = (SearchView) MenuItemCompat.getActionView(menu.findItem(R.id.search_textbox));
-        mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                if (newText.length() > 0) {
-                    mTvShowLoader.search(newText);
-                    showProgressBar();
-                } else {
-                    onSearchViewCollapsed();
+        MenuItem searchItem = menu.findItem(R.id.search_textbox);
+        if (searchItem != null) {
+            searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
+                @Override
+                public boolean onMenuItemActionExpand(MenuItem item) {
+                    return true;
                 }
-                return true;
-            }
-            @Override
-            public boolean onQueryTextSubmit(String query) { return false; }
-        });
 
-        SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-        ComponentName cn = new ComponentName(getActivity(), TvShowActorSearchActivity.class);
-        mSearchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
+                @Override
+                public boolean onMenuItemActionCollapse(MenuItem item) {
+                    onSearchViewCollapsed();
+                    return true;
+                }
+            });
+
+            mSearchView = (SearchView) searchItem.getActionView();
+            if (mSearchView != null) {
+                mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
+                    @Override
+                    public boolean onQueryTextChange(String newText) {
+                        if (newText.length() > 0) {
+                            mTvShowLoader.search(newText);
+                            showProgressBar();
+                        } else {
+                            onSearchViewCollapsed();
+                        }
+                        return true;
+                    }
+
+                    @Override
+                    public boolean onQueryTextSubmit(String query) {
+                        return false;
+                    }
+                });
+
+                SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
+                ComponentName cn = new ComponentName(getActivity(), TvShowActorSearchActivity.class);
+                mSearchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
+            }
+        }
 
         super.onCreateOptionsMenu(menu, inflater);
     }
@@ -437,7 +469,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         switch (item.getItemId()) {
             case R.id.update:
                 Intent intent = new Intent();
-                intent.setClass(mContext, Update.class);
+                intent.setClass(getActivity(), Update.class);
                 intent.putExtra("isMovie", false);
                 startActivityForResult(intent, 0);
                 break;
@@ -508,7 +540,7 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
                 }
                 break;
             case R.id.unidentifiedFiles:
-                startActivity(new Intent(mContext, UnidentifiedTvShows.class));
+                startActivity(new Intent(getActivity(), UnidentifiedTvShows.class));
                 break;
         }
 
@@ -535,28 +567,46 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         if (mTvShowLoader.isShowingSearchResults()) {
             mEmptyLibraryTitle.setText(R.string.no_search_results);
             mEmptyLibraryDescription.setText(R.string.no_search_results_description);
+            mAddFileSourceButton.setVisibility(View.GONE);
+            mUpdateLibraryButton.setVisibility(View.GONE);
         } else {
             switch (mTvShowLoader.getType()) {
                 case ALL_SHOWS:
                     mEmptyLibraryTitle.setText(R.string.no_tv_shows);
                     mEmptyLibraryDescription.setText(MizLib.isTablet(mContext) ?
                             R.string.no_tv_shows_description_tablet : R.string.no_tv_shows_description);
+
+                    if (MizLib.getFileSources(MizLib.TYPE_SHOWS, false).size() == 0) {
+                        mAddFileSourceButton.setVisibility(View.VISIBLE);
+                        mUpdateLibraryButton.setVisibility(View.GONE);
+                    } else {
+                        mAddFileSourceButton.setVisibility(View.GONE);
+                        mUpdateLibraryButton.setVisibility(View.VISIBLE);
+                    }
                     break;
                 case FAVORITES:
                     mEmptyLibraryTitle.setText(R.string.no_favorites);
                     mEmptyLibraryDescription.setText(R.string.no_favorites_description_tv);
+                    mAddFileSourceButton.setVisibility(View.GONE);
+                    mUpdateLibraryButton.setVisibility(View.GONE);
                     break;
                 case RECENTLY_AIRED:
                     mEmptyLibraryTitle.setText(R.string.recently_aired);
                     mEmptyLibraryDescription.setText(R.string.recently_aired_description);
+                    mAddFileSourceButton.setVisibility(View.GONE);
+                    mUpdateLibraryButton.setVisibility(View.GONE);
                     break;
                 case WATCHED:
                     mEmptyLibraryTitle.setText(R.string.no_watched_tv_shows);
                     mEmptyLibraryDescription.setText(R.string.no_watched_movies_description);
+                    mAddFileSourceButton.setVisibility(View.GONE);
+                    mUpdateLibraryButton.setVisibility(View.GONE);
                     break;
                 case UNWATCHED:
                     mEmptyLibraryTitle.setText(R.string.no_unwatched_movies);
                     mEmptyLibraryDescription.setText(R.string.no_unwatched_tv_shows_descriptions);
+                    mAddFileSourceButton.setVisibility(View.GONE);
+                    mUpdateLibraryButton.setVisibility(View.GONE);
                     break;
             }
         }
@@ -570,12 +620,8 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
     public void onSharedPreferenceChanged(SharedPreferences sharedPreferences, String key) {
         if (key.equals(GRID_ITEM_SIZE)) {
             mImageThumbSize = ViewUtils.getGridViewThumbSize(mContext);
-
-            if (mGridView != null)
-                mGridView.setColumnWidth(mImageThumbSize);
-
+            updateGridViewColumns();
             mAdapter.notifyDataSetChanged();
-
         } else if (key.equals(SHOW_TITLES_IN_GRID)) {
             mShowTitles = sharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
             mAdapter.notifyDataSetChanged();

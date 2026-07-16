@@ -2,16 +2,18 @@ package com.miz.functions;
 
 import android.animation.ArgbEvaluator;
 import android.animation.ObjectAnimator;
+import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.net.Uri;
-import android.support.v7.graphics.Palette;
+import android.os.AsyncTask;
 import android.view.View;
 
-import com.melnykov.fab.FloatingActionButton;
+import androidx.palette.graphics.Palette;
+
+import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.mizuu.MizuuApplication;
 import com.squareup.picasso.Picasso;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -69,8 +71,8 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
         if (palette == null) {
             try {
-                palette = Palette.generate(mPicasso.load(getImage()).get());
-            } catch (IOException e) {}
+                palette = Palette.from(mPicasso.load(getImage()).get()).generate();
+            } catch (Exception e) {}
         }
 
         return palette;
@@ -109,9 +111,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
         // Set the FAB color, if a FAB has been set
         if (getFab() != null) {
-            mFab.setColorNormal(getSwatchColor());
-            mFab.setColorPressed(getSwatchColor());
-            mFab.setColorRipple(Color.parseColor("#80ffffff"));
+            mFab.setBackgroundTintList(ColorStateList.valueOf(getSwatchColor()));
         }
     }
 
