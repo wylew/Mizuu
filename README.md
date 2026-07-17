@@ -1,6 +1,20 @@
 Mizuu - media indexer for Android
 =====
 
+Mizuu was one of my go to apps for my anrdoid tablets for organizing media in a nice way. Yes there is Kodi, but I find that app to be incredibly annoying to use.
+
+I am slowing updating this app to work on modern android devices. I am also removing some features that don't matter to me (ratings, favorites, sharing, watch a random movie/show, drilling into actor/cast data, network shares as sources, etc) as well as making some design/UX choices of my own. I've never designed an app so it's not to anyones liking but mine, oh well!
+
+Overall there is really only a few features of this app. Organize movies and tv shows and scrape metadata for them. then allow you to play the video in your chosen player. If I can, I'd like to get it so that it remembers playback position, but that might be too complex.
+
+
+
+=====
+OLD README
+=====
+Mizuu - media indexer for Android
+=====
+
 Mizuu is no longer being maintained and hasn't been maintained since early 2015.
 
 This GitHub repository houses the source code of the Mizuu application for Android.
