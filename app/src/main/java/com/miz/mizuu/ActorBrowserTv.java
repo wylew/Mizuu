@@ -28,7 +28,7 @@ public class ActorBrowserTv extends MizActivity {
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.content, ActorBrowserTvFragment.newInstance(showId), TAG);
+			ft.replace(R.id.content_frame, ActorBrowserTvFragment.newInstance(showId), TAG);
 			ft.commit();
 		}
 	}

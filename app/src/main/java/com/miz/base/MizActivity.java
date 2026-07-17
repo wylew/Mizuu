@@ -71,13 +71,12 @@ public abstract class MizActivity extends AppCompatActivity {
                 });
             }
             
-            // Handle insets for the root view to avoid overlap with navigation bar if needed
+            // Handle insets for the root view to avoid overlap with navigation bar
             View rootView = findViewById(android.R.id.content);
             if (rootView != null) {
                 ViewCompat.setOnApplyWindowInsetsListener(rootView, (v, windowInsets) -> {
                     Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-                    // Apply bottom insets to the root view or specific containers like BottomNavigationView
-                    // For now, just return to allow children to handle their own insets
+                    v.setPadding(0, 0, 0, insets.bottom);
                     return windowInsets;
                 });
             }

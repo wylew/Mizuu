@@ -275,6 +275,7 @@ public class TvShowIdentification {
             if (cursor.getCount() > 0) {
                 downloadCovers = false;
             }
+            cursor.close();
         }
 
         if (downloadCovers) {
@@ -293,11 +294,13 @@ public class TvShowIdentification {
                 if (!TextUtils.isEmpty(thisShow.getBackdropUrl()))
                     if (!MizLib.downloadFile(thisShow.getBackdropUrl(), backdrop_filepath))
                         MizLib.downloadFile(thisShow.getBackdropUrl(), backdrop_filepath);
-
-                DbAdapterTvShows dbHelper = MizuuApplication.getTvDbAdapter();
-                dbHelper.createShow(thisShow.getId(), thisShow.getTitle(), thisShow.getDescription(), thisShow.getActors(), thisShow.getGenres(),
-                        thisShow.getRating(), thisShow.getCertification(), thisShow.getRuntime(), thisShow.getFirstAired(), "0");
             }
+        }
+
+        if (!TextUtils.isEmpty(thisShow.getId()) && !thisShow.getId().equals(DbAdapterTvShows.UNIDENTIFIED_ID)) {
+            DbAdapterTvShows dbHelper = MizuuApplication.getTvDbAdapter();
+            dbHelper.createOrUpdateShow(thisShow.getId(), thisShow.getTitle(), thisShow.getDescription(), thisShow.getActors(), thisShow.getGenres(),
+                    thisShow.getRating(), thisShow.getCertification(), thisShow.getRuntime(), thisShow.getFirstAired(), "0");
         }
     }
 
@@ -350,7 +353,7 @@ public class TvShowIdentification {
             MizuuApplication.getTvShowEpisodeMappingsDbAdapter().createFilepathMapping(filepath,
                     thisShow.getId(), MizLib.addIndexZero(ep.getSeason()), MizLib.addIndexZero(ep.getEpisode()));
         } else {
-            dbHelper.createEpisode(filepath, MizLib.addIndexZero(ep.getSeason()),
+            dbHelper.createOrUpdateEpisode(filepath, MizLib.addIndexZero(ep.getSeason()),
                     MizLib.addIndexZero(ep.getEpisode()), thisShow.getId(), ep.getTitle(),
                     ep.getDescription(), ep.getAirdate(), ep.getRating(), ep.getDirector(),
                     ep.getWriter(), ep.getGueststars(), "0", "0");

@@ -22,6 +22,10 @@ import android.database.Cursor;
 import android.database.SQLException;
 import android.text.TextUtils;
 
+import com.miz.functions.ColumnIndexCache;
+import com.miz.mizuu.MizuuApplication;
+import com.miz.mizuu.TvShow;
+
 import java.util.ArrayList;
 
 public class DbAdapterTvShows extends AbstractDbAdapter {
@@ -41,7 +45,7 @@ public class DbAdapterTvShows extends AbstractDbAdapter {
 	public static final String UNIDENTIFIED_ID = "invalid";
 
 	public static final String[] SELECT_ALL = new String[]{KEY_SHOW_ID, KEY_SHOW_TITLE, KEY_SHOW_PLOT, KEY_SHOW_ACTORS,
-		KEY_SHOW_GENRES, KEY_SHOW_RATING, KEY_SHOW_RATING, KEY_SHOW_CERTIFICATION, KEY_SHOW_RUNTIME,
+		KEY_SHOW_GENRES, KEY_SHOW_RATING, KEY_SHOW_CERTIFICATION, KEY_SHOW_RUNTIME,
 		KEY_SHOW_FIRST_AIRDATE, KEY_SHOW_FAVOURITE};
 
 	public DbAdapterTvShows(Context context) {
@@ -54,11 +58,30 @@ public class DbAdapterTvShows extends AbstractDbAdapter {
         if (showId.equals(UNIDENTIFIED_ID))
             return; // We're not interesting in adding this to the TV show database
 
-        if (getShow(showId).getCount() == 0) {
+        Cursor cursor = getShow(showId);
+        if (cursor.getCount() == 0) {
 			ContentValues initialValues = createContentValues(showId, showTitle, showPlot, showActors, showGenres, showRating, showCertification, showRuntime, showFirstAirdate, isFavorite);
 			mDatabase.insert(DATABASE_TABLE, null, initialValues);
 		}
+        cursor.close();
 	}
+
+    public void createOrUpdateShow(String showId, String showTitle, String showPlot, String showActors, String showGenres, String showRating, String showCertification,
+                                   String showRuntime, String showFirstAirdate, String isFavorite) {
+
+        if (showId.equals(UNIDENTIFIED_ID))
+            return; // We're not interesting in adding this to the TV show database
+
+        ContentValues initialValues = createContentValues(showId, showTitle, showPlot, showActors, showGenres, showRating, showCertification, showRuntime, showFirstAirdate, isFavorite);
+
+        Cursor cursor = getShow(showId);
+        if (cursor.getCount() > 0) {
+            mDatabase.update(DATABASE_TABLE, initialValues, KEY_SHOW_ID + " = ?", new String[]{showId});
+        } else {
+            mDatabase.insert(DATABASE_TABLE, null, initialValues);
+        }
+        cursor.close();
+    }
 
 	public boolean showExists(String id, String showTitle) {
 		// Test against ID's
@@ -220,4 +243,37 @@ public class DbAdapterTvShows extends AbstractDbAdapter {
 		cv.put(KEY_SHOW_GENRES, genres);
 		return mDatabase.update(DATABASE_TABLE, cv, KEY_SHOW_ID + " = ?", new String[]{showId}) > 0;
 	}
+
+    public ArrayList<TvShow> listFromCursor(Cursor cursor) {
+        ArrayList<TvShow> list = new ArrayList<>();
+
+        if (cursor != null) {
+            ColumnIndexCache cache = new ColumnIndexCache();
+
+            try {
+                while (cursor.moveToNext()) {
+                    list.add(new TvShow(
+                            mContext,
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_ID)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_TITLE)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_PLOT)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_RATING)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_GENRES)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_ACTORS)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_CERTIFICATION)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_FIRST_AIRDATE)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_RUNTIME)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_FAVOURITE)),
+                            MizuuApplication.getTvEpisodeDbAdapter().getLatestEpisodeAirdate(cursor.getString(cache.getColumnIndex(cursor, KEY_SHOW_ID)))
+                    ));
+                }
+            } catch (Exception e) {
+            } finally {
+                cursor.close();
+                cache.clear();
+            }
+        }
+
+        return list;
+    }
 }

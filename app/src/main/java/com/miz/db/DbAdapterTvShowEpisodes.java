@@ -78,6 +78,24 @@ public class DbAdapterTvShowEpisodes extends AbstractDbAdapter {
         mDatabase.insert(DATABASE_TABLE, null, initialValues);
 	}
 
+    public void createOrUpdateEpisode(String filepath, String season, String episode, String showId, String episodeTitle, String episodePlot,
+                              String episodeAirdate, String episodeRating, String episodeDirector, String episodeWriter, String episodeGuestStars, String hasWatched, String favorite) {
+
+        ContentValues initialValues = createContentValues(season, episode, showId, episodeTitle,
+                episodePlot, episodeAirdate, episodeRating, episodeDirector, episodeWriter, episodeGuestStars, hasWatched, favorite);
+
+        MizuuApplication.getTvShowEpisodeMappingsDbAdapter().createFilepathMapping(filepath, showId, season, episode);
+
+        Cursor cursor = getEpisode(showId, MizLib.getInteger(season), MizLib.getInteger(episode));
+        if (cursor.getCount() > 0) {
+            mDatabase.update(DATABASE_TABLE, initialValues, KEY_SHOW_ID + " = ? AND " + KEY_SEASON + " = ? AND " + KEY_EPISODE + " = ?",
+                    new String[]{showId, season, episode});
+        } else {
+            mDatabase.insert(DATABASE_TABLE, null, initialValues);
+        }
+        cursor.close();
+    }
+
 	public boolean updateEpisode(String showId, String season, String episode, String table, String value) {
 		ContentValues values = new ContentValues();
 		values.put(table, value);

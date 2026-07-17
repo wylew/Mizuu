@@ -38,7 +38,7 @@ public class Preferences extends MizActivity implements PreferenceFragmentCompat
 
         if (savedInstanceState == null) {
             getSupportFragmentManager().beginTransaction()
-                    .replace(R.id.settings_content, new Prefs())
+                    .replace(R.id.content, new Prefs())
                     .commit();
         }
     }
@@ -66,7 +66,7 @@ public class Preferences extends MizActivity implements PreferenceFragmentCompat
                 pref.getFragment());
         fragment.setArguments(args);
         getSupportFragmentManager().beginTransaction()
-                .replace(R.id.settings_content, fragment)
+                .replace(R.id.content, fragment)
                 .addToBackStack(null)
                 .commit();
         return true;

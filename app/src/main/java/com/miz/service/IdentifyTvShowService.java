@@ -133,22 +133,29 @@ public class IdentifyTvShowService extends IntentService implements TvShowLibrar
 		// This will remove all episode mappings, episodes and the TV show from the database
 		boolean result = MizuuApplication.getTvShowEpisodeMappingsDbAdapter().deleteAllFilepaths(mOldShowId);
 		if (result) {
+			MizuuApplication.getTvEpisodeDbAdapter().deleteAllEpisodes(mOldShowId);
+			MizuuApplication.getTvDbAdapter().deleteShow(mOldShowId);
+
 			// Delete the old TV show thumb and backdrop images
 			FileUtils.getTvShowThumb(this, mOldShowId).delete();
 			FileUtils.getTvShowBackdrop(this, mOldShowId).delete();
 
 			// Delete season photos
 			File[] seasonPhotos = MizuuApplication.getTvShowSeasonFolder(this).listFiles();
-			for (int i = 0; i < seasonPhotos.length; i++) {
-				if (seasonPhotos[i].getName().startsWith(mOldShowId + "_S"))
-					seasonPhotos[i].delete();
+			if (seasonPhotos != null) {
+				for (int i = 0; i < seasonPhotos.length; i++) {
+					if (seasonPhotos[i].getName().startsWith(mOldShowId + "_S"))
+						seasonPhotos[i].delete();
+				}
 			}
 
 			// Delete episode photos
 			File[] episodePhotos = MizuuApplication.getTvShowEpisodeFolder(this).listFiles();
-			for (int i = 0; i < episodePhotos.length; i++) {
-				if (episodePhotos[i].getName().startsWith(mOldShowId + "_S"))
-					episodePhotos[i].delete();
+			if (episodePhotos != null) {
+				for (int i = 0; i < episodePhotos.length; i++) {
+					if (episodePhotos[i].getName().startsWith(mOldShowId + "_S"))
+						episodePhotos[i].delete();
+				}
 			}
 			
 			LocalBroadcastUtils.updateTvShowLibrary(this);

@@ -23,25 +23,25 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
-import androidx.annotation.NonNull;
-import androidx.preference.PreferenceManager;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.core.view.ViewCompat;
-import androidx.core.view.WindowInsetsCompat;
-import androidx.core.graphics.Insets;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 
-import com.google.android.material.bottomnavigation.BottomNavigationView;
-import com.google.android.material.navigation.NavigationBarView;
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.preference.PreferenceManager;
+
+import com.google.android.material.button.MaterialButton;
+import com.google.android.material.button.MaterialButtonToggleGroup;
 import com.miz.base.MizActivity;
-import com.miz.db.DbAdapterMovies;
-import com.miz.db.DbAdapterTvShows;
 import com.miz.loader.MovieLoader;
 import com.miz.loader.TvShowLoader;
+import com.miz.mizuu.fragments.AllLibraryFragment;
 import com.miz.mizuu.fragments.MovieLibraryFragment;
 import com.miz.mizuu.fragments.TvShowLibraryFragment;
 import com.miz.utils.LocalBroadcastUtils;
@@ -49,13 +49,13 @@ import com.miz.utils.LocalBroadcastUtils;
 import static com.miz.functions.PreferenceKeys.STARTUP_SELECTION;
 
 @SuppressLint("NewApi")
-public class Main extends MizActivity implements NavigationBarView.OnItemSelectedListener {
+public class Main extends MizActivity {
 
-    public static final int MOVIES = 1, SHOWS = 2;
+    public static final int ALL = 0, MOVIES = 1, SHOWS = 2;
     private int selectedIndex, mStartup;
-    private BottomNavigationView mBottomNavigation;
-    private DbAdapterMovies mDbHelper;
-    private DbAdapterTvShows mDbHelperTv;
+    private MaterialButtonToggleGroup mLibraryToggleGroup;
+    private View mBottomControls;
+    private MaterialButton mSearchButton, mMenuButton;
 
     @Override
     protected int getLayoutResource() {
@@ -70,16 +70,39 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
         mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
 
-        mDbHelper = MizuuApplication.getMovieAdapter();
-        mDbHelperTv = MizuuApplication.getTvDbAdapter();
+        mBottomControls = findViewById(R.id.bottom_controls);
+        mLibraryToggleGroup = findViewById(R.id.library_toggle_group);
+        mSearchButton = findViewById(R.id.search_button);
+        mMenuButton = findViewById(R.id.menu_button);
 
-        mBottomNavigation = findViewById(R.id.bottom_navigation);
-        mBottomNavigation.setOnItemSelectedListener(this);
+        mLibraryToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
+            if (isChecked) {
+                if (checkedId == R.id.btn_all) {
+                    loadFragment(ALL);
+                } else if (checkedId == R.id.btn_movies) {
+                    loadFragment(MOVIES);
+                } else if (checkedId == R.id.btn_tv) {
+                    loadFragment(SHOWS);
+                }
+            }
+        });
 
-        // Handle insets for bottom navigation
-        ViewCompat.setOnApplyWindowInsetsListener(mBottomNavigation, (v, windowInsets) -> {
+        mSearchButton.setOnClickListener(v -> {
+            onSearchRequested();
+        });
+
+        mMenuButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, v);
+            popup.getMenuInflater().inflate(R.menu.main_menu_m3, popup.getMenu());
+            popup.setOnMenuItemClickListener(this::onOptionsItemSelected);
+            popup.show();
+        });
+
+        // Handle insets for bottom controls ONLY.
+        // We do NOT add padding to the content frame so that the list scrolls UNDER the floating buttons.
+        ViewCompat.setOnApplyWindowInsetsListener(mBottomControls, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
-            v.setPadding(0, 0, 0, insets.bottom);
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom + 16);
             return windowInsets;
         });
 
@@ -91,8 +114,12 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
             selectedIndex = mStartup;
         }
 
-        // Sync bottom nav state
-        mBottomNavigation.setSelectedItemId(selectedIndex == MOVIES ? R.id.nav_movies : R.id.nav_shows);
+        // Sync toggle group state
+        int checkId = R.id.btn_all;
+        if (selectedIndex == MOVIES) checkId = R.id.btn_movies;
+        else if (selectedIndex == SHOWS) checkId = R.id.btn_tv;
+        
+        mLibraryToggleGroup.check(checkId);
         loadFragment(selectedIndex);
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
@@ -100,14 +127,14 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
     }
 
     private void loadFragment(int type) {
-        if (type == 0) type = 1;
-
-        // Use a different tag to avoid confusion with the old fragments
         Fragment frag = getSupportFragmentManager().findFragmentByTag("lib_frag" + type);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
             ft.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
             switch (type) {
+                case ALL:
+                    ft.replace(R.id.content_frame, AllLibraryFragment.newInstance(), "lib_frag" + type);
+                    break;
                 case MOVIES:
                     ft.replace(R.id.content_frame, MovieLibraryFragment.newInstance(MovieLoader.ALL_MOVIES), "lib_frag" + type);
                     break;
@@ -120,24 +147,13 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
-            getSupportActionBar().setTitle(type == MOVIES ? R.string.chooserMovies : R.string.chooserTVShows);
+            int titleRes = R.string.all;
+            if (type == MOVIES) titleRes = R.string.chooserMovies;
+            else if (type == SHOWS) titleRes = R.string.chooserTVShows;
+            getSupportActionBar().setTitle(titleRes);
         }
 
         selectedIndex = type;
-    }
-
-    @Override
-    public boolean onNavigationItemSelected(@NonNull MenuItem item) {
-        int id = item.getItemId();
-
-        if (id == R.id.nav_movies) {
-            loadFragment(MOVIES);
-            return true;
-        } else if (id == R.id.nav_shows) {
-            loadFragment(SHOWS);
-            return true;
-        }
-        return false;
     }
 
     @Override
@@ -147,7 +163,10 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
 
         if (newIntent.hasExtra("startup")) {
             selectedIndex = Integer.parseInt(newIntent.getStringExtra("startup"));
-            mBottomNavigation.setSelectedItemId(selectedIndex == MOVIES ? R.id.nav_movies : R.id.nav_shows);
+            int checkId = R.id.btn_all;
+            if (selectedIndex == MOVIES) checkId = R.id.btn_movies;
+            else if (selectedIndex == SHOWS) checkId = R.id.btn_tv;
+            mLibraryToggleGroup.check(checkId);
             loadFragment(selectedIndex);
         }
     }
@@ -173,7 +192,6 @@ public class Main extends MizActivity implements NavigationBarView.OnItemSelecte
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        getMenuInflater().inflate(R.menu.main_menu_m3, menu);
         return true;
     }
 

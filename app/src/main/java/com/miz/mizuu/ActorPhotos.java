@@ -44,7 +44,7 @@ public class ActorPhotos extends MizActivity {
 		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
 		if (frag == null && savedInstanceState == null) {
 			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.replace(R.id.settings_content, ActorPhotosFragment.newInstance(actorId), TAG);
+			ft.replace(R.id.content, ActorPhotosFragment.newInstance(actorId), TAG);
 			ft.commit();
 		}
 	}

@@ -13,6 +13,13 @@
         <!-- M3 Expressive values -->
         <item name="textAppearanceTitleLarge">@style/TextAppearance.Material3.TitleLarge</item>
         <item name="textAppearanceBodyMedium">@style/TextAppearance.Material3.BodyMedium</item>
+
+        <item name="toolbarStyle">@style/Mizuu.Toolbar</item>
+    </style>
+
+    <style name="Mizuu.Toolbar" parent="Widget.Material3.Toolbar">
+        <item name="titleTextColor">?attr/colorOnSurface</item>
+        <item name="navigationIconTint">?attr/colorOnSurface</item>
     </style>
 
     <!-- Light Theme -->
@@ -42,6 +49,9 @@
         <item name="colorSurfaceVariant">#E7E0EC</item>
         <item name="colorOnSurfaceVariant">#49454F</item>
         <item name="android:windowBackground">#FFFBFE</item>
+
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+        <item name="actionMenuTextColor">?attr/colorOnSurface</item>
     </style>
 
     <!-- Dark Theme -->
@@ -71,6 +81,9 @@
         <item name="colorSurfaceVariant">#49454F</item>
         <item name="colorOnSurfaceVariant">#CAC4D0</item>
         <item name="android:windowBackground">#1C1B1F</item>
+
+        <item name="colorControlNormal">?attr/colorOnSurface</item>
+        <item name="actionMenuTextColor">?attr/colorOnSurface</item>
     </style>
 
     <!-- System Theme -->

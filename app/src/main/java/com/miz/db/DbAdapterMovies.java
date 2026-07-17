@@ -23,9 +23,13 @@ import android.database.SQLException;
 import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
 
+import com.google.common.collect.ArrayListMultimap;
+import com.miz.functions.ColumnIndexCache;
+import com.miz.functions.MediumMovie;
 import com.miz.mizuu.MizuuApplication;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class DbAdapterMovies extends AbstractDbAdapter {
 
@@ -297,5 +301,53 @@ public class DbAdapterMovies extends AbstractDbAdapter {
         }
 
         return certifications;
+    }
+
+    public ArrayList<MediumMovie> listFromCursor(Cursor cursor) {
+        ArrayListMultimap<String, String> filepaths = ArrayListMultimap.create();
+        Cursor paths = MizuuApplication.getMovieMappingAdapter().getAllFilepaths(false);
+        if (paths != null) {
+            try {
+                while (paths.moveToNext()) {
+                    filepaths.put(paths.getString(paths.getColumnIndex(DbAdapterMovieMappings.KEY_TMDB_ID)),
+                            paths.getString(paths.getColumnIndex(DbAdapterMovieMappings.KEY_FILEPATH)));
+                }
+            } catch (Exception e) {} finally {
+                paths.close();
+                MizuuApplication.setMovieFilepaths(filepaths);
+            }
+        }
+
+        ArrayList<MediumMovie> list = new ArrayList<MediumMovie>();
+
+        if (cursor != null) {
+            ColumnIndexCache cache = new ColumnIndexCache();
+
+            try {
+                while (cursor.moveToNext()) {
+                    list.add(new MediumMovie(mContext,
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_TITLE)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_TMDB_ID)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_RATING)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_RELEASEDATE)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_GENRES)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_FAVOURITE)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_ACTORS)),
+                            "",
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_COLLECTION_ID)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_TO_WATCH)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_HAS_WATCHED)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_DATE_ADDED)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_CERTIFICATION)),
+                            cursor.getString(cache.getColumnIndex(cursor, KEY_RUNTIME))
+                    ));
+                }
+            } catch (Exception e) {} finally {
+                cursor.close();
+                cache.clear();
+            }
+        }
+
+        return list;
     }
 }

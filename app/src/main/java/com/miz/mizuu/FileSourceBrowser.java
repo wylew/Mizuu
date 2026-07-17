@@ -62,13 +62,13 @@ public class FileSourceBrowser extends MizActivity {
 			ft.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
 			switch (mFilesource) {
 			case FileSource.FILE:
-				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceFile(isMovie), TAG);
+				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceFile(isMovie), TAG);
 				break;
 			case FileSource.SMB:
-				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceSmbFile(extras.getString(SERVER), extras.getString(USER), extras.getString(PASSWORD), extras.getString(DOMAIN), isMovie), TAG);
+				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceSmbFile(extras.getString(SERVER), extras.getString(USER), extras.getString(PASSWORD), extras.getString(DOMAIN), isMovie), TAG);
 				break;
 			case FileSource.UPNP:
-				ft.replace(R.id.settings_content, FileSourceBrowserFragment.newInstanceUpnp(extras.getString(SERVER), extras.getString(SERIAL_NUMBER), isMovie), TAG);
+				ft.replace(R.id.content, FileSourceBrowserFragment.newInstanceUpnp(extras.getString(SERVER), extras.getString(SERIAL_NUMBER), isMovie), TAG);
 				break;
 			}
 			ft.commit();

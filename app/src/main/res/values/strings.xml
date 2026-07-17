@@ -385,4 +385,6 @@
 
     <string name="prefsDynamicColorsTitle">Use dynamic colors</string>
     <string name="prefsDynamicColorsSummary">Apply colors matching your wallpaper.</string>
+
+    <string name="all">All</string>
 </resources>

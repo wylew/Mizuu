@@ -5,6 +5,9 @@
     android:id="@+id/toolbar"
     android:layout_width="match_parent"
     android:layout_height="?attr/actionBarSize"
-    android:background="?attr/colorSurface"
+    android:background="@android:color/transparent"
+    app:backgroundTint="@android:color/transparent"
+    app:elevation="0dp"
+    app:titleCentered="true"
     app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
     app:titleTextColor="?attr/colorOnSurface" />
