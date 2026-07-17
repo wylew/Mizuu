@@ -7,6 +7,12 @@ I am slowing updating this app to work on modern android devices. I am also remo
 
 Overall there is really only a few features of this app. Organize movies and tv shows and scrape metadata for them. then allow you to play the video in your chosen player. If I can, I'd like to get it so that it remembers playback position, but that might be too complex.
 
+Still lots of bugs, here is current state as of jul 17 2026
+
+<img width="906" height="1450" alt="image" src="https://github.com/user-attachments/assets/00340d34-592d-4c07-8851-b67a72665e2d" />
+
+<img width="906" height="1450" alt="image" src="https://github.com/user-attachments/assets/bac65cf7-3cf7-4376-bf48-a7d6b13b58c7" />
+
 
 
 =====
