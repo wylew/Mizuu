@@ -20,11 +20,18 @@ import android.app.Activity;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.button.MaterialButton;
 import com.miz.base.MizActivity;
 import com.miz.mizuu.fragments.TvShowDetailsFragment;
 import com.miz.utils.ViewUtils;
@@ -33,10 +40,12 @@ public class TvShowDetails extends MizActivity {
 
     private static String TAG = "TvShowDetailsFragment";
     private String mShowId;
+    private MaterialButton mBackButton, mMenuButton;
+    private View mBottomControls;
 
     @Override
     protected int getLayoutResource() {
-        return 0;
+        return R.layout.activity_details;
     }
 
     public void onCreate(Bundle savedInstanceState) {
@@ -46,6 +55,44 @@ public class TvShowDetails extends MizActivity {
         setTheme(R.style.Mizuu_Theme_NoBackground);
 
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
+
+        mBottomControls = findViewById(R.id.bottom_controls);
+        mBackButton = findViewById(R.id.fab_back);
+        mMenuButton = findViewById(R.id.fab_menu);
+
+        mBackButton.setOnClickListener(v -> onBackPressed());
+
+        mMenuButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, v);
+            popup.getMenuInflater().inflate(R.menu.tv_show_details, popup.getMenu());
+            
+            // Sync favorite state
+            Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+            if (frag instanceof TvShowDetailsFragment) {
+                TvShowDetailsFragment detailsFrag = (TvShowDetailsFragment) frag;
+                MenuItem favItem = popup.getMenu().findItem(R.id.show_fav);
+                if (favItem != null && detailsFrag.getShow() != null) {
+                    boolean isFav = detailsFrag.getShow().isFavorite();
+                    favItem.setIcon(isFav ? R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp);
+                    favItem.setTitle(isFav ? R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+                }
+            }
+
+            popup.setOnMenuItemClickListener(item -> {
+                Fragment f = getSupportFragmentManager().findFragmentByTag(TAG);
+                if (f != null) {
+                    return f.onOptionsItemSelected(item);
+                }
+                return false;
+            });
+            popup.show();
+        });
+
+        ViewCompat.setOnApplyWindowInsetsListener(mBottomControls, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom + 16);
+            return windowInsets;
+        });
 
         setTitle(null);
 
@@ -59,7 +106,7 @@ public class TvShowDetails extends MizActivity {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.add(android.R.id.content, TvShowDetailsFragment.newInstance(mShowId), TAG);
+            ft.add(R.id.content_frame, TvShowDetailsFragment.newInstance(mShowId), TAG);
             ft.commit();
         }
     }
@@ -67,7 +114,8 @@ public class TvShowDetails extends MizActivity {
     @Override
     public void onStart() {
         super.onStart();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override

@@ -131,7 +131,6 @@ public class MovieDetailsFragment extends Fragment {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        setHasOptionsMenu(true);
         setRetainInstance(true);
 
         mContext = getActivity();
@@ -219,7 +218,6 @@ public class MovieDetailsFragment extends Fragment {
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
         ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
@@ -391,6 +389,10 @@ public class MovieDetailsFragment extends Fragment {
         loadImages();
     }
 
+    public Movie getMovie() {
+        return mMovie;
+    }
+
     private void loadActors(final int capacity) {
         // Show ProgressBar
         new AsyncTask<Void, Void, Void>() {
@@ -469,52 +471,8 @@ public class MovieDetailsFragment extends Fragment {
     }
 
     @Override
-    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (mMovie == null)
-            return;
-
-        inflater.inflate(R.menu.movie_details, menu);
-
-        // If this is a tablet, we have more room to display icons
-        if (MizLib.isTablet(mContext)) {
-            MenuItem favItem = menu.findItem(R.id.movie_fav);
-            if (favItem != null)
-                favItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-
-            MenuItem shareItem = menu.findItem(R.id.share);
-            if (shareItem != null)
-                shareItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
-        }
-
-        // Favourite
-        MenuItem favItem = menu.findItem(R.id.movie_fav);
-        if (favItem != null) {
-            favItem.setIcon(mMovie.isFavourite() ?
-                    R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
-                    .setTitle(mMovie.isFavourite() ?
-                            R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
-        }
-
-        // Only allow the user to browse artwork if it's a valid TMDb movie
-        MenuItem coverItem = menu.findItem(R.id.change_cover);
-        if (coverItem != null)
-            coverItem.setVisible(MizLib.isValidTmdbId(mMovie.getTmdbId()));
-    }
-
-    @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         switch (item.getItemId()) {
-            case android.R.id.home:
-                if (getActivity().getIntent().getExtras().getBoolean("isFromWidget")) {
-                    Intent i = new Intent(Intent.ACTION_VIEW);
-                    i.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP|Intent.FLAG_ACTIVITY_NEW_TASK|Intent.FLAG_ACTIVITY_CLEAR_TASK);
-                    i.putExtra("startup", String.valueOf(Main.MOVIES));
-                    i.setClass(mContext, Main.class);
-                    startActivity(i);
-                }
-
-                getActivity().finish();
-                return true;
             case R.id.share:
                 Intent intent = new Intent(Intent.ACTION_SEND);
                 intent.setType("text/plain");
@@ -673,7 +631,7 @@ public class MovieDetailsFragment extends Fragment {
             startActivity(intent); // Start the intent for result
         } else {
             // No movie ID / Internet connection
-            Toast.makeText(mContext, getString(R.string.coverSearchFailed), Toast.LENGTH_LONG).show();
+            Toast.makeText(mContext, getString(R.string.coverartSearchFailed), Toast.LENGTH_LONG).show();
         }
     }
 

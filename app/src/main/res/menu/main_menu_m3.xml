@@ -1,22 +1,97 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
+
     <item
         android:id="@+id/update"
         android:icon="@drawable/ic_sync_white_24dp"
-        android:title="@string/menuUpdateTitle"
-        app:showAsAction="always" />
+        android:title="@string/menuUpdateTitle" />
+
     <item
-        android:id="@+id/fileSources"
-        android:title="@string/fileSources"
-        app:showAsAction="never" />
+        android:id="@+id/sort_menu"
+        android:title="@string/stringSort">
+        <menu>
+            <item
+                android:id="@+id/menuSortTitle"
+                android:title="@string/sortTitle" />
+            <item
+                android:id="@+id/menuSortRelease"
+                android:title="@string/sortRelease" />
+            <item
+                android:id="@+id/menuSortDuration"
+                android:title="@string/sortDuration" />
+            <item
+                android:id="@+id/menuSortRating"
+                android:title="@string/sortRating" />
+            <item
+                android:id="@+id/menuSortWeightedRating"
+                android:title="@string/sortWeightedRating" />
+            <item
+                android:id="@+id/menuSortAdded"
+                android:title="@string/sortAdded" />
+            <item
+                android:id="@+id/menuSortNewestEpisode"
+                android:title="@string/sortNewestEpisode" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/filter_menu"
+        android:title="@string/filters">
+        <menu>
+            <item
+                android:id="@+id/genres"
+                android:title="@string/choiceGenres" />
+            <item
+                android:id="@+id/certifications"
+                android:title="@string/detailsCertification" />
+            <item
+                android:id="@+id/release_year"
+                android:title="@string/release_year" />
+            <item
+                android:id="@+id/folders"
+                android:title="@string/folders" />
+            <item
+                android:id="@+id/fileSources"
+                android:title="@string/fileSources" />
+            <item
+                android:id="@+id/offline_files"
+                android:title="@string/choiceOffline" />
+            <item
+                android:id="@+id/available_files"
+                android:title="@string/choiceAvailableFiles" />
+            <item
+                android:id="@+id/clear_filters"
+                android:title="@string/clear_filters" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/grid_size_menu"
+        android:title="@string/grid_item_size">
+        <menu>
+            <item
+                android:id="@+id/cover_size_small"
+                android:title="@string/small" />
+            <item
+                android:id="@+id/cover_size_normal"
+                android:title="@string/normal" />
+            <item
+                android:id="@+id/cover_size_large"
+                android:title="@string/large" />
+        </menu>
+    </item>
+
+    <item
+        android:id="@+id/random"
+        android:title="@string/random_movie" />
+
     <item
         android:id="@+id/unidentified_files"
-        android:title="@string/unidentifiedFiles"
-        app:showAsAction="never" />
+        android:title="@string/unidentifiedFiles" />
+
     <item
         android:id="@+id/settings"
         android:icon="@drawable/ic_settings_white_24dp"
-        android:title="@string/settings_name"
-        app:showAsAction="never" />
+        android:title="@string/settings_name" />
 </menu>

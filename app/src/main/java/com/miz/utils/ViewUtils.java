@@ -334,11 +334,14 @@ public class ViewUtils {
 
     public static int getGridViewNumColumns(Context context) {
         SharedPreferences prefs = PreferenceManager.getDefaultSharedPreferences(context);
-        String numColsStr = prefs.getString(GRID_ITEM_SIZE, "3");
-        try {
-            return Integer.parseInt(numColsStr);
-        } catch (NumberFormatException e) {
+        String gridChoice = prefs.getString(GRID_ITEM_SIZE, "normal");
+        
+        if (gridChoice.equals("small")) {
+            return 5;
+        } else if (gridChoice.equals("large")) {
             return 3;
+        } else {
+            return 4; // normal
         }
     }
 

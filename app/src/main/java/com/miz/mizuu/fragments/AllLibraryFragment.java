@@ -68,7 +68,9 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
     private boolean mShowTitles;
     private Picasso mPicasso;
     private Config mConfig;
+    private List<Object> mFullResults = new ArrayList<>();
     private List<Object> mResults = new ArrayList<>();
+    private String mSearchQuery = "";
 
     public AllLibraryFragment() {}
 
@@ -125,6 +127,28 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
         return v;
     }
 
+    public void search(String query) {
+        mSearchQuery = query;
+        filterResults();
+    }
+
+    private void filterResults() {
+        if (mSearchQuery.isEmpty()) {
+            mResults = new ArrayList<>(mFullResults);
+        } else {
+            mResults = new ArrayList<>();
+            for (Object obj : mFullResults) {
+                String title = (obj instanceof MediumMovie) ? ((MediumMovie) obj).getTitle() : ((TvShow) obj).getTitle();
+                if (title.toLowerCase().contains(mSearchQuery.toLowerCase())) {
+                    mResults.add(obj);
+                }
+            }
+        }
+        if (mAdapter != null) {
+            mAdapter.notifyDataSetChanged();
+        }
+    }
+
     private void loadData() {
         new AsyncTask<Void, Void, List<Object>>() {
             @Override
@@ -157,8 +181,8 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
 
             @Override
             protected void onPostExecute(List<Object> objects) {
-                mResults = objects;
-                mAdapter.notifyDataSetChanged();
+                mFullResults = objects;
+                filterResults();
                 mProgressBar.setVisibility(View.GONE);
                 mGridView.setVisibility(View.VISIBLE);
             }

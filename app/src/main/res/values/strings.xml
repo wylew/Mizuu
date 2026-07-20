@@ -268,7 +268,7 @@
     <string name="identifyEpisodeTitle">Identify TV show episode</string>
     <string name="addFileSourceTitle">Add file source</string>
     <string name="chooserMovies">Movies</string>
-    <string name="chooserTVShows">TV shows</string>
+    <string name="chooserTVShows">Shows</string>
     <string name="actorsShowAllPhotos">Show all photos</string>
     <string name="actorsTaggedPhotos">Tagged photos</string>
     <string name="detailsActors">Actors</string>
@@ -299,7 +299,7 @@
     <string name="choiceAllMovies">All movies</string>
     <string name="choiceCollections">Collections</string>
     <string name="removeMovie">Remove movie</string>
-    <string name="coverSearchFailed">Cover search failed!</string>
+    <string name="coverartSearchFailed">Cover search failed!</string>
     <string name="noInternet">No internet connection!</string>
     <string name="updatingMovieInfo">Updating movie information…</string>
     <string name="updatingShowInfo">Updating show information…</string>
@@ -379,7 +379,7 @@
     <string name="prefsUI">User interface</string>
     <string name="prefsSearchNavTitle">Search</string>
     <string name="app_name_movies">Movies</string>
-    <string name="app_name_tvshows">TV shows</string>
+    <string name="app_name_tvshows">Shows</string>
     <string name="prefsShowGridTitles">Show grid titles</string>
     <string name="prefsShowGridTitlesTitle">Show grid titles</string>
 

@@ -776,4 +776,8 @@ public class TvShowDetailsFragment extends Fragment {
             }
         }.start();
     }
+
+    public TvShow getShow() {
+        return thisShow;
+    }
 }

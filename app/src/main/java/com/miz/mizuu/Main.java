@@ -26,8 +26,11 @@ import android.os.Bundle;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.inputmethod.InputMethodManager;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.appcompat.widget.PopupMenu;
+import androidx.appcompat.widget.SearchView;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
@@ -38,7 +41,9 @@ import androidx.preference.PreferenceManager;
 
 import com.google.android.material.button.MaterialButton;
 import com.google.android.material.button.MaterialButtonToggleGroup;
+import com.google.android.material.card.MaterialCardView;
 import com.miz.base.MizActivity;
+import com.miz.functions.PreferenceKeys;
 import com.miz.loader.MovieLoader;
 import com.miz.loader.TvShowLoader;
 import com.miz.mizuu.fragments.AllLibraryFragment;
@@ -46,16 +51,19 @@ import com.miz.mizuu.fragments.MovieLibraryFragment;
 import com.miz.mizuu.fragments.TvShowLibraryFragment;
 import com.miz.utils.LocalBroadcastUtils;
 
+import static com.miz.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.miz.functions.PreferenceKeys.STARTUP_SELECTION;
 
 @SuppressLint("NewApi")
 public class Main extends MizActivity {
 
     public static final int ALL = 0, MOVIES = 1, SHOWS = 2;
-    private int selectedIndex, mStartup;
+    private int selectedIndex = -1, mStartup;
     private MaterialButtonToggleGroup mLibraryToggleGroup;
     private View mBottomControls;
     private MaterialButton mSearchButton, mMenuButton;
+    private MaterialCardView mSearchCard, mToggleCard;
+    private SearchView mSearchView;
 
     @Override
     protected int getLayoutResource() {
@@ -72,23 +80,49 @@ public class Main extends MizActivity {
 
         mBottomControls = findViewById(R.id.bottom_controls);
         mLibraryToggleGroup = findViewById(R.id.library_toggle_group);
-        mSearchButton = findViewById(R.id.search_button);
-        mMenuButton = findViewById(R.id.menu_button);
+        mSearchButton = findViewById(R.id.fab_search);
+        mMenuButton = findViewById(R.id.fab_menu);
+        mSearchCard = findViewById(R.id.search_card);
+        mToggleCard = findViewById(R.id.toggle_card);
+        mSearchView = findViewById(R.id.bottom_search_view);
 
         mLibraryToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
-                if (checkedId == R.id.btn_all) {
-                    loadFragment(ALL);
-                } else if (checkedId == R.id.btn_movies) {
-                    loadFragment(MOVIES);
-                } else if (checkedId == R.id.btn_tv) {
-                    loadFragment(SHOWS);
+                int type = ALL;
+                if (checkedId == R.id.btn_movies) type = MOVIES;
+                else if (checkedId == R.id.btn_tv) type = SHOWS;
+                
+                if (selectedIndex != type) {
+                    loadFragment(type);
                 }
             }
         });
 
-        mSearchButton.setOnClickListener(v -> {
-            onSearchRequested();
+        mSearchButton.setOnClickListener(v -> toggleSearch(true));
+
+        mSearchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+            @Override
+            public boolean onQueryTextSubmit(String query) {
+                return false;
+            }
+
+            @Override
+            public boolean onQueryTextChange(String newText) {
+                Fragment frag = getSupportFragmentManager().findFragmentByTag("lib_frag" + selectedIndex);
+                if (frag instanceof AllLibraryFragment) {
+                    ((AllLibraryFragment) frag).search(newText);
+                } else if (frag instanceof MovieLibraryFragment) {
+                    ((MovieLibraryFragment) frag).search(newText);
+                } else if (frag instanceof TvShowLibraryFragment) {
+                    ((TvShowLibraryFragment) frag).search(newText);
+                }
+                return true;
+            }
+        });
+
+        mSearchView.setOnCloseListener(() -> {
+            toggleSearch(false);
+            return true;
         });
 
         mMenuButton.setOnClickListener(v -> {
@@ -98,12 +132,25 @@ public class Main extends MizActivity {
             popup.show();
         });
 
-        // Handle insets for bottom controls ONLY.
-        // We do NOT add padding to the content frame so that the list scrolls UNDER the floating buttons.
+        // Handle insets for bottom controls
         ViewCompat.setOnApplyWindowInsetsListener(mBottomControls, (v, windowInsets) -> {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom + 16);
             return windowInsets;
+        });
+
+        // Back behavior handling
+        getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+            @Override
+            public void handleOnBackPressed() {
+                if (mSearchCard.getVisibility() == View.VISIBLE) {
+                    toggleSearch(false);
+                } else {
+                    setEnabled(false);
+                    onBackPressed();
+                    setEnabled(true);
+                }
+            }
         });
 
         if (savedInstanceState != null && savedInstanceState.containsKey("selectedIndex")) {
@@ -126,24 +173,56 @@ public class Main extends MizActivity {
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
     }
 
+    private void toggleSearch(boolean show) {
+        if (show) {
+            mSearchCard.setVisibility(View.VISIBLE);
+            mToggleCard.setVisibility(View.GONE);
+            mSearchButton.setVisibility(View.GONE);
+            mMenuButton.setVisibility(View.GONE);
+            mSearchView.requestFocus();
+            mSearchView.postDelayed(() -> {
+                InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+                if (imm != null) {
+                    imm.showSoftInput(mSearchView.findFocus(), InputMethodManager.SHOW_IMPLICIT);
+                }
+            }, 100);
+        } else {
+            mSearchCard.setVisibility(View.GONE);
+            mToggleCard.setVisibility(View.VISIBLE);
+            mSearchButton.setVisibility(View.VISIBLE);
+            mMenuButton.setVisibility(View.VISIBLE);
+            mSearchView.setQuery("", false);
+            InputMethodManager imm = (InputMethodManager) getSystemService(Context.INPUT_METHOD_SERVICE);
+            if (imm != null) {
+                imm.hideSoftInputFromWindow(mSearchView.getWindowToken(), 0);
+            }
+        }
+    }
+
     private void loadFragment(int type) {
-        Fragment frag = getSupportFragmentManager().findFragmentByTag("lib_frag" + type);
+        selectedIndex = type;
+        String tag = "lib_frag" + type;
+        Fragment frag = getSupportFragmentManager().findFragmentByTag(tag);
+        
+        final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+        ft.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
+        
         if (frag == null) {
-            final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.setCustomAnimations(R.anim.fade_in, R.anim.fade_out);
             switch (type) {
                 case ALL:
-                    ft.replace(R.id.content_frame, AllLibraryFragment.newInstance(), "lib_frag" + type);
+                    frag = AllLibraryFragment.newInstance();
                     break;
                 case MOVIES:
-                    ft.replace(R.id.content_frame, MovieLibraryFragment.newInstance(MovieLoader.ALL_MOVIES), "lib_frag" + type);
+                    frag = MovieLibraryFragment.newInstance(MovieLoader.ALL_MOVIES);
                     break;
                 case SHOWS:
-                    ft.replace(R.id.content_frame, TvShowLibraryFragment.newInstance(TvShowLoader.ALL_SHOWS), "lib_frag" + type);
+                    frag = TvShowLibraryFragment.newInstance(TvShowLoader.ALL_SHOWS);
                     break;
             }
-            ft.commit();
         }
+        
+        ft.replace(R.id.content_frame, frag, tag);
+        ft.commit();
 
         if (getSupportActionBar() != null) {
             getSupportActionBar().setDisplayShowTitleEnabled(true);
@@ -152,8 +231,11 @@ public class Main extends MizActivity {
             else if (type == SHOWS) titleRes = R.string.chooserTVShows;
             getSupportActionBar().setTitle(titleRes);
         }
-
-        selectedIndex = type;
+        
+        // Clear search when switching tabs
+        if (mSearchCard != null && mSearchCard.getVisibility() == View.VISIBLE) {
+            toggleSearch(false);
+        }
     }
 
     @Override
@@ -162,12 +244,12 @@ public class Main extends MizActivity {
         setIntent(newIntent);
 
         if (newIntent.hasExtra("startup")) {
-            selectedIndex = Integer.parseInt(newIntent.getStringExtra("startup"));
+            int type = Integer.parseInt(newIntent.getStringExtra("startup"));
             int checkId = R.id.btn_all;
-            if (selectedIndex == MOVIES) checkId = R.id.btn_movies;
-            else if (selectedIndex == SHOWS) checkId = R.id.btn_tv;
+            if (type == MOVIES) checkId = R.id.btn_movies;
+            else if (type == SHOWS) checkId = R.id.btn_tv;
             mLibraryToggleGroup.check(checkId);
-            loadFragment(selectedIndex);
+            loadFragment(type);
         }
     }
 
@@ -198,20 +280,33 @@ public class Main extends MizActivity {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         int id = item.getItemId();
+        
         if (id == R.id.settings) {
             startActivity(new Intent(getApplicationContext(), Preferences.class));
             return true;
-        } else if (id == R.id.unidentified_files) {
-            if (selectedIndex == MOVIES) {
-                startActivity(new Intent(getApplicationContext(), UnidentifiedMovies.class));
-            } else {
-                startActivity(new Intent(getApplicationContext(), UnidentifiedTvShows.class));
-            }
+        }
+
+        // Handle grid size changes
+        SharedPreferences.Editor editor = PreferenceManager.getDefaultSharedPreferences(this).edit();
+        if (id == R.id.cover_size_small) {
+            editor.putString(GRID_ITEM_SIZE, "small").apply();
             return true;
-        } else if (id == R.id.fileSources) {
-            startActivity(new Intent(getApplicationContext(), FileSources.class));
+        } else if (id == R.id.cover_size_normal) {
+            editor.putString(GRID_ITEM_SIZE, "normal").apply();
+            return true;
+        } else if (id == R.id.cover_size_large) {
+            editor.putString(GRID_ITEM_SIZE, "large").apply();
             return true;
         }
+
+        // Pass actions to the current fragment
+        Fragment frag = getSupportFragmentManager().findFragmentByTag("lib_frag" + selectedIndex);
+        if (frag instanceof MovieLibraryFragment) {
+            ((MovieLibraryFragment) frag).onMenuAction(id);
+        } else if (frag instanceof TvShowLibraryFragment) {
+            ((TvShowLibraryFragment) frag).onMenuAction(id);
+        }
+
         return super.onOptionsItemSelected(item);
     }
 }

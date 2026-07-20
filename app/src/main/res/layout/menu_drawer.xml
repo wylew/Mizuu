@@ -35,11 +35,34 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-        <!-- Search Button - Standard 56dp size, fixed centering -->
+        <!-- Search Bar Area (Hidden by default) -->
+        <com.google.android.material.card.MaterialCardView
+            android:id="@+id/search_card"
+            android:layout_width="0dp"
+            android:layout_height="56dp"
+            android:visibility="gone"
+            app:cardCornerRadius="28dp"
+            app:cardElevation="8dp"
+            app:strokeWidth="0dp"
+            app:cardBackgroundColor="?attr/colorSurface"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent">
+
+            <androidx.appcompat.widget.SearchView
+                android:id="@+id/bottom_search_view"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                app:iconifiedByDefault="false"
+                app:queryBackground="@android:color/transparent"
+                app:searchIcon="@drawable/ic_search_white_24dp"
+                app:queryHint="@string/stringSearch" />
+
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- Search Button -->
         <com.google.android.material.button.MaterialButton
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-            android:id="@+id/search_button"
+            android:id="@+id/fab_search"
             style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="56dp"
             android:layout_height="56dp"
@@ -49,7 +72,9 @@
             android:insetLeft="0dp"
             android:insetRight="0dp"
             app:icon="@drawable/ic_search_white_24dp"
-            android:gravity="center"
+            app:iconSize="24dp"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSecondaryContainer"
             app:iconTint="?attr/colorOnSecondaryContainer"
@@ -68,12 +93,10 @@
             app:strokeWidth="0dp"
             app:cardBackgroundColor="?attr/colorSurface"
             app:layout_constraintBottom_toBottomOf="parent"
-            app:layout_constraintEnd_toStartOf="@+id/menu_button"
-            app:layout_constraintStart_toEndOf="@+id/search_button">
+            app:layout_constraintEnd_toStartOf="@+id/fab_menu"
+            app:layout_constraintStart_toEndOf="@+id/fab_search">
 
             <com.google.android.material.button.MaterialButtonToggleGroup
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
                 android:id="@+id/library_toggle_group"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
@@ -81,16 +104,18 @@
                 app:selectionRequired="true">
 
                 <com.google.android.material.button.MaterialButton
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
                     android:id="@+id/btn_all"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     app:icon="@drawable/ic_video_collection_white_24dp"
+                    app:iconSize="18dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="4dp"
                     android:text="@string/all"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="?attr/colorOnSurface"
                     app:iconTint="?attr/colorOnSurface"
                     android:insetTop="0dp"
@@ -98,16 +123,18 @@
                     android:padding="0dp" />
 
                 <com.google.android.material.button.MaterialButton
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
                     android:id="@+id/btn_movies"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     app:icon="@drawable/ic_movie_white_24dp"
+                    app:iconSize="18dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="4dp"
                     android:text="@string/chooserMovies"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="?attr/colorOnSurface"
                     app:iconTint="?attr/colorOnSurface"
                     android:insetTop="0dp"
@@ -115,16 +142,18 @@
                     android:padding="0dp" />
 
                 <com.google.android.material.button.MaterialButton
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
                     android:id="@+id/btn_tv"
                     style="@style/Widget.Material3.Button.TextButton"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     app:icon="@drawable/ic_tv_white_24dp"
+                    app:iconSize="18dp"
+                    app:iconGravity="textStart"
+                    app:iconPadding="4dp"
                     android:text="@string/chooserTVShows"
                     android:textSize="12sp"
+                    android:textAllCaps="false"
                     android:textColor="?attr/colorOnSurface"
                     app:iconTint="?attr/colorOnSurface"
                     android:insetTop="0dp"
@@ -132,15 +161,12 @@
                     android:padding="0dp" />
 
             </com.google.android.material.button.MaterialButtonToggleGroup>
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
+
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Menu Button (Standard 56dp size) - Fixed icon centering -->
+        <!-- Menu Button (Standard 56dp size) -->
         <com.google.android.material.button.MaterialButton
-        app:iconGravity="textStart"
-        app:iconPadding="0dp"
-            android:id="@+id/menu_button"
+            android:id="@+id/fab_menu"
             style="?attr/materialIconButtonFilledTonalStyle"
             android:layout_width="56dp"
             android:layout_height="56dp"
@@ -150,7 +176,9 @@
             android:insetLeft="0dp"
             android:insetRight="0dp"
             app:icon="@drawable/ic_more_vert_white_24dp"
-            android:gravity="center"
+            app:iconSize="24dp"
+            app:iconGravity="textStart"
+            app:iconPadding="0dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSurface"
             app:iconTint="?attr/colorOnSurface"

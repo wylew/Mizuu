@@ -19,97 +19,143 @@ package com.miz.mizuu;
 import android.app.SearchManager;
 import android.content.Intent;
 import android.os.Bundle;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
 import android.view.KeyEvent;
 import android.view.MenuItem;
+import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.widget.PopupMenu;
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
+import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.material.button.MaterialButton;
 import com.miz.base.MizActivity;
 import com.miz.mizuu.fragments.MovieDetailsFragment;
 import com.miz.utils.ViewUtils;
 
 public class MovieDetails extends MizActivity {
 
-	private static String TAG = "MovieDetailsFragment";
-	private String mMovieId;
+    private static String TAG = "MovieDetailsFragment";
+    private String mMovieId;
+    private MaterialButton mBackButton, mMenuButton;
+    private View mBottomControls;
 
-	@Override
-	public void onCreate(Bundle savedInstanceState) {
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.activity_details;
+    }
+
+    @Override
+    public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
 
-		setTitle(null);
+        mBottomControls = findViewById(R.id.bottom_controls);
+        mBackButton = findViewById(R.id.fab_back);
+        mMenuButton = findViewById(R.id.fab_menu);
 
-		// Fetch the database ID of the movie to view
-		if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
-			mMovieId = getIntent().getStringExtra(SearchManager.EXTRA_DATA_KEY);
-		} else if (getIntent().getExtras() != null) {
-			mMovieId = getIntent().getExtras().getString("tmdbId");
-		}
+        mBackButton.setOnClickListener(v -> onBackPressed());
 
-		Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
-		if (frag == null) {
-			final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-			ft.add(android.R.id.content, MovieDetailsFragment.newInstance(mMovieId), TAG);
-			ft.commit();
-		}
-	}
+        mMenuButton.setOnClickListener(v -> {
+            PopupMenu popup = new PopupMenu(this, v);
+            popup.getMenuInflater().inflate(R.menu.movie_details, popup.getMenu());
+            
+            // Sync favorite state
+            Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+            if (frag instanceof MovieDetailsFragment) {
+                MovieDetailsFragment detailsFrag = (MovieDetailsFragment) frag;
+                MenuItem favItem = popup.getMenu().findItem(R.id.movie_fav);
+                if (favItem != null && detailsFrag.getMovie() != null) {
+                    boolean isFav = detailsFrag.getMovie().isFavourite();
+                    favItem.setIcon(isFav ? R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp);
+                    favItem.setTitle(isFav ? R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+                }
+            }
+            
+            popup.setOnMenuItemClickListener(item -> {
+                Fragment f = getSupportFragmentManager().findFragmentByTag(TAG);
+                if (f != null) {
+                    return f.onOptionsItemSelected(item);
+                }
+                return false;
+            });
+            popup.show();
+        });
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch (item.getItemId()) {
-		case android.R.id.home:
-			onBackPressed();
-			return true;
-		default:
-			return super.onOptionsItemSelected(item);
-		}
-	}
+        ViewCompat.setOnApplyWindowInsetsListener(mBottomControls, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom + 16);
+            return windowInsets;
+        });
 
-	@Override
-	protected void onStart() {
-		super.onStart();
-		if (getSupportActionBar() != null)
-			getSupportActionBar().setDisplayHomeAsUpEnabled(true);
-	}
+        setTitle(null);
 
-	@Override
-	protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-		super.onActivityResult(requestCode, resultCode, data);
+        // Fetch the database ID of the movie to view
+        if (Intent.ACTION_SEARCH.equals(getIntent().getAction())) {
+            mMovieId = getIntent().getStringExtra(SearchManager.EXTRA_DATA_KEY);
+        } else if (getIntent().getExtras() != null) {
+            mMovieId = getIntent().getExtras().getString("tmdbId");
+        }
 
-		if (resultCode == 4) {
-			Toast.makeText(this, getString(R.string.updatedMovie), Toast.LENGTH_SHORT).show();
+        Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+        if (frag == null) {
+            final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
+            ft.add(R.id.content_frame, MovieDetailsFragment.newInstance(mMovieId), TAG);
+            ft.commit();
+        }
+    }
 
-			// Create a new Intent with the Bundle
-			Intent intent = new Intent();
-			intent.setClass(getApplicationContext(), MovieDetails.class);
-			intent.putExtra("tmdbId", mMovieId);
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+            case android.R.id.home:
+                onBackPressed();
+                return true;
+            default:
+                return super.onOptionsItemSelected(item);
+        }
+    }
 
-			// Start the Intent for result
-			startActivity(intent);
+    @Override
+    protected void onStart() {
+        super.onStart();
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+    }
 
-			finish();
-		}
-	}
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
 
-	@Override 
-	public boolean onKeyDown(int keyCode, KeyEvent event) {
-		switch (keyCode) {
-		case KeyEvent.KEYCODE_MEDIA_PLAY:
-		case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
-			// Nasty...
-			Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
-			if (frag instanceof MovieDetailsFragment) {
-				((MovieDetailsFragment) frag).onKeyDown(keyCode, event);
-			}
-		}
-		return super.onKeyDown(keyCode, event);
-	}
-	
-	@Override
-	protected int getLayoutResource() {
-		return 0;
-	}
+        if (resultCode == 4) {
+            Toast.makeText(this, getString(R.string.updatedMovie), Toast.LENGTH_SHORT).show();
+
+            // Create a new Intent with the Bundle
+            Intent intent = new Intent();
+            intent.setClass(getApplicationContext(), MovieDetails.class);
+            intent.putExtra("tmdbId", mMovieId);
+
+            // Start the Intent for result
+            startActivity(intent);
+
+            finish();
+        }
+    }
+
+    @Override 
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        switch (keyCode) {
+            case KeyEvent.KEYCODE_MEDIA_PLAY:
+            case KeyEvent.KEYCODE_MEDIA_PLAY_PAUSE:
+                Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
+                if (frag instanceof MovieDetailsFragment) {
+                    ((MovieDetailsFragment) frag).onKeyDown(keyCode, event);
+                }
+        }
+        return super.onKeyDown(keyCode, event);
+    }
 }

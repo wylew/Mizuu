@@ -304,6 +304,97 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         }
     }
 
+    public void search(String query) {
+        if (mMovieLoader != null) {
+            if (query.isEmpty()) {
+                mMovieLoader.load();
+            } else {
+                mMovieLoader.search(query);
+            }
+            showProgressBar();
+        }
+    }
+
+    public void onMenuAction(int id) {
+        switch (id) {
+            case R.id.update:
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), Update.class);
+                intent.putExtra("isMovie", true);
+                startActivityForResult(intent, 0);
+                break;
+            case R.id.menuSortAdded:
+                mMovieLoader.setSortType(MovieSortType.DATE_ADDED);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortRating:
+                mMovieLoader.setSortType(MovieSortType.RATING);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortWeightedRating:
+                mMovieLoader.setSortType(MovieSortType.WEIGHTED_RATING);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortRelease:
+                mMovieLoader.setSortType(MovieSortType.RELEASE);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortTitle:
+                mMovieLoader.setSortType(MovieSortType.TITLE);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortDuration:
+                mMovieLoader.setSortType(MovieSortType.DURATION);
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.genres:
+                mMovieLoader.showGenresFilterDialog(getActivity());
+                break;
+            case R.id.certifications:
+                mMovieLoader.showCertificationsFilterDialog(getActivity());
+                break;
+            case R.id.folders:
+                mMovieLoader.showFoldersFilterDialog(getActivity());
+                break;
+            case R.id.fileSources:
+                mMovieLoader.showFileSourcesFilterDialog(getActivity());
+                break;
+            case R.id.release_year:
+                mMovieLoader.showReleaseYearFilterDialog(getActivity());
+                break;
+            case R.id.offline_files:
+                mMovieLoader.addFilter(new MovieFilter(MovieFilter.OFFLINE_FILES));
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.available_files:
+                mMovieLoader.addFilter(new MovieFilter(MovieFilter.AVAILABLE_FILES));
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.clear_filters:
+                mMovieLoader.clearFilters();
+                mMovieLoader.load();
+                showProgressBar();
+                break;
+            case R.id.random:
+                if (mAdapter.getCount() > 0) {
+                    int random = new Random().nextInt(mAdapter.getCount());
+                    viewMovieDetails(random, null);
+                }
+                break;
+            case R.id.unidentified_files:
+                startActivity(new Intent(getActivity(), UnidentifiedMovies.class));
+                break;
+        }
+    }
+
     private class LoaderAdapter extends BaseAdapter {
 
         private Set<Integer> mChecked = new HashSet<>();
@@ -423,134 +514,13 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menu, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.search_textbox);
-        if (searchItem != null) {
-            searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-                @Override
-                public boolean onMenuItemActionExpand(MenuItem item) {
-                    return true;
-                }
-
-                @Override
-                public boolean onMenuItemActionCollapse(MenuItem item) {
-                    onSearchViewCollapsed();
-                    return true;
-                }
-            });
-
-            mSearchView = (SearchView) searchItem.getActionView();
-            if (mSearchView != null) {
-                mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        if (newText.length() > 0) {
-                            mMovieLoader.search(newText);
-                            showProgressBar();
-                        } else {
-                            onSearchViewCollapsed();
-                        }
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return false;
-                    }
-                });
-
-                SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-                mSearchView.setSearchableInfo(searchManager.getSearchableInfo(getActivity().getComponentName()));
-            }
-        }
-
-        super.onCreateOptionsMenu(menu, inflater);
+        // Remove standard menu as it's now handled by the bottom nav
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        super.onOptionsItemSelected(item);
-
-        switch (item.getItemId()) {
-            case R.id.update:
-                Intent intent = new Intent();
-                intent.setClass(getActivity(), Update.class);
-                intent.putExtra("isMovie", true);
-                startActivityForResult(intent, 0);
-                break;
-            case R.id.menuSortAdded:
-                mMovieLoader.setSortType(MovieSortType.DATE_ADDED);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRating:
-                mMovieLoader.setSortType(MovieSortType.RATING);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortWeightedRating:
-                mMovieLoader.setSortType(MovieSortType.WEIGHTED_RATING);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRelease:
-                mMovieLoader.setSortType(MovieSortType.RELEASE);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortTitle:
-                mMovieLoader.setSortType(MovieSortType.TITLE);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortDuration:
-                mMovieLoader.setSortType(MovieSortType.DURATION);
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.genres:
-                mMovieLoader.showGenresFilterDialog(getActivity());
-                break;
-            case R.id.certifications:
-                mMovieLoader.showCertificationsFilterDialog(getActivity());
-                break;
-            case R.id.folders:
-                mMovieLoader.showFoldersFilterDialog(getActivity());
-                break;
-            case R.id.fileSources:
-                mMovieLoader.showFileSourcesFilterDialog(getActivity());
-                break;
-            case R.id.release_year:
-                mMovieLoader.showReleaseYearFilterDialog(getActivity());
-                break;
-            case R.id.offline_files:
-                mMovieLoader.addFilter(new MovieFilter(MovieFilter.OFFLINE_FILES));
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.available_files:
-                mMovieLoader.addFilter(new MovieFilter(MovieFilter.AVAILABLE_FILES));
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.clear_filters:
-                mMovieLoader.clearFilters();
-                mMovieLoader.load();
-                showProgressBar();
-                break;
-            case R.id.random:
-                if (mAdapter.getCount() > 0) {
-                    int random = new Random().nextInt(mAdapter.getCount());
-                    viewMovieDetails(random, null);
-                }
-                break;
-            case R.id.unidentifiedFiles:
-                startActivity(new Intent(getActivity(), UnidentifiedMovies.class));
-                break;
-        }
-
-        return true;
+        onMenuAction(item.getItemId());
+        return super.onOptionsItemSelected(item);
     }
 
     private void hideProgressBar() {

@@ -95,7 +95,6 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
     private Picasso mPicasso;
     private Config mConfig;
     private TvShowLoader mTvShowLoader;
-    private SearchView mSearchView;
     private View mEmptyLibraryLayout;
     private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
     private Button mAddFileSourceButton, mUpdateLibraryButton;
@@ -298,6 +297,97 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
         }
     }
 
+    public void search(String query) {
+        if (mTvShowLoader != null) {
+            if (query.isEmpty()) {
+                mTvShowLoader.load();
+            } else {
+                mTvShowLoader.search(query);
+            }
+            showProgressBar();
+        }
+    }
+
+    public void onMenuAction(int id) {
+        switch (id) {
+            case R.id.update:
+                Intent intent = new Intent();
+                intent.setClass(getActivity(), Update.class);
+                intent.putExtra("isMovie", false);
+                startActivityForResult(intent, 0);
+                break;
+            case R.id.menuSortNewestEpisode:
+                mTvShowLoader.setSortType(TvShowSortType.NEWEST_EPISODE);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortRating:
+                mTvShowLoader.setSortType(TvShowSortType.RATING);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortWeightedRating:
+                mTvShowLoader.setSortType(TvShowSortType.WEIGHTED_RATING);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortRelease:
+                mTvShowLoader.setSortType(TvShowSortType.FIRST_AIR_DATE);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortTitle:
+                mTvShowLoader.setSortType(TvShowSortType.TITLE);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.menuSortDuration:
+                mTvShowLoader.setSortType(TvShowSortType.DURATION);
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.genres:
+                mTvShowLoader.showGenresFilterDialog(getActivity());
+                break;
+            case R.id.certifications:
+                mTvShowLoader.showCertificationsFilterDialog(getActivity());
+                break;
+            case R.id.folders:
+                mTvShowLoader.showFoldersFilterDialog(getActivity());
+                break;
+            case R.id.fileSources:
+                mTvShowLoader.showFileSourcesFilterDialog(getActivity());
+                break;
+            case R.id.release_year:
+                mTvShowLoader.showReleaseYearFilterDialog(getActivity());
+                break;
+            case R.id.offline_files:
+                mTvShowLoader.addFilter(new TvShowFilter(TvShowFilter.OFFLINE_FILES));
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.available_files:
+                mTvShowLoader.addFilter(new TvShowFilter(TvShowFilter.AVAILABLE_FILES));
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.clear_filters:
+                mTvShowLoader.clearFilters();
+                mTvShowLoader.load();
+                showProgressBar();
+                break;
+            case R.id.random:
+                if (mAdapter.getCount() > 0) {
+                    int random = new Random().nextInt(mAdapter.getCount());
+                    viewTvShowDetails(random, null);
+                }
+                break;
+            case R.id.unidentified_files:
+                startActivity(new Intent(getActivity(), UnidentifiedTvShows.class));
+                break;
+        }
+    }
+
     private class LoaderAdapter extends BaseAdapter {
 
         private Set<Integer> mChecked = new HashSet<>();
@@ -416,135 +506,13 @@ public class TvShowLibraryFragment extends Fragment implements SharedPreferences
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        inflater.inflate(R.menu.menutv, menu);
-
-        MenuItem searchItem = menu.findItem(R.id.search_textbox);
-        if (searchItem != null) {
-            searchItem.setOnActionExpandListener(new MenuItem.OnActionExpandListener() {
-                @Override
-                public boolean onMenuItemActionExpand(MenuItem item) {
-                    return true;
-                }
-
-                @Override
-                public boolean onMenuItemActionCollapse(MenuItem item) {
-                    onSearchViewCollapsed();
-                    return true;
-                }
-            });
-
-            mSearchView = (SearchView) searchItem.getActionView();
-            if (mSearchView != null) {
-                mSearchView.setOnQueryTextListener(new OnQueryTextListener() {
-                    @Override
-                    public boolean onQueryTextChange(String newText) {
-                        if (newText.length() > 0) {
-                            mTvShowLoader.search(newText);
-                            showProgressBar();
-                        } else {
-                            onSearchViewCollapsed();
-                        }
-                        return true;
-                    }
-
-                    @Override
-                    public boolean onQueryTextSubmit(String query) {
-                        return false;
-                    }
-                });
-
-                SearchManager searchManager = (SearchManager) getActivity().getSystemService(Context.SEARCH_SERVICE);
-                ComponentName cn = new ComponentName(getActivity(), TvShowActorSearchActivity.class);
-                mSearchView.setSearchableInfo(searchManager.getSearchableInfo(cn));
-            }
-        }
-
-        super.onCreateOptionsMenu(menu, inflater);
+        // Handled by bottom nav
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        super.onOptionsItemSelected(item);
-
-        switch (item.getItemId()) {
-            case R.id.update:
-                Intent intent = new Intent();
-                intent.setClass(getActivity(), Update.class);
-                intent.putExtra("isMovie", false);
-                startActivityForResult(intent, 0);
-                break;
-            case R.id.menuSortNewestEpisode:
-                mTvShowLoader.setSortType(TvShowSortType.NEWEST_EPISODE);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRating:
-                mTvShowLoader.setSortType(TvShowSortType.RATING);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortWeightedRating:
-                mTvShowLoader.setSortType(TvShowSortType.WEIGHTED_RATING);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortRelease:
-                mTvShowLoader.setSortType(TvShowSortType.FIRST_AIR_DATE);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortTitle:
-                mTvShowLoader.setSortType(TvShowSortType.TITLE);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.menuSortDuration:
-                mTvShowLoader.setSortType(TvShowSortType.DURATION);
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.genres:
-                mTvShowLoader.showGenresFilterDialog(getActivity());
-                break;
-            case R.id.certifications:
-                mTvShowLoader.showCertificationsFilterDialog(getActivity());
-                break;
-            case R.id.folders:
-                mTvShowLoader.showFoldersFilterDialog(getActivity());
-                break;
-            case R.id.fileSources:
-                mTvShowLoader.showFileSourcesFilterDialog(getActivity());
-                break;
-            case R.id.release_year:
-                mTvShowLoader.showReleaseYearFilterDialog(getActivity());
-                break;
-            case R.id.offline_files:
-                mTvShowLoader.addFilter(new TvShowFilter(TvShowFilter.OFFLINE_FILES));
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.available_files:
-                mTvShowLoader.addFilter(new TvShowFilter(TvShowFilter.AVAILABLE_FILES));
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.clear_filters:
-                mTvShowLoader.clearFilters();
-                mTvShowLoader.load();
-                showProgressBar();
-                break;
-            case R.id.random:
-                if (mAdapter.getCount() > 0) {
-                    int random = new Random().nextInt(mAdapter.getCount());
-                    viewTvShowDetails(random, null);
-                }
-                break;
-            case R.id.unidentifiedFiles:
-                startActivity(new Intent(getActivity(), UnidentifiedTvShows.class));
-                break;
-        }
-
-        return true;
+        onMenuAction(item.getItemId());
+        return super.onOptionsItemSelected(item);
     }
 
     private void hideProgressBar() {
