@@ -17,9 +17,15 @@
 package com.miz.mizuu;
 
 import android.os.Bundle;
+import android.view.View;
+
+import androidx.core.graphics.Insets;
+import androidx.core.view.ViewCompat;
+import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.google.android.material.button.MaterialButton;
 import com.miz.base.MizActivity;
 import com.miz.mizuu.fragments.TmdbMovieDetailsFragment;
 import com.miz.utils.ViewUtils;
@@ -28,6 +34,13 @@ public class TMDbMovieDetails extends MizActivity {
 
     private static String TAG = "TmdbMovieDetailsFragment";
     private String mMovieId;
+    private MaterialButton mBackButton, mMenuButton;
+    private View mBottomControls;
+
+    @Override
+    protected int getLayoutResource() {
+        return R.layout.activity_details;
+    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -38,6 +51,22 @@ public class TMDbMovieDetails extends MizActivity {
 
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
 
+        mBottomControls = findViewById(R.id.bottom_controls);
+        mBackButton = findViewById(R.id.fab_back);
+        mMenuButton = findViewById(R.id.fab_menu);
+
+        mBackButton.setOnClickListener(v -> onBackPressed());
+        
+        // TMDbMovieDetails typically doesn't have a special menu, so we'll hide it for now
+        // but the design remains unified.
+        mMenuButton.setVisibility(View.GONE);
+
+        ViewCompat.setOnApplyWindowInsetsListener(mBottomControls, (v, windowInsets) -> {
+            Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
+            v.setPadding(v.getPaddingLeft(), v.getPaddingTop(), v.getPaddingRight(), insets.bottom + 16);
+            return windowInsets;
+        });
+
         setTitle(null);
 
         mMovieId = getIntent().getExtras().getString("tmdbId");
@@ -45,13 +74,8 @@ public class TMDbMovieDetails extends MizActivity {
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {
             final FragmentTransaction ft = getSupportFragmentManager().beginTransaction();
-            ft.add(android.R.id.content, TmdbMovieDetailsFragment.newInstance(mMovieId), TAG);
+            ft.add(R.id.content_frame, TmdbMovieDetailsFragment.newInstance(mMovieId), TAG);
             ft.commit();
         }
-    }
-
-    @Override
-    protected int getLayoutResource() {
-        return 0;
     }
 }

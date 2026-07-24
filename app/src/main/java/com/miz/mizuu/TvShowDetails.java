@@ -24,6 +24,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Toast;
 
+import androidx.appcompat.view.ContextThemeWrapper;
 import androidx.appcompat.widget.PopupMenu;
 import androidx.core.graphics.Insets;
 import androidx.core.view.ViewCompat;
@@ -63,7 +64,9 @@ public class TvShowDetails extends MizActivity {
         mBackButton.setOnClickListener(v -> onBackPressed());
 
         mMenuButton.setOnClickListener(v -> {
-            PopupMenu popup = new PopupMenu(this, v);
+            // Material 3 Expressive Menu implementation
+            ContextThemeWrapper wrapper = new ContextThemeWrapper(this, R.style.Mizuu_PopupMenu_Context);
+            PopupMenu popup = new PopupMenu(wrapper, v);
             popup.getMenuInflater().inflate(R.menu.tv_show_details, popup.getMenu());
             
             // Sync favorite state

@@ -75,7 +75,6 @@ import com.squareup.picasso.Picasso;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
-import java.util.Random;
 import java.util.Set;
 
 import static com.miz.functions.PreferenceKeys.GRID_ITEM_SIZE;
@@ -382,12 +381,6 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
                 mMovieLoader.clearFilters();
                 mMovieLoader.load();
                 showProgressBar();
-                break;
-            case R.id.random:
-                if (mAdapter.getCount() > 0) {
-                    int random = new Random().nextInt(mAdapter.getCount());
-                    viewMovieDetails(random, null);
-                }
                 break;
             case R.id.unidentified_files:
                 startActivity(new Intent(getActivity(), UnidentifiedMovies.class));

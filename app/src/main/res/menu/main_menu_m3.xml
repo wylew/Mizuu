@@ -83,10 +83,6 @@
     </item>
 
     <item
-        android:id="@+id/random"
-        android:title="@string/random_movie" />
-
-    <item
         android:id="@+id/unidentified_files"
         android:title="@string/unidentifiedFiles" />
 

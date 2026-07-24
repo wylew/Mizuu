@@ -1,8 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout  xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.coordinatorlayout.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/layout"
     android:layout_width="match_parent"
-    android:layout_height="match_parent" >
+    android:layout_height="match_parent">
 
     <androidx.viewpager.widget.ViewPager
         android:id="@+id/awesomepager"
@@ -19,4 +20,60 @@
 
     <include layout="@layout/toolbar_layout" />
 
-</FrameLayout>
+    <!-- Floating bottom controls -->
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/bottom_controls"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="bottom"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
+        android:paddingBottom="24dp"
+        android:clipToPadding="false"
+        android:clipChildren="false">
+
+        <!-- Back Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fab_back"
+            style="?attr/materialIconButtonFilledTonalStyle"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            app:icon="@drawable/ic_arrow_back_white_24dp"
+            app:iconSize="24dp"
+            app:iconGravity="start"
+            app:iconPadding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:elevation="8dp"
+            app:backgroundTint="?attr/colorSecondaryContainer"
+            app:iconTint="?attr/colorOnSecondaryContainer"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintStart_toStartOf="parent" />
+
+        <!-- Menu Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/fab_menu"
+            style="?attr/materialIconButtonFilledTonalStyle"
+            android:layout_width="56dp"
+            android:layout_height="56dp"
+            app:icon="@drawable/ic_more_vert_white_24dp"
+            app:iconSize="24dp"
+            app:iconGravity="start"
+            app:iconPadding="0dp"
+            android:insetTop="0dp"
+            android:insetBottom="0dp"
+            android:insetLeft="0dp"
+            android:insetRight="0dp"
+            android:elevation="8dp"
+            app:backgroundTint="?attr/colorSurface"
+            app:iconTint="?attr/colorOnSurface"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
+
+</androidx.coordinatorlayout.widget.CoordinatorLayout>

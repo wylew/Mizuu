@@ -93,7 +93,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     private Typeface mMediumItalic, mMedium, mCondensedRegular;
     private DbAdapterTvShowEpisodes mDatabaseHelper;
     private long mVideoPlaybackStarted, mVideoPlaybackEnded;
-    private boolean mShowFileLocation;
+    private boolean mShowFileLocation, mIsRegistered;
     private Bus mBus;
     private int mToolbarColor = 0;
     private FloatingActionButton mFab;
@@ -455,13 +455,25 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     public void onResume() {
         super.onResume();
 
-        mBus.register(getActivity());
+        if (!mIsRegistered) {
+            mBus.register(getActivity());
+            mIsRegistered = true;
+        }
 
         mVideoPlaybackEnded = System.currentTimeMillis();
 
         if (mVideoPlaybackStarted > 0 && mVideoPlaybackEnded - mVideoPlaybackStarted > (1000 * 60 * 5)) {
             if (!mEpisode.hasWatched())
                 watched(false); // Mark it as watched
+        }
+    }
+
+    @Override
+    public void onPause() {
+        super.onPause();
+        if (mIsRegistered) {
+            mBus.unregister(getActivity());
+            mIsRegistered = false;
         }
     }
 

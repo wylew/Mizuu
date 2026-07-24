@@ -64,7 +64,6 @@ import com.miz.utils.TypefaceUtils;
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
-import java.util.Random;
 
 import static com.miz.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.miz.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
@@ -448,9 +447,9 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         inflater.inflate(R.menu.menu, menu);
 
         menu.removeItem(R.id.update);
-        menu.removeItem(R.id.search_textbox);
+        menu.removeItem(R.id.action_search);
         menu.removeItem(R.id.filters);
-        menu.removeItem(R.id.sort);
+        menu.removeItem(R.id.action_sort);
         menu.removeItem(R.id.unidentified_files);
 
         menu.findItem(R.id.view_collection_online).setVisible(true);
@@ -461,12 +460,6 @@ public class CollectionLibraryFragment extends Fragment implements OnSharedPrefe
         super.onOptionsItemSelected(item);
 
         switch (item.getItemId()) {
-            case R.id.random:
-                if (mMovieKeys.size() > 0) {
-                    int random = new Random().nextInt(mMovieKeys.size());
-                    showDetails(random);
-                }
-                break;
             case R.id.view_collection_online:
                 Intent i = new Intent(Intent.ACTION_VIEW);
                 i.setData(Uri.parse("http://www.themoviedb.org/collection/" + mCollectionId));

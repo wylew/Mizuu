@@ -32,19 +32,14 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-        <!-- Back Button -->
+        <!-- Back Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_back"
-            style="?attr/materialIconButtonFilledTonalStyle"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:padding="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
             app:icon="@drawable/ic_arrow_back_white_24dp"
-            android:gravity="center"
+            app:iconSize="24dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSecondaryContainer"
             app:iconTint="?attr/colorOnSecondaryContainer"
@@ -52,19 +47,14 @@
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Menu Button -->
+        <!-- Menu Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_menu"
-            style="?attr/materialIconButtonFilledTonalStyle"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             android:layout_width="56dp"
             android:layout_height="56dp"
-            android:padding="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
             app:icon="@drawable/ic_more_vert_white_24dp"
-            android:gravity="center"
+            app:iconSize="24dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSurface"
             app:iconTint="?attr/colorOnSurface"
