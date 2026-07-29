@@ -59,6 +59,7 @@ import com.miz.functions.SimpleAnimatorListener;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
 import com.miz.service.WireUpnpService;
+import com.miz.utils.IntentUtils;
 import com.miz.utils.ViewUtils;
 
 import org.teleal.cling.android.AndroidUpnpService;
@@ -74,6 +75,7 @@ import org.teleal.cling.support.model.SortCriterion;
 import org.teleal.cling.support.model.container.Container;
 import org.teleal.cling.support.model.item.Item;
 
+import java.io.File;
 import java.io.UnsupportedEncodingException;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
@@ -201,7 +203,7 @@ public class FileSourceBrowserFragment extends Fragment {
 			break;
 		}
 
-		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(new Intent("mizuu-filesource-change"));
+		LocalBroadcastManager.getInstance(getActivity()).sendBroadcast(IntentUtils.getFileSourceChangeListener());
 		getActivity().finish();
 	}
 
@@ -281,7 +283,8 @@ public class FileSourceBrowserFragment extends Fragment {
 	private void loadFilesource() throws MalformedURLException, UnsupportedEncodingException {
 		switch (mType) {
 		case FileSource.FILE:
-			mBrowser = new BrowserFile(Environment.getExternalStorageDirectory());
+            // Use /storage to allow browsing both internal and external (SD card) storage
+			mBrowser = new BrowserFile(new File("/storage"));
 			break;
 		case FileSource.SMB:
 			mBrowser = new BrowserSmb(new SmbFile(MizLib.createSmbLoginString(
@@ -391,7 +394,6 @@ public class FileSourceBrowserFragment extends Fragment {
 	private class CurrentFolderAdapter extends BaseAdapter {
 
 		private List<BrowserFileObject> mItems = new ArrayList<BrowserFileObject>();
-		private LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		@Override
 		public int getCount() {
@@ -418,7 +420,7 @@ public class FileSourceBrowserFragment extends Fragment {
 			ViewHolder holder;
 
 			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.file_list_item, parent, false);
+				convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_list_item, parent, false);
 				holder = new ViewHolder();
 				holder.name = (TextView) convertView.findViewById(R.id.text1);
 				holder.size = (TextView) convertView.findViewById(R.id.size);
@@ -468,7 +470,6 @@ public class FileSourceBrowserFragment extends Fragment {
 	private class ParentFolderAdapter extends BaseAdapter {
 
 		private List<BrowserFileObject> mItems = new ArrayList<BrowserFileObject>();
-		private LayoutInflater inflater = (LayoutInflater) getActivity().getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 
 		@Override
 		public int getCount() {
@@ -490,7 +491,7 @@ public class FileSourceBrowserFragment extends Fragment {
 			ViewHolder holder;
 
 			if (convertView == null) {
-				convertView = inflater.inflate(R.layout.file_list_item, parent, false);
+				convertView = LayoutInflater.from(parent.getContext()).inflate(R.layout.file_list_item, parent, false);
 				holder = new ViewHolder();
 				holder.name = (TextView) convertView.findViewById(R.id.text1);
 				holder.size = (TextView) convertView.findViewById(R.id.size);

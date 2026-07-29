@@ -18,10 +18,13 @@ package com.miz.service;
 
 import android.app.IntentService;
 import android.app.Notification;
+import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -66,6 +69,12 @@ public class IdentifyMovieService extends IntentService implements MovieLibraryU
 	}
 
 	@Override
+	public int onStartCommand(Intent intent, int flags, int startId) {
+		setup();
+		return super.onStartCommand(intent, flags, startId);
+	}
+
+	@Override
 	protected void onHandleIntent(Intent intent) {
 
 		if (MizLib.isMovieLibraryBeingUpdated(this)) {
@@ -83,21 +92,20 @@ public class IdentifyMovieService extends IntentService implements MovieLibraryU
 		log("clear()");
 		clear();
 
-		log("setup()");
-		setup();
-
 		log("Intent extras");
 		Bundle b = intent.getExtras();
-		mMovieId = b.getString("movieId");
-		mLanguage = b.getString("language", "en");
-		mFilepath = b.getString("filepath");
-        mOldMovieId = b.getString("currentMovieId");
-		
-		log("setupList()");
-		setupList();
+		if (b != null) {
+			mMovieId = b.getString("movieId");
+			mLanguage = b.getString("language", "en");
+			mFilepath = b.getString("filepath");
+			mOldMovieId = b.getString("currentMovieId");
 
-		log("start()");
-		start();
+			log("setupList()");
+			setupList();
+
+			log("start()");
+			start();
+		}
 	}
 
 	private void setupList() {
@@ -123,8 +131,16 @@ public class IdentifyMovieService extends IntentService implements MovieLibraryU
 	}
 
 	private void setup() {
+		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
+
+		String channelId = MizLib.getNotificationChannelId(this);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			NotificationChannel channel = new NotificationChannel(channelId, getString(R.string.app_name), NotificationManager.IMPORTANCE_LOW);
+			mNotificationManager.createNotificationChannel(channel);
+		}
+
 		// Setup up notification
-		mBuilder = new NotificationCompat.Builder(getApplicationContext(), MizLib.getNotificationChannelId(getApplicationContext()));
+		mBuilder = new NotificationCompat.Builder(getApplicationContext(), channelId);
         mBuilder.setColor(getResources().getColor(R.color.color_primary));
 		mBuilder.setSmallIcon(R.drawable.ic_sync_white_24dp);
 		mBuilder.setTicker(getString(R.string.identifying_movie));
@@ -136,12 +152,12 @@ public class IdentifyMovieService extends IntentService implements MovieLibraryU
 		// Build notification
 		Notification updateNotification = mBuilder.build();
 
-		// Show the notification
-		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
-		mNotificationManager.notify(NOTIFICATION_ID, updateNotification);
-
 		// Tell the system that this is an ongoing notification, so it shouldn't be killed
-		startForeground(NOTIFICATION_ID, updateNotification);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			startForeground(NOTIFICATION_ID, updateNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+		} else {
+			startForeground(NOTIFICATION_ID, updateNotification);
+		}
 	}
 	
 	@Override

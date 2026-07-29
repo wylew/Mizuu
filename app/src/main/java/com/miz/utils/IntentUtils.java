@@ -212,4 +212,8 @@ public class IntentUtils {
         seasonIntent.putExtra(IntentKeys.TOOLBAR_COLOR, toolbarColor);
         return seasonIntent;
     }
+
+	public static Intent getFileSourceChangeListener() {
+		return new Intent("mizuu-filesource-change");
+	}
 }

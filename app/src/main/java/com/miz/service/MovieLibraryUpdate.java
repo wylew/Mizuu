@@ -27,6 +27,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.SharedPreferences.Editor;
+import android.content.pm.ServiceInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
 import android.os.Build;
@@ -320,7 +321,11 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		mNotificationManager.notify(NOTIFICATION_ID, updateNotification);
 
 		// Tell the system that this is an ongoing notification, so it shouldn't be killed
-		startForeground(NOTIFICATION_ID, updateNotification);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			startForeground(NOTIFICATION_ID, updateNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+		} else {
+			startForeground(NOTIFICATION_ID, updateNotification);
+		}
 
 		mSettings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
 		mClearLibrary = mSettings.getBoolean(CLEAR_LIBRARY_MOVIES, false);

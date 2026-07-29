@@ -10,4 +10,4 @@
     app:elevation="0dp"
     app:titleCentered="true"
     app:titleTextAppearance="@style/TextAppearance.Material3.TitleLarge"
-    app:titleTextColor="?attr/colorOnSurface" />
+    app:titleTextColor="?android:attr/textColorPrimary" />

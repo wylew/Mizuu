@@ -7,12 +7,12 @@
 
     <androidx.cardview.widget.CardView
         android:id="@+id/card"
-        android:background="@null"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
         android:layout_margin="16dp"
-        app:cardBackgroundColor="#292929"
-        app:cardCornerRadius="8dp">
+        app:cardBackgroundColor="?android:attr/windowBackground"
+        app:cardCornerRadius="12dp"
+        app:cardElevation="2dp">
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -25,15 +25,14 @@
                 android:layout_weight="1" >
 
                 <ListView
+                    android:id="@+id/parentList"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
                     android:clipToPadding="false"
                     android:paddingTop="8dp"
                     android:paddingBottom="8dp"
                     android:divider="@null"
-                    android:dividerHeight="0dp"
-                    android:id="@+id/parentList"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content" >
-                </ListView>
+                    android:dividerHeight="0dp" />
 
                 <TextView
                     android:id="@+id/no_content_parent"
@@ -43,6 +42,7 @@
                     android:layout_marginBottom="8dp"
                     android:gravity="center"
                     android:text="@string/no_parent_folder"
+                    android:textColor="?android:attr/textColorSecondary"
                     android:textAppearance="?android:attr/textAppearanceLarge" />
             </FrameLayout>
 
@@ -50,26 +50,26 @@
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
                 android:layout_weight="2"
-                app:cardBackgroundColor="#404040"
-                app:cardCornerRadius="8dp" >
+                app:cardBackgroundColor="?android:attr/windowBackground"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="0dp">
 
                 <FrameLayout
                     android:layout_width="match_parent"
                     android:layout_height="match_parent" >
 
                     <ListView
+                        android:id="@+id/currentList"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
                         android:clipToPadding="false"
                         android:paddingTop="8dp"
-                        android:paddingBottom="8dp"
+                        android:paddingBottom="80dp"
                         android:divider="@null"
-                        android:drawSelectorOnTop="true"
                         android:dividerHeight="0dp"
-                        android:id="@+id/currentList"
+                        android:drawSelectorOnTop="true"
                         android:nextFocusDown="@id/fab"
-                        android:nextFocusRight="@id/fab"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content" >
-                    </ListView>
+                        android:nextFocusRight="@id/fab" />
 
                     <LinearLayout
                         android:id="@+id/no_content"
@@ -84,12 +84,14 @@
                             android:layout_height="wrap_content"
                             android:layout_marginBottom="8dp"
                             android:text="@string/no_content"
+                            android:textColor="?android:attr/textColorPrimary"
                             android:textAppearance="?android:attr/textAppearanceLarge" />
 
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/folder_has_no_files_folders"
+                            android:textColor="?android:attr/textColorSecondary"
                             android:textAppearance="?android:attr/textAppearanceMedium" />
                     </LinearLayout>
 
@@ -111,15 +113,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="bottom|right"
-        android:text="@string/addCurrentFolderAsFileSource"
-        android:textColor="#FFFFFF"
-        app:icon="@drawable/ic_add_white_24dp"
-        app:iconTint="#FFFFFF"
         android:layout_marginRight="32dp"
         android:layout_marginBottom="32dp"
+        android:text="@string/addCurrentFolderAsFileSource"
+        android:textColor="?android:attr/textColorPrimaryInverse"
+        app:backgroundTint="?android:attr/colorPrimary"
+        app:icon="@drawable/ic_add_white_24dp"
+        app:iconTint="?android:attr/textColorPrimaryInverse"
         android:nextFocusLeft="@id/currentList"
-        app:backgroundTint="@color/color_primary"
-        app:rippleColor="#80ffffff"
         android:clickable="true"
         android:focusable="true" />
 </FrameLayout>

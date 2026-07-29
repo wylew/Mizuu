@@ -9,6 +9,8 @@
         android:layout_height="match_parent"
         android:clickable="true"
         android:drawSelectorOnTop="true"
+        android:divider="?android:attr/listDivider"
+        android:dividerHeight="1dp"
         android:focusable="true" />
 
     <ProgressBar

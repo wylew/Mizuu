@@ -26,7 +26,6 @@ import android.content.res.TypedArray;
 import android.graphics.Color;
 import android.graphics.Point;
 import android.graphics.drawable.ColorDrawable;
-import android.graphics.drawable.GradientDrawable;
 import androidx.preference.PreferenceManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
@@ -47,8 +46,6 @@ import android.view.ViewTreeObserver;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.animation.AccelerateInterpolator;
-import android.widget.FrameLayout;
-import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.TextView;
@@ -71,14 +68,20 @@ public class ViewUtils {
     private ViewUtils() {} // No instantiation
 
     /**
-     * Returns a actor card with name, character, image and click listener.
+     * Returns an actor card with name, character, image and click listener.
      */
     @SuppressLint("InflateParams")
-    public static View setupActorCard(final Activity context, Picasso picasso, final Actor actor) {
+    public static View setupActorCard(final Activity context, Picasso picasso, final Actor actor, int width, int height) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
-        // Load image
-        picasso.load(actor.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.noactor).config(MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        // Load image - explicitly resize to fill the container width
+        picasso.load(actor.getUrl())
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.noactor)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set title
         ((TextView) v.findViewById(R.id.text)).setText(actor.getName());
@@ -103,11 +106,17 @@ public class ViewUtils {
      * Returns a movie card with title, release date, image and click listener.
      */
     @SuppressLint("InflateParams")
-    public static View setupMovieCard(final Activity context, Picasso picasso, final WebMovie movie) {
+    public static View setupMovieCard(final Activity context, Picasso picasso, final WebMovie movie, int width, int height) {
         final View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
-        picasso.load(movie.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        picasso.load(movie.getUrl())
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.loading_image)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set title
         ((TextView) v.findViewById(R.id.text)).setText(movie.getTitle());
@@ -133,11 +142,17 @@ public class ViewUtils {
      * Returns a TV show card with title, release date, image and click listener.
      */
     @SuppressLint("InflateParams")
-    public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show) {
+    public static View setupTvShowCard(final Context context, Picasso picasso, final WebMovie show, int width, int height) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
-        picasso.load(show.getUrl()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        picasso.load(show.getUrl())
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.loading_image)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set title
         ((TextView) v.findViewById(R.id.text)).setText(show.getTitle());
@@ -162,12 +177,17 @@ public class ViewUtils {
      * Returns a TV show season card with title, release date, image and click listener.
      */
     @SuppressLint("InflateParams")
-    public static View setupTvShowSeasonCard(final Activity context, Picasso picasso, final GridSeason season, final int toolbarColor) {
+    public static View setupTvShowSeasonCard(final Activity context, Picasso picasso, final GridSeason season, final int toolbarColor, int width, int height) {
         final View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small, null);
 
         // Load image
-        picasso.load(season.getCover()).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(
-            MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        picasso.load(season.getCover())
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.loading_image)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set title
         ((TextView) v.findViewById(R.id.text)).setText(season.getHeaderText());
@@ -192,11 +212,17 @@ public class ViewUtils {
      * Returns a photo card.
      */
     @SuppressLint("InflateParams")
-    public static View setupPhotoCard(final Activity context, Picasso picasso, final String url, final List<String> photos, final int index) {
+    public static View setupPhotoCard(final Activity context, Picasso picasso, final String url, final List<String> photos, final int index, int width, int height) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small_no_text, null);
 
         // Load image
-        picasso.load(url).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        picasso.load(url)
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.loading_image)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set click listener
         v.setOnClickListener(new OnClickListener() {
@@ -213,11 +239,17 @@ public class ViewUtils {
      * Returns a tagged photo card.
      */
     @SuppressLint("InflateParams")
-    public static View setupTaggedPhotoCard(final Activity context, Picasso picasso, final String url, final List<String> photos, final int index) {
+    public static View setupTaggedPhotoCard(final Activity context, Picasso picasso, final String url, final List<String> photos, final int index, int width, int height) {
         View v = LayoutInflater.from(context).inflate(R.layout.horizontal_grid_item_small_no_text, null);
 
         // Load image
-        picasso.load(url).placeholder(R.color.card_background_dark).error(R.drawable.loading_image).config(MizuuApplication.getBitmapConfig()).into(((ImageView) v.findViewById(R.id.cover)));
+        picasso.load(url)
+               .placeholder(R.color.card_background_dark)
+               .error(R.drawable.loading_image)
+               .resize(width, height)
+               .centerCrop()
+               .config(MizuuApplication.getBitmapConfig())
+               .into(((ImageView) v.findViewById(R.id.cover)));
 
         // Set click listener
         v.setOnClickListener(new OnClickListener() {
@@ -306,21 +338,37 @@ public class ViewUtils {
         if (!MizLib.isPortrait(context)) {
             View empty = layout.findViewById(R.id.empty_view);
             if (empty == null) return;
-            int fullHeight = background.getHeight();
+            
+            // If backdrop is inside the layout, background height might be 0 until measured
+            int backdropHeight = background != null ? background.getHeight() : 0;
+            if (backdropHeight == 0) backdropHeight = context.getResources().getDimensionPixelSize(R.dimen.backdrop_portrait_height);
+            
             int contentHeight = context.getResources().getDimensionPixelSize(R.dimen.content_details_main_height);
-            empty.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, fullHeight - contentHeight));
+            empty.setLayoutParams(new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, backdropHeight - contentHeight));
         }
         MizLib.removeViewTreeObserver(scrollView.getViewTreeObserver(), listener);
     }
 
     public static void handleOnScrollChangedEvent(Activity activity, View layout, View background, String title, int height, int t, Toolbar toolbar, int toolbarColor) {
-        final int headerHeight = (MizLib.isPortrait(activity) ? background.getHeight() : layout.findViewById(R.id.empty_view).getHeight()) - height;
+        // Robust calculation for unified layouts
+        int baseHeaderHeight = 0;
+        if (MizLib.isPortrait(activity)) {
+            if (background != null) baseHeaderHeight = background.getHeight();
+        } else {
+            View empty = layout.findViewById(R.id.empty_view);
+            if (empty != null) baseHeaderHeight = empty.getHeight();
+        }
+        
+        // Fallback to a sensible default if heights aren't available yet
+        if (baseHeaderHeight == 0) baseHeaderHeight = 300; 
+
+        final int headerHeight = baseHeaderHeight - height;
         final float ratio = (float) Math.min(Math.max(t, 0), headerHeight) / headerHeight;
         final int newAlpha = (int) (ratio * 255);
 
         updateToolbarBackground(activity, toolbar, newAlpha, title, toolbarColor);
 
-        if (MizLib.isPortrait(activity)) {
+        if (MizLib.isPortrait(activity) && background != null) {
             background.setPadding(0, (int) (t / 1.5), 0, 0);
         }
     }

@@ -265,15 +265,15 @@
         </activity>
 
         <service android:name="com.miz.service.DeleteFile" android:exported="false" />
-        <service android:name="com.miz.service.TraktMoviesSyncService" android:exported="false" />
-        <service android:name="com.miz.service.TraktTvShowsSyncService" android:exported="false" />
+        <service android:name="com.miz.service.TraktMoviesSyncService" android:exported="false" android:foregroundServiceType="dataSync" />
+        <service android:name="com.miz.service.TraktTvShowsSyncService" android:exported="false" android:foregroundServiceType="dataSync" />
         <service android:name="com.miz.service.MovieLibraryUpdate" android:exported="false" android:foregroundServiceType="dataSync" />
         <service android:name="com.miz.service.TvShowsLibraryUpdate" android:exported="false" android:foregroundServiceType="dataSync" />
         <service android:name="com.miz.service.WireUpnpService" android:exported="false" />
-        <service android:name="com.miz.service.IdentifyTvShowService" android:exported="false" />
-        <service android:name="com.miz.service.IdentifyTvShowEpisodeService" android:exported="false" />
-        <service android:name="com.miz.service.IdentifyMovieService" android:exported="false" />
-        <service android:name="com.miz.service.DownloadImageService" android:exported="false" />
+        <service android:name="com.miz.service.IdentifyTvShowService" android:exported="false" android:foregroundServiceType="dataSync" />
+        <service android:name="com.miz.service.IdentifyTvShowEpisodeService" android:exported="false" android:foregroundServiceType="dataSync" />
+        <service android:name="com.miz.service.IdentifyMovieService" android:exported="false" android:foregroundServiceType="dataSync" />
+        <service android:name="com.miz.service.DownloadImageService" android:exported="false" android:foregroundServiceType="dataSync" />
 
         <!-- Update activity -->
         <activity

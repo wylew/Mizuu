@@ -100,7 +100,7 @@ public class TvShowDetailsFragment extends Fragment {
     private TextView textTitle, textPlot, textGenre, textRuntime, textReleaseDate, textRating, textCertification;
     private ImageView background, cover;
     private ObservableScrollView mScrollView;
-    private View mDetailsArea;
+    private View mDetailsArea, mTextContainerCard;
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mBold, mCondensedRegular;
     private Bus mBus;
@@ -218,7 +218,8 @@ public class TvShowDetailsFragment extends Fragment {
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
         mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
 
-        mDetailsArea = v.findViewById(R.id.details_area);
+        mDetailsArea = v.findViewById(R.id.details_card);
+        mTextContainerCard = v.findViewById(R.id.text_container_card);
 
         background = (ImageView) v.findViewById(R.id.imageBackground);
         textTitle = (TextView) v.findViewById(R.id.movieTitle);
@@ -246,12 +247,6 @@ public class TvShowDetailsFragment extends Fragment {
                 });
             }
         });
-
-        // Get rid of these...
-        View fileView = v.findViewById(R.id.textView3);
-        if (fileView != null) fileView.setVisibility(View.GONE); // File
-        View taglineView = v.findViewById(R.id.textView6);
-        if (taglineView != null) taglineView.setVisibility(View.GONE); // Tagline
 
         final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
 
@@ -415,6 +410,7 @@ public class TvShowDetailsFragment extends Fragment {
                     });
 
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
                     mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
@@ -426,6 +422,7 @@ public class TvShowDetailsFragment extends Fragment {
 
                     // Add views after configuration change
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
                     mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);

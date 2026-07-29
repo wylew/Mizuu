@@ -7,5 +7,7 @@
     android:textSize="@dimen/content_details_subheader"
     android:textStyle="bold"
     android:minHeight="48dp"
-    android:textColor="#fff" />
-
+    android:textColor="?android:attr/textColorPrimary"
+    android:paddingLeft="16dp"
+    android:paddingRight="16dp"
+    android:paddingBottom="8dp" />

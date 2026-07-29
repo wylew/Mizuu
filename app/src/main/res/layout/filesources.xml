@@ -27,7 +27,7 @@
             android:layout_height="80dp"
             android:alpha="0.5"
             android:src="@drawable/ic_folder_open_white_24dp"
-            app:tint="?attr/colorOnSurface" />
+            android:tint="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/noFileSourcesTitle"
@@ -35,7 +35,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/noFileSources"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
@@ -43,7 +44,8 @@
             android:layout_marginTop="8dp"
             android:gravity="center"
             android:text="@string/addFileSourcesAbove"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="?android:attr/textColorSecondary" />
 
         <Button
             android:id="@+id/add_local_folder"

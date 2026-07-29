@@ -70,7 +70,7 @@ public class AddUpnpFilesourceDialog extends Activity {
 		deviceListRegistryListener = new DeviceListRegistryListener();
 
 		deviceListAdapter = new ArrayAdapter<UpnpDevice>(this,
-				android.R.layout.simple_list_item_1);
+				R.layout.upnp_item, R.id.text1);
 
 		mListView.setAdapter(deviceListAdapter);
 		mListView.setOnItemClickListener(new OnItemClickListener() {

@@ -102,7 +102,7 @@ public class MovieDetailsFragment extends Fragment {
     private Movie mMovie;
     private DbAdapterMovies mDatabase;
     private TextView mTitle, mPlot, mSrc, mGenre, mRuntime, mReleaseDate, mRating, mTagline, mCertification;
-    private View mDetailsArea;
+    private View mDetailsArea, mTextContainerCard;
     private ObservableScrollView mScrollView;
     private HorizontalCardLayout mActorsLayout;
     private boolean mShowFileLocation;
@@ -223,7 +223,8 @@ public class MovieDetailsFragment extends Fragment {
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
         mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
 
-        mDetailsArea = view.findViewById(R.id.details_area);
+        mDetailsArea = view.findViewById(R.id.details_card);
+        mTextContainerCard = view.findViewById(R.id.text_container_card);
         mBackground = (ImageView) view.findViewById(R.id.imageBackground);
         mTitle = (TextView) view.findViewById(R.id.movieTitle);
         mPlot = (TextView) view.findViewById(R.id.textView2);
@@ -431,6 +432,7 @@ public class MovieDetailsFragment extends Fragment {
                     });
 
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
 
@@ -441,6 +443,7 @@ public class MovieDetailsFragment extends Fragment {
 
                     // Add views after configuration change
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
 

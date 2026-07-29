@@ -2,8 +2,7 @@
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@drawable/bg">
+    android:layout_height="match_parent">
 
     <ListView
         android:id="@+id/currentList"
@@ -29,13 +28,15 @@
             android:layout_height="wrap_content"
             android:layout_marginBottom="8dp"
             android:text="@string/no_content"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/folder_has_no_files_folders"
-            android:textAppearance="?android:attr/textAppearanceMedium" />
+            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="?android:attr/textColorSecondary" />
     </LinearLayout>
 
     <ProgressBar
@@ -52,9 +53,9 @@
         android:layout_gravity="bottom|right"
         android:layout_margin="16dp"
         android:text="@string/addCurrentFolderAsFileSource"
-        android:textColor="#FFFFFF"
-        app:backgroundTint="@color/color_primary"
+        android:textColor="?android:attr/textColorPrimaryInverse"
+        app:backgroundTint="?android:attr/colorPrimary"
         app:icon="@drawable/ic_add_white_24dp"
-        app:iconTint="#FFFFFF" />
+        app:iconTint="?android:attr/textColorPrimaryInverse" />
 
 </FrameLayout>

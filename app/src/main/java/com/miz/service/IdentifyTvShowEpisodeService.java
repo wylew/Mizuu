@@ -21,7 +21,9 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -67,8 +69,6 @@ public class IdentifyTvShowEpisodeService extends IntentService implements TvSho
             mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
         mNotificationManager.cancel(NOTIFICATION_ID);
-
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(null); // Just a placeholder, as the original didn't have one
 
         LocalBroadcastUtils.updateTvShowLibrary(this);
     }
@@ -173,7 +173,11 @@ public class IdentifyTvShowEpisodeService extends IntentService implements TvSho
         mNotificationManager.notify(NOTIFICATION_ID, updateNotification);
 
         // Tell the system that this is an ongoing notification, so it shouldn't be killed
-        startForeground(NOTIFICATION_ID, updateNotification);
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+            startForeground(NOTIFICATION_ID, updateNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+        } else {
+            startForeground(NOTIFICATION_ID, updateNotification);
+        }
     }
 
     @Override

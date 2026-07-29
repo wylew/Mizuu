@@ -17,7 +17,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="@string/folderContent"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/textView2"
@@ -26,7 +27,8 @@
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/contentTypeDescription"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?android:attr/textColorSecondary"
             android:textStyle="italic" />
 
         <RadioGroup
@@ -39,13 +41,15 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="@string/chooserMovies" />
+                android:text="@string/chooserMovies"
+                android:textColor="?android:attr/textColorPrimary" />
 
             <RadioButton
                 android:id="@+id/content_tv_show"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/chooserTVShows" />
+                android:text="@string/chooserTVShows"
+                android:textColor="?android:attr/textColorPrimary" />
         </RadioGroup>
 
         <TextView
@@ -54,7 +58,8 @@
             android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
             android:text="@string/contentLocation"
-            android:textAppearance="?android:attr/textAppearanceLarge" />
+            android:textAppearance="?android:attr/textAppearanceLarge"
+            android:textColor="?android:attr/textColorPrimary" />
 
         <TextView
             android:id="@+id/TextView02"
@@ -63,7 +68,8 @@
             android:layout_marginBottom="8dp"
             android:layout_marginTop="8dp"
             android:text="@string/contentLocationDescription"
-            android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textAppearance="?android:attr/textAppearanceSmall"
+            android:textColor="?android:attr/textColorSecondary"
             android:textStyle="italic" />
 
         <RadioGroup
@@ -76,19 +82,22 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:checked="true"
-                android:text="@string/contentLocationDevice" />
+                android:text="@string/contentLocationDevice"
+                android:textColor="?android:attr/textColorPrimary" />
 
             <RadioButton
                 android:id="@+id/source_smb"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/contentLocationSMB" />
+                android:text="@string/contentLocationSMB"
+                android:textColor="?android:attr/textColorPrimary" />
 
             <RadioButton
                 android:id="@+id/source_upnp"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:text="@string/contentLocationUPnP" />
+                android:text="@string/contentLocationUPnP"
+                android:textColor="?android:attr/textColorPrimary" />
         </RadioGroup>
 
         <Button

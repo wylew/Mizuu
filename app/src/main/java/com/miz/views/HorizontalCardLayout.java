@@ -131,19 +131,21 @@ public class HorizontalCardLayout extends LinearLayout {
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, LayoutParams.WRAP_CONTENT);
 			lp.setMargins(0, 0, getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing), 0);
 
+			int height = (int) (width * 1.5);
+
 			for (int i = 0; i < items.size() && i < capacity; i++) {
 				if (type == MOVIES || type == RELATED_MOVIES) {
-					addView(ViewUtils.setupMovieCard(context, picasso, (WebMovie) items.get(i)), i, lp);
+					addView(ViewUtils.setupMovieCard(context, picasso, (WebMovie) items.get(i), width, height), i, lp);
 				} else if (type == TV_SHOWS) {
-					addView(ViewUtils.setupTvShowCard(context, picasso, (WebMovie) items.get(i)), i, lp);
+					addView(ViewUtils.setupTvShowCard(context, picasso, (WebMovie) items.get(i), width, height), i, lp);
 				} else if (type == PHOTOS) {
-					addView(ViewUtils.setupPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i), i, lp);
+					addView(ViewUtils.setupPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i, width, width), i, lp);
 				} else if (type == TAGGED_PHOTOS) {
-					addView(ViewUtils.setupTaggedPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i), i, lp);
+					addView(ViewUtils.setupTaggedPhotoCard(context, picasso, (String) items.get(i), (List<String>) items, i, width, width), i, lp);
 				} else if (type == ACTORS) {
-					addView(ViewUtils.setupActorCard(context, picasso, (Actor) items.get(i)), i, lp);
+					addView(ViewUtils.setupActorCard(context, picasso, (Actor) items.get(i), width, height), i, lp);
 				} else if (type == SEASONS) {
-                    addView(ViewUtils.setupTvShowSeasonCard(context, picasso, (GridSeason) items.get(i), toolbarColor), i, lp);
+                    addView(ViewUtils.setupTvShowSeasonCard(context, picasso, (GridSeason) items.get(i), toolbarColor, width, height), i, lp);
                 }
 			}
 

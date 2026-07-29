@@ -30,8 +30,8 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
     private FloatingActionButton mFab;
     private int mSwatchColor = 0xFF333333; // Default dark grey
-    private int mTitleTextColor = Color.WHITE;
-    private int mBodyTextColor = Color.WHITE;
+    private int mContrastTextColor = Color.WHITE;
+    private int mAccentColor = 0xFFE91E63; // Default standout color
 
     public PaletteLoader(Picasso picasso, Uri image, OnPaletteLoadedCallback callback) {
         mPicasso = picasso;
@@ -50,7 +50,9 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
     }
 
     public void addView(View view) {
-        mViews.add(view);
+        if (view != null) {
+            mViews.add(view);
+        }
     }
 
     private List<View> getViews() {
@@ -89,7 +91,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
             // Add it to the Palette cache
             MizuuApplication.addToPaletteCache(getPaletteKey(), result);
 
-            // Try to find a dark vibrant swatch first for the background
+            // Background swatch for cards
             Palette.Swatch sw = result.getDarkVibrantSwatch();
             if (sw == null) sw = result.getDarkMutedSwatch();
             if (sw == null) sw = result.getVibrantSwatch();
@@ -98,8 +100,18 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
             if (sw != null) {
                 mSwatchColor = sw.getRgb();
-                mTitleTextColor = sw.getTitleTextColor();
-                mBodyTextColor = sw.getBodyTextColor();
+                mContrastTextColor = getContrastColor(mSwatchColor);
+                
+                // Standout accent color for the Play Button
+                Palette.Swatch accentSw = result.getVibrantSwatch();
+                if (accentSw == null || accentSw == sw) accentSw = result.getLightVibrantSwatch();
+                
+                if (accentSw != null) {
+                    mAccentColor = accentSw.getRgb();
+                } else {
+                    // Fallback to a color that stands out from mSwatchColor
+                    mAccentColor = getOffsetColor(mSwatchColor);
+                }
 
                 // Color the views
                 colorViews();
@@ -110,18 +122,20 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
     }
 
     public void colorViews() {
-        // Animate the color change for all set views
+        // Animate the color change for background containers
         for (View v : getViews())
             animate(v);
 
-        // Set the FAB color, if a FAB has been set
+        // Color the Play Button with the accent color
         if (getFab() != null) {
-            mFab.setBackgroundTintList(ColorStateList.valueOf(getSwatchColor()));
-            mFab.setImageTintList(ColorStateList.valueOf(mTitleTextColor));
+            mFab.setBackgroundTintList(ColorStateList.valueOf(mAccentColor));
+            mFab.setImageTintList(ColorStateList.valueOf(getContrastColor(mAccentColor)));
         }
     }
 
     private void animate(final View v) {
+        if (v == null) return;
+        
         try {
             int startColor = Color.TRANSPARENT;
             if (v instanceof MaterialCardView) {
@@ -131,7 +145,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
                 startColor = ((android.graphics.drawable.ColorDrawable) v.getBackground()).getColor();
             }
 
-            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), startColor, getSwatchColor());
+            ValueAnimator colorAnimation = ValueAnimator.ofObject(new ArgbEvaluator(), startColor, mSwatchColor);
             colorAnimation.setDuration(500);
             colorAnimation.addUpdateListener(animator -> {
                 int color = (int) animator.getAnimatedValue();
@@ -147,19 +161,18 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
             if (v instanceof ViewGroup) {
                 colorTextViews((ViewGroup) v);
             } else if (v instanceof TextView) {
-                ((TextView) v).setTextColor(mBodyTextColor);
+                ((TextView) v).setTextColor(mContrastTextColor);
             }
         } catch (Exception e) {
-            // Some devices crash at runtime when using the ObjectAnimator
             if (v instanceof MaterialCardView) {
-                ((MaterialCardView) v).setCardBackgroundColor(getSwatchColor());
+                ((MaterialCardView) v).setCardBackgroundColor(mSwatchColor);
             } else {
-                v.setBackgroundColor(getSwatchColor());
+                v.setBackgroundColor(mSwatchColor);
             }
             if (v instanceof ViewGroup) {
                 colorTextViews((ViewGroup) v);
             } else if (v instanceof TextView) {
-                ((TextView) v).setTextColor(mBodyTextColor);
+                ((TextView) v).setTextColor(mContrastTextColor);
             }
         }
     }
@@ -168,13 +181,35 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
         for (int i = 0; i < group.getChildCount(); i++) {
             View child = group.getChildAt(i);
             if (child instanceof TextView) {
-                // Determine which color to use based on view ID if necessary, 
-                // but usually body text color is fine for all labels in these containers.
-                ((TextView) child).setTextColor(mBodyTextColor);
+                ((TextView) child).setTextColor(mContrastTextColor);
             } else if (child instanceof ViewGroup) {
                 colorTextViews((ViewGroup) child);
             }
         }
+    }
+
+    private int getContrastColor(int color) {
+        // WCAG Relative Luminance
+        double red = Color.red(color) / 255.0;
+        double green = Color.green(color) / 255.0;
+        double blue = Color.blue(color) / 255.0;
+
+        red = red <= 0.03928 ? red / 12.92 : Math.pow((red + 0.055) / 1.055, 2.4);
+        green = green <= 0.03928 ? green / 12.92 : Math.pow((green + 0.055) / 1.055, 2.4);
+        blue = blue <= 0.03928 ? blue / 12.92 : Math.pow((blue + 0.055) / 1.055, 2.4);
+
+        double luminance = 0.2126 * red + 0.7152 * green + 0.0722 * blue;
+        return (luminance > 0.179) ? Color.BLACK : Color.WHITE;
+    }
+
+    private int getOffsetColor(int color) {
+        float[] hsv = new float[3];
+        Color.colorToHSV(color, hsv);
+        // Shift hue by 180 degrees and bump saturation/value for standout
+        hsv[0] = (hsv[0] + 180) % 360;
+        hsv[1] = Math.max(hsv[1], 0.7f);
+        hsv[2] = Math.max(hsv[2], 0.8f);
+        return Color.HSVToColor(hsv);
     }
 
     public int getSwatchColor() {

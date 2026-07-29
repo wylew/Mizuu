@@ -28,6 +28,7 @@ import android.os.Bundle;
 import androidx.preference.PreferenceManager;
 import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.core.util.Pair;
@@ -140,7 +141,8 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
         super.onDestroy();
 
         // Unregister since the activity is about to be closed.
-        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
+        if (mContext != null)
+            LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 
@@ -477,7 +479,7 @@ public class MovieLibraryFragment extends Fragment implements SharedPreferences.
             mPicasso.load(movie.getThumbnail()).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
             if (mChecked.contains(position)) {
-                holder.cardview.setForeground(getResources().getDrawable(R.drawable.checked_foreground_drawable));
+                holder.cardview.setForeground(ContextCompat.getDrawable(mContext, R.drawable.checked_foreground_drawable));
             } else {
                 holder.cardview.setForeground(null);
             }

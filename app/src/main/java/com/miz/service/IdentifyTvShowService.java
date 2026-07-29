@@ -21,8 +21,10 @@ import android.app.Notification;
 import android.app.NotificationManager;
 import android.content.Context;
 import android.content.Intent;
+import android.content.pm.ServiceInfo;
 import android.database.Cursor;
 import android.graphics.Bitmap;
+import android.os.Build;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.Looper;
@@ -199,7 +201,11 @@ public class IdentifyTvShowService extends IntentService implements TvShowLibrar
 		mNotificationManager.notify(NOTIFICATION_ID, updateNotification);
 
 		// Tell the system that this is an ongoing notification, so it shouldn't be killed
-		startForeground(NOTIFICATION_ID, updateNotification);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+			startForeground(NOTIFICATION_ID, updateNotification, ServiceInfo.FOREGROUND_SERVICE_TYPE_DATA_SYNC);
+		} else {
+			startForeground(NOTIFICATION_ID, updateNotification);
+		}
 	}
 
 	@Override
