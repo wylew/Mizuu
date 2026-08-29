@@ -37,8 +37,8 @@
                 <!-- Poster Card - 160dp x 240dp (25% overlay = 60dp) -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardview"
-                    android:layout_width="160dp"
-                    android:layout_height="240dp"
+                    android:layout_width="250dp"
+                    android:layout_height="375dp"
                     android:layout_marginStart="24dp"
                     android:layout_marginTop="-60dp"
                     android:transitionName="cover"
@@ -83,7 +83,7 @@
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
                             android:maxLines="2"
-                            android:textAppearance="?attr/textAppearanceTitleLarge"
+                            android:textAppearance="?attr/textAppearanceHeadlineMedium"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold"
                             tools:text="Jurassic Park" />
@@ -93,7 +93,7 @@
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
-                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textStyle="italic"
                             tools:text="An adventure 65 million years in the making" />
@@ -112,7 +112,7 @@
                             android:layout_weight="1"
                             android:ellipsize="end"
                             android:maxLines="6"
-                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             tools:text="An industrialist invites some experts to visit his theme park of cloned dinosaurs. After a power failure, the creatures run loose, putting everyone's lives, including his grandchildren's, in danger." />
 
@@ -220,6 +220,7 @@
                 <!-- Genre -->
                 <TextView
                     android:id="@+id/textView7"
+        android:visibility="gone"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"

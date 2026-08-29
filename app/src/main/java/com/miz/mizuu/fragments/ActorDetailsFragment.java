@@ -316,7 +316,7 @@ public class ActorDetailsFragment extends Fragment {
                 if (mPaletteLoader == null) {
                     mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mActor.getProfilePhotoThumb()), new PaletteLoader.OnPaletteLoadedCallback() {
                         @Override
-                        public void onPaletteLoaded(int swatchColor) {
+                        public void onPaletteLoaded(int swatchColor, int accentColor) {
                             mToolbarColor = swatchColor;
                         }
                     });

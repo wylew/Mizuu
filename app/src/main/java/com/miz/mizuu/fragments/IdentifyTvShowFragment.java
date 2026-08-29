@@ -57,6 +57,7 @@ import com.miz.apis.thetvdb.TvShow;
 import com.miz.base.MizActivity;
 import com.miz.functions.AsyncTask;
 import com.miz.functions.MizLib;
+import com.miz.mizuu.Main;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
 import com.miz.service.IdentifyTvShowService;
@@ -230,8 +231,11 @@ public class IdentifyTvShowFragment extends Fragment {
 
             getActivity().startService(identifyService);
 
-            getActivity().setResult(Activity.RESULT_OK);
-            getActivity().finish();
+            // Go back to the library overview and clear the back stack
+            Intent libraryOverview = new Intent(getActivity().getApplicationContext(), Main.class);
+            libraryOverview.putExtra("startup", "2"); // Shows
+            libraryOverview.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
+            startActivity(libraryOverview);
         } else
             Toast.makeText(getActivity(), getString(R.string.noInternet), Toast.LENGTH_SHORT).show();
     }

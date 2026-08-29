@@ -94,14 +94,14 @@ public class TvShowEpisodeDetails extends MizActivity {
 		}
 
 		mShowTitle = MizuuApplication.getTvDbAdapter().getShowTitle(mShowId);
-        setTitle(mShowTitle);
+        setTitle(""); // Remove show title from header/activity title
 
 		mViewPager = (ViewPager) findViewById(R.id.awesomepager);
 		mViewPager.setAdapter(new TvShowEpisodeDetailsAdapter(getSupportFragmentManager()));
 		mViewPager.setOnPageChangeListener(new ViewPager.SimpleOnPageChangeListener() {
 			@Override
 			public void onPageSelected(int position) {
-                ViewUtils.updateToolbarBackground(TvShowEpisodeDetails.this, mToolbar, 0, mEpisodes.get(position).getTitle(), Color.TRANSPARENT);
+                ViewUtils.updateToolbarBackground(TvShowEpisodeDetails.this, mToolbar, 0, "", Color.TRANSPARENT);
 			}
 		});
 
@@ -127,7 +127,7 @@ public class TvShowEpisodeDetails extends MizActivity {
 		super.onResume();
 
 		mBus.register(this);
-        ViewUtils.updateToolbarBackground(this, mToolbar, 0, mShowTitle, Color.TRANSPARENT);
+        ViewUtils.updateToolbarBackground(this, mToolbar, 0, "", Color.TRANSPARENT);
 	}
 
 	@Override

@@ -32,45 +32,25 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-        <!-- Back Button -->
+        <!-- Back Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_back"
-            style="?attr/materialIconButtonFilledTonalStyle"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             app:icon="@drawable/ic_arrow_back_white_24dp"
-            app:iconSize="24dp"
-            app:iconGravity="start"
-            app:iconPadding="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSecondaryContainer"
             app:iconTint="?attr/colorOnSecondaryContainer"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
-        <!-- Menu Button -->
+        <!-- Menu Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_menu"
-            style="?attr/materialIconButtonFilledTonalStyle"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             app:icon="@drawable/ic_more_vert_white_24dp"
-            app:iconSize="24dp"
-            app:iconGravity="start"
-            app:iconPadding="0dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
             android:elevation="8dp"
             app:backgroundTint="?attr/colorSurface"
             app:iconTint="?attr/colorOnSurface"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

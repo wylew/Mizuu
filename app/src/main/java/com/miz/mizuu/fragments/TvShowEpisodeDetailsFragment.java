@@ -34,6 +34,8 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
 import android.view.LayoutInflater;
@@ -88,14 +90,15 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     private TvShowEpisode mEpisode;
     private ImageView mBackdrop, mEpisodePhoto;
     private TextView mTitle, mDescription, mFileSource, mAirDate, mRating, mDirector, mWriter, mGuestStars, mSeasonEpisodeNumber;
-    private View mDetailsArea;
+    private View mDetailsArea, mTextContainerCard;
     private Picasso mPicasso;
     private Typeface mMediumItalic, mMedium, mCondensedRegular;
     private DbAdapterTvShowEpisodes mDatabaseHelper;
     private long mVideoPlaybackStarted, mVideoPlaybackEnded;
-    private boolean mShowFileLocation, mIsRegistered;
+    private boolean mShowFileLocation;
     private Bus mBus;
     private int mToolbarColor = 0;
+    private Toolbar mToolbar;
     private FloatingActionButton mFab;
     private PaletteLoader mPaletteLoader;
     private ObservableScrollView mScrollView;
@@ -198,9 +201,18 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
         if (mEpisode == null) return;
 
+        mToolbar = (Toolbar) view.findViewById(R.id.toolbar);
+        if (mToolbar != null) {
+            mToolbar.setBackgroundResource(android.R.color.transparent);
+            ViewUtils.setProperToolbarSize(mContext, mToolbar);
+            ((AppCompatActivity) getActivity()).setSupportActionBar(mToolbar);
+            ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        }
+
         mBackdrop = (ImageView) view.findViewById(R.id.imageBackground);
         mEpisodePhoto = (ImageView) view.findViewById(R.id.episodePhoto);
-        mDetailsArea = view.findViewById(R.id.details_area);
+        mDetailsArea = view.findViewById(R.id.details_card);
+        mTextContainerCard = view.findViewById(R.id.text_container_card);
 
         mTitle = (TextView) view.findViewById(R.id.movieTitle);
         mSeasonEpisodeNumber = (TextView) view.findViewById(R.id.textView7);
@@ -232,11 +244,14 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
         mScrollView.setOnScrollChangedListener(new OnScrollChangedListener() {
             @Override
             public void onScrollChanged(ScrollView who, int l, int t, int oldl, int oldt) {
-                final int headerHeight = mEpisodePhoto.getHeight() - height;
-                final float ratio = (float) Math.min(Math.max(t, 0), headerHeight) / headerHeight;
-                final int newAlpha = (int) (ratio * 255);
+                ViewUtils.handleOnScrollChangedEvent(getActivity(), view, mEpisodePhoto, mEpisode.getTitle(), height, t, mToolbar, mToolbarColor);
 
-                mBus.post(new BusToolbarColorObject(mToolbarColor, newAlpha));
+                final int headerHeight = mEpisodePhoto.getHeight() - height;
+                if (headerHeight > 0) {
+                    final float ratio = (float) Math.min(Math.max(t, 0), headerHeight) / headerHeight;
+                    final int newAlpha = (int) (ratio * 255);
+                    mBus.post(new BusToolbarColorObject(mToolbarColor, newAlpha));
+                }
 
                 if (MizLib.isPortrait(mContext)) {
                     // Such parallax, much wow
@@ -248,7 +263,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
             @Override
             public void onGlobalLayout() {
                 ViewUtils.setLayoutParamsForDetailsEmptyView(mContext, view,
-                        mBackdrop, mScrollView, this);
+                        mEpisodePhoto, mScrollView, this);
             }
         });
 
@@ -269,12 +284,14 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
                 if (mPaletteLoader == null) {
                     mPaletteLoader = new PaletteLoader(mPicasso, Uri.fromFile(mEpisode.getEpisodePhoto()), new PaletteLoader.OnPaletteLoadedCallback() {
                         @Override
-                        public void onPaletteLoaded(int swatchColor) {
+                        public void onPaletteLoaded(int swatchColor, int accentColor) {
                             mToolbarColor = swatchColor;
+                            ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mEpisode.getTitle(), mToolbarColor);
                         }
                     });
 
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.setFab(mFab);
 
                     mPaletteLoader.execute();
@@ -284,6 +301,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
                     // Add views after configuration change
                     mPaletteLoader.addView(mDetailsArea);
+                    mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.setFab(mFab);
 
                     // Re-color the views
@@ -340,28 +358,6 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
         mSeasonEpisodeNumber.setText(getString(R.string.showSeason) + " " + mEpisode.getSeason() + ", " + getString(R.string.showEpisode) + " " + mEpisode.getEpisode());
 
         // Set the movie plot
-        if (!MizLib.isPortrait(getActivity())) {
-            mDescription.setBackgroundResource(R.drawable.selectable_background);
-            mDescription.setMaxLines(getActivity().getResources().getInteger(R.integer.episode_details_max_lines));
-            mDescription.setTag(true); // true = collapsed
-            mDescription.setOnClickListener(new OnClickListener() {
-                @Override
-                public void onClick(View v) {
-                    if (((Boolean) mDescription.getTag())) {
-                        mDescription.setMaxLines(1000);
-                        mDescription.setTag(false);
-                    } else {
-                        mDescription.setMaxLines(getActivity().getResources().getInteger(R.integer.episode_details_max_lines));
-                        mDescription.setTag(true);
-                    }
-                }
-            });
-            mDescription.setEllipsize(TextUtils.TruncateAt.END);
-            mDescription.setFocusable(true);
-        } else {
-            if (MizLib.isTablet(getActivity()))
-                mDescription.setLineSpacing(0, 1.15f);
-        }
         mDescription.setText(mEpisode.getDescription());
 
         if (mShowFileLocation) {
@@ -406,6 +402,11 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
     private void play() {
         ArrayList<Filepath> paths = mEpisode.getFilepaths();
+        if (paths.size() == 0) {
+            Toast.makeText(getActivity(), R.string.noVideoPlayerFound, Toast.LENGTH_LONG).show();
+            return;
+        }
+
         if (paths.size() == 1) {
             Filepath path = paths.get(0);
             if (mEpisode.hasOfflineCopy(path)) {
@@ -454,11 +455,7 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
 
     public void onResume() {
         super.onResume();
-
-        if (!mIsRegistered) {
-            mBus.register(getActivity());
-            mIsRegistered = true;
-        }
+        mContext = getActivity();
 
         mVideoPlaybackEnded = System.currentTimeMillis();
 
@@ -471,10 +468,6 @@ import static com.miz.functions.PreferenceKeys.SHOW_FILE_LOCATION;
     @Override
     public void onPause() {
         super.onPause();
-        if (mIsRegistered) {
-            mBus.unregister(getActivity());
-            mIsRegistered = false;
-        }
     }
 
     @Override

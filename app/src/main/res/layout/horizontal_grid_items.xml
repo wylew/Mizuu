@@ -1,50 +1,59 @@
 <?xml version="1.0" encoding="utf-8"?>
-<merge xmlns:android="http://schemas.android.com/apk/res/android">
+<merge xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
-    <FrameLayout
+    <androidx.constraintlayout.widget.ConstraintLayout
+        android:id="@+id/title_container"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginRight="@dimen/image_thumbnail_spacing"
-        android:addStatesFromChildren="true"
-        android:background="?android:attr/selectableItemBackground"
         android:paddingBottom="8dp"
-        android:paddingTop="8dp" >
-
-        <TextView
-            android:id="@+id/see_more"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_gravity="right|center_vertical"
-            android:background="@color/card_background_dark"
-            android:paddingBottom="2dp"
-            android:paddingLeft="8dp"
-            android:paddingRight="8dp"
-            android:paddingTop="2dp"
-            android:text="@string/see_more"
-            android:textAllCaps="true"
-            android:textColor="@color/card_title_color"
-            android:layout_marginRight="@dimen/horizontal_card_layout_title_padding"
-            android:visibility="gone" />
+        android:paddingTop="8dp">
 
         <TextView
             android:id="@+id/title"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="@dimen/horizontal_card_layout_title_padding"
+            android:textAppearance="?attr/textAppearanceTitleMedium"
+            android:textColor="?attr/colorOnSurface"
+            android:textStyle="bold"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toStartOf="@+id/see_more"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/see_more"
+            style="@style/Widget.Material3.Button.TextButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_gravity="left|center_vertical"
-            android:paddingLeft="@dimen/horizontal_card_layout_title_padding"
-            android:textColor="#f0f0f0"
-            android:textSize="@dimen/content_details_subheader" />
-    </FrameLayout>
+            android:layout_marginEnd="@dimen/horizontal_card_layout_title_padding"
+            android:text="@string/see_more"
+            android:visibility="gone"
+            app:layout_constraintBottom_toBottomOf="parent"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintTop_toTopOf="parent" />
+
+    </androidx.constraintlayout.widget.ConstraintLayout>
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content" >
+        android:layout_height="wrap_content">
 
-        <LinearLayout
-            android:id="@+id/linear_layout"
+        <HorizontalScrollView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="horizontal" />
+            android:scrollbars="none"
+            android:clipToPadding="false"
+            android:paddingStart="16dp"
+            android:paddingEnd="16dp">
+
+            <LinearLayout
+                android:id="@+id/linear_layout"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal" />
+        </HorizontalScrollView>
 
         <TextView
             android:id="@+id/error_message"
@@ -54,6 +63,7 @@
             android:padding="16dp"
             android:text="@string/no_actors"
             android:textAppearance="?android:attr/textAppearanceMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
             android:visibility="gone" />
 
         <ProgressBar

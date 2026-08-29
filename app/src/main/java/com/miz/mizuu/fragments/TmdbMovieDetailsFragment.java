@@ -362,8 +362,10 @@ public class TmdbMovieDetailsFragment extends Fragment {
                     if (mPaletteLoader == null) {
                         mPaletteLoader = new PaletteLoader(mPicasso, Uri.parse(mMovie.getCover()), new PaletteLoader.OnPaletteLoadedCallback() {
                             @Override
-                            public void onPaletteLoaded(int swatchColor) {
+                            public void onPaletteLoaded(int swatchColor, int accentColor) {
                                 mToolbarColor = swatchColor;
+                                mActorsLayout.setTitleColor(accentColor);
+                                mSimilarMoviesLayout.setTitleColor(accentColor);
                             }
                         });
 

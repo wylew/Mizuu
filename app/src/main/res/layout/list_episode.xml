@@ -1,6 +1,13 @@
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.cardview.widget.CardView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="wrap_content" >
+    android:layout_height="wrap_content"
+    app:cardBackgroundColor="?android:attr/colorBackground"
+    app:cardCornerRadius="8dp"
+    app:cardElevation="1dp"
+    android:layout_marginHorizontal="8dp"
+    android:layout_marginVertical="4dp">
 
     <LinearLayout
         android:id="@+id/card_layout"
@@ -25,7 +32,8 @@
             android:paddingLeft="@dimen/movie_details_padding"
             android:paddingRight="@dimen/movie_details_padding"
             android:paddingBottom="@dimen/details_very_small_padding"
-            android:paddingTop="@dimen/details_very_small_padding">
+            android:paddingTop="@dimen/details_very_small_padding"
+            android:gravity="center_vertical">
 
             <TextView
                 android:id="@+id/text"
@@ -33,10 +41,8 @@
                 android:layout_height="wrap_content"
                 android:ellipsize="end"
                 android:maxLines="2"
-                android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/card_title_color"
-                android:textIsSelectable="false"
-                android:textSize="@dimen/details_text_size"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:textColor="?android:attr/textColorPrimary"
                 android:textStyle="bold" />
 
             <TextView
@@ -46,9 +52,7 @@
                 android:ellipsize="end"
                 android:maxLines="2"
                 android:textAppearance="?android:attr/textAppearanceSmall"
-                android:textColor="@color/grid_item_subtitle_text_color"
-                android:textIsSelectable="false"
-                android:textSize="@dimen/season_list_subtitle"
+                android:textColor="?android:attr/textColorSecondary"
                 android:textStyle="italic" />
         </LinearLayout>
     </LinearLayout>
@@ -60,4 +64,4 @@
         android:src="@color/gridview_highlight"
         android:visibility="gone" />
 
-</FrameLayout>
+</androidx.cardview.widget.CardView>

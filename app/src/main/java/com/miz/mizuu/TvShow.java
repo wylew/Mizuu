@@ -48,7 +48,7 @@ public class TvShow implements Comparable<TvShow> {
 		FIRST_AIR_DATE = firstAirdate;
 		RUNTIME = runtime;
 		LATEST_EPISODE_AIR_DATE = latestEpisodeAirDate;
-		mFavorite = !(isFavorite.equals("0") || isFavorite.isEmpty());
+		mFavorite = !TextUtils.isEmpty(isFavorite) && !isFavorite.equals("0");
 
 		// Thumbnail
 		mThumbnail = FileUtils.getTvShowThumb(mContext, mId);
@@ -64,7 +64,7 @@ public class TvShow implements Comparable<TvShow> {
 		if (!TextUtils.isEmpty(FIRST_AIR_DATE)) {
 			String YEAR = FIRST_AIR_DATE.trim();
 			try {
-				if (YEAR.substring(4,5).equals("-") && YEAR.substring(7,8).equals("-")) {
+				if (YEAR.length() >= 8 && YEAR.substring(4,5).equals("-") && YEAR.substring(7,8).equals("-")) {
 					mGetReleaseYear = YEAR.substring(0,4);
 				} else {
 					mGetReleaseYear = mContext.getString(R.string.unknownYear);
@@ -119,7 +119,7 @@ public class TvShow implements Comparable<TvShow> {
 	}
 
 	public String getDescription() {
-		if (DESCRIPTION == null || DESCRIPTION.isEmpty()) {
+		if (TextUtils.isEmpty(DESCRIPTION)) {
 			return mContext.getString(R.string.stringNoPlot);
 		} else {
 			return DESCRIPTION;
@@ -143,12 +143,12 @@ public class TvShow implements Comparable<TvShow> {
 	}
 
 	public String getRating() {
-		return RATING;
+		return TextUtils.isEmpty(RATING) ? "0.0" : RATING;
 	}
 
 	public double getRawRating() {
 		try {
-			return Double.valueOf(RATING);
+			return Double.valueOf(getRating());
 		} catch (NumberFormatException e) {
 			return 0.0;
 		}
@@ -161,11 +161,11 @@ public class TvShow implements Comparable<TvShow> {
 	}
 
 	public String getGenres() {
-		return StringUtils.replacePipesWithCommas(GENRES);
+		return StringUtils.replacePipesWithCommas(GENRES != null ? GENRES : "");
 	}
 
 	public String getActors() {
-		return StringUtils.replacePipesWithCommas(ACTORS);
+		return StringUtils.replacePipesWithCommas(ACTORS != null ? ACTORS : "");
 	}
 	
 	public void setCertification(String certification) {
@@ -173,7 +173,7 @@ public class TvShow implements Comparable<TvShow> {
 	}
 
 	public String getCertification() {
-		return CERTIFICATION;
+		return CERTIFICATION != null ? CERTIFICATION : "";
 	}
 
 	public void setFirstAiredDate(int year, int month, int day) {
@@ -201,7 +201,7 @@ public class TvShow implements Comparable<TvShow> {
 	}
 	
 	public String getRuntime() {
-		if (!MizLib.isNumber(RUNTIME) || TextUtils.isEmpty(RUNTIME))
+		if (TextUtils.isEmpty(RUNTIME) || !MizLib.isNumber(RUNTIME))
 			return "0";
 		return RUNTIME;
 	}

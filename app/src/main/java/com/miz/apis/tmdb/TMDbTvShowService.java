@@ -30,7 +30,7 @@ public class TMDbTvShowService extends TvShowApiService {
 
 	public static TMDbTvShowService getInstance(Context context) {
 		if (mService == null)
-			mService = new TMDbTvShowService(context);
+			mService = new TMDbTvShowService(context.getApplicationContext());
 		return mService;
 	}
 	

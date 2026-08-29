@@ -25,21 +25,21 @@
                 android:layout_height="wrap_content"
                 android:clipChildren="false">
 
-                <!-- Backdrop Banner - Shorter for Landscape -->
+                <!-- Backdrop Banner -->
                 <ImageView
                     android:id="@+id/imageBackground"
                     android:layout_width="match_parent"
-                    android:layout_height="240dp"
+                    android:layout_height="300dp"
                     android:scaleType="centerCrop"
                     android:src="@drawable/bg"
                     app:layout_constraintTop_toTopOf="parent" />
 
-                <!-- Poster Card - 160dp x 240dp (25% overlay = 60dp) -->
+                <!-- Poster Card - Size: 200dp x 300dp -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardview"
-                    android:layout_width="160dp"
-                    android:layout_height="240dp"
-                    android:layout_marginStart="32dp"
+                    android:layout_width="200dp"
+                    android:layout_height="300dp"
+                    android:layout_marginStart="24dp"
                     android:layout_marginTop="-60dp"
                     android:transitionName="cover"
                     app:cardCornerRadius="12dp"
@@ -62,10 +62,10 @@
                     android:layout_width="0dp"
                     android:layout_height="0dp"
                     android:layout_marginStart="16dp"
-                    android:layout_marginEnd="32dp"
+                    android:layout_marginEnd="24dp"
                     app:cardBackgroundColor="?attr/colorSurfaceContainer"
                     app:cardCornerRadius="12dp"
-                    app:cardElevation="2dp"
+                    app:cardElevation="4dp"
                     app:layout_constraintBottom_toBottomOf="@id/cardview"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toEndOf="@id/cardview"
@@ -75,15 +75,15 @@
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:orientation="vertical"
-                        android:padding="16dp">
+                        android:padding="20dp">
 
                         <TextView
                             android:id="@+id/movieTitle"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
                             android:ellipsize="end"
-                            android:maxLines="1"
-                            android:textAppearance="?attr/textAppearanceTitleLarge"
+                            android:maxLines="2"
+                            android:textAppearance="?attr/textAppearanceHeadlineMedium"
                             android:textColor="?attr/colorOnSurface"
                             android:textStyle="bold"
                             tools:text="Jurassic Park" />
@@ -92,11 +92,18 @@
                             android:id="@+id/textView6"
                             android:layout_width="match_parent"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="2dp"
-                            android:textAppearance="?attr/textAppearanceTitleSmall"
+                            android:layout_marginTop="4dp"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
                             android:textStyle="italic"
                             tools:text="An adventure 65 million years in the making" />
+
+                        <View
+                            android:layout_width="40dp"
+                            android:layout_height="2dp"
+                            android:layout_marginTop="8dp"
+                            android:layout_marginBottom="8dp"
+                            android:background="?attr/colorPrimary" />
 
                         <TextView
                             android:id="@+id/textView2"
@@ -104,11 +111,10 @@
                             android:layout_height="0dp"
                             android:layout_weight="1"
                             android:ellipsize="end"
-                            android:maxLines="4"
-                            android:layout_marginTop="8dp"
-                            android:textAppearance="?attr/textAppearanceBodyMedium"
+                            android:maxLines="6"
+                            android:textAppearance="?attr/textAppearanceBodyLarge"
                             android:textColor="?attr/colorOnSurfaceVariant"
-                            tools:text="An industrialist invites some experts to visit his theme park of cloned dinosaurs..." />
+                            tools:text="Plot description goes here..." />
 
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -118,13 +124,14 @@
                     android:id="@+id/info_bar_container"
                     android:layout_width="0dp"
                     android:layout_height="80dp"
-                    android:layout_marginStart="32dp"
-                    android:layout_marginTop="16dp"
-                    android:layout_marginEnd="32dp"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginTop="24dp"
+                    android:layout_marginEnd="24dp"
                     app:layout_constraintEnd_toEndOf="parent"
                     app:layout_constraintStart_toStartOf="parent"
                     app:layout_constraintTop_toBottomOf="@id/cardview">
 
+                    <!-- Background Bar -->
                     <com.google.android.material.card.MaterialCardView
                         android:id="@+id/details_card"
                         android:layout_width="0dp"
@@ -165,6 +172,7 @@
                                 android:textAppearance="?attr/textAppearanceLabelLarge"
                                 tools:text="1993" />
 
+                            <!-- Space for Play button -->
                             <View android:layout_width="80dp" android:layout_height="match_parent" />
 
                             <TextView
@@ -186,9 +194,11 @@
                                 android:gravity="center"
                                 android:textAppearance="?attr/textAppearanceLabelLarge"
                                 tools:text="4.7 Stars" />
+
                         </LinearLayout>
                     </com.google.android.material.card.MaterialCardView>
 
+                    <!-- Play Button -->
                     <com.google.android.material.floatingactionbutton.FloatingActionButton
                         android:id="@+id/fab"
                         android:layout_width="wrap_content"
@@ -207,21 +217,17 @@
 
                 </androidx.constraintlayout.widget.ConstraintLayout>
 
-                <!-- Genre -->
+                <!-- Genre Area (Programmatically GONE, but reserved here) -->
                 <TextView
                     android:id="@+id/textView7"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:gravity="center"
-                    android:textAppearance="?attr/textAppearanceLabelLarge"
-                    android:textColor="?attr/colorPrimary"
-                    android:textStyle="bold"
+                    android:visibility="gone"
                     app:layout_constraintBottom_toBottomOf="parent"
                     app:layout_constraintEnd_toEndOf="@id/info_bar_container"
                     app:layout_constraintStart_toStartOf="@id/info_bar_container"
-                    app:layout_constraintTop_toBottomOf="@id/info_bar_container"
-                    tools:text="Action, Adventure, Sci-Fi" />
+                    app:layout_constraintTop_toBottomOf="@id/info_bar_container" />
 
             </androidx.constraintlayout.widget.ConstraintLayout>
 
@@ -230,7 +236,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:padding="24dp">
+                android:padding="16dp">
 
                 <com.miz.views.HorizontalCardLayout
                     android:id="@+id/horizontal_card_layout"

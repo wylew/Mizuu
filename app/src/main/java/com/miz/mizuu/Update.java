@@ -49,7 +49,7 @@ public class Update extends MizActivity {
     private CheckBox mClearLibrary, mRemoveUnavailableFiles;
     private Editor mEditor;
     private SharedPreferences mSharedPreferences;
-    private boolean mIsMovie;
+    private boolean mIsMovie, mIsAll;
     private Typeface mTypeface;
     private Toolbar mToolbar;
 
@@ -57,11 +57,18 @@ public class Update extends MizActivity {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-        mIsMovie = getIntent().getExtras().getBoolean("isMovie");
+        Bundle extras = getIntent().getExtras();
+        mIsMovie = extras != null && extras.getBoolean("isMovie", true);
+        mIsAll = extras != null && extras.getBoolean("isAll", false);
 
         mToolbar = (Toolbar) findViewById(R.id.toolbar);
-        if (!mIsMovie)
+        if (mIsAll) {
+            mToolbar.setTitle(getString(R.string.menuUpdateTitle));
+        } else if (!mIsMovie) {
             mToolbar.setTitle(getString(R.string.updateTvShowsTitle));
+        } else {
+            mToolbar.setTitle(getString(R.string.updateMoviesTitle));
+        }
 
         setSupportActionBar(mToolbar);
 
@@ -88,6 +95,15 @@ public class Update extends MizActivity {
         mFileSourcesButton.setTypeface(mTypeface);
         mUpdateLibraryButton = (Button) findViewById(R.id.start_update_button);
         mUpdateLibraryButton.setTypeface(mTypeface);
+
+        if (mIsAll) {
+            mFileSourcesButton.setVisibility(View.GONE);
+            mFileSourcesDescription.setVisibility(View.GONE);
+            View rowTitle = findViewById(R.id.row_title_movies_online);
+            if (rowTitle != null) {
+                rowTitle.setVisibility(View.GONE);
+            }
+        }
     }
 
     @Override
@@ -100,10 +116,20 @@ public class Update extends MizActivity {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
                 mEditor = mSharedPreferences.edit();
-                if (clearLibrary)
-                    mEditor.putBoolean(mIsMovie ? CLEAR_LIBRARY_MOVIES : CLEAR_LIBRARY_TVSHOWS, isChecked);
-                else
-                    mEditor.putBoolean(mIsMovie ? REMOVE_UNAVAILABLE_FILES_MOVIES : REMOVE_UNAVAILABLE_FILES_TVSHOWS, isChecked);
+                if (mIsAll) {
+                    if (clearLibrary) {
+                        mEditor.putBoolean(CLEAR_LIBRARY_MOVIES, isChecked);
+                        mEditor.putBoolean(CLEAR_LIBRARY_TVSHOWS, isChecked);
+                    } else {
+                        mEditor.putBoolean(REMOVE_UNAVAILABLE_FILES_MOVIES, isChecked);
+                        mEditor.putBoolean(REMOVE_UNAVAILABLE_FILES_TVSHOWS, isChecked);
+                    }
+                } else {
+                    if (clearLibrary)
+                        mEditor.putBoolean(mIsMovie ? CLEAR_LIBRARY_MOVIES : CLEAR_LIBRARY_TVSHOWS, isChecked);
+                    else
+                        mEditor.putBoolean(mIsMovie ? REMOVE_UNAVAILABLE_FILES_MOVIES : REMOVE_UNAVAILABLE_FILES_TVSHOWS, isChecked);
+                }
                 mEditor.apply();
             }
         };
@@ -113,15 +139,27 @@ public class Update extends MizActivity {
     public void onResume() {
         super.onResume();
 
-        mClearLibrary.setChecked(mSharedPreferences.getBoolean(mIsMovie ? CLEAR_LIBRARY_MOVIES : CLEAR_LIBRARY_TVSHOWS, false));
-        mRemoveUnavailableFiles.setChecked(mSharedPreferences.getBoolean(mIsMovie ? REMOVE_UNAVAILABLE_FILES_MOVIES : REMOVE_UNAVAILABLE_FILES_TVSHOWS, false));
+        if (mIsAll) {
+            mClearLibrary.setChecked(mSharedPreferences.getBoolean(CLEAR_LIBRARY_MOVIES, false) && mSharedPreferences.getBoolean(CLEAR_LIBRARY_TVSHOWS, false));
+            mRemoveUnavailableFiles.setChecked(mSharedPreferences.getBoolean(REMOVE_UNAVAILABLE_FILES_MOVIES, false) && mSharedPreferences.getBoolean(REMOVE_UNAVAILABLE_FILES_TVSHOWS, false));
+        } else {
+            mClearLibrary.setChecked(mSharedPreferences.getBoolean(mIsMovie ? CLEAR_LIBRARY_MOVIES : CLEAR_LIBRARY_TVSHOWS, false));
+            mRemoveUnavailableFiles.setChecked(mSharedPreferences.getBoolean(mIsMovie ? REMOVE_UNAVAILABLE_FILES_MOVIES : REMOVE_UNAVAILABLE_FILES_TVSHOWS, false));
+        }
     }
 
     public void startUpdate(View v) {
-        if (mIsMovie && !MizLib.isMovieLibraryBeingUpdated(this))
-            getApplicationContext().startService(new Intent(getApplicationContext(), MovieLibraryUpdate.class));
-        else if (!mIsMovie && !MizLib.isTvShowLibraryBeingUpdated(this))
-            getApplicationContext().startService(new Intent(getApplicationContext(), TvShowsLibraryUpdate.class));
+        if (mIsAll) {
+            if (!MizLib.isMovieLibraryBeingUpdated(this))
+                getApplicationContext().startService(new Intent(getApplicationContext(), MovieLibraryUpdate.class));
+            if (!MizLib.isTvShowLibraryBeingUpdated(this))
+                getApplicationContext().startService(new Intent(getApplicationContext(), TvShowsLibraryUpdate.class));
+        } else {
+            if (mIsMovie && !MizLib.isMovieLibraryBeingUpdated(this))
+                getApplicationContext().startService(new Intent(getApplicationContext(), MovieLibraryUpdate.class));
+            else if (!mIsMovie && !MizLib.isTvShowLibraryBeingUpdated(this))
+                getApplicationContext().startService(new Intent(getApplicationContext(), TvShowsLibraryUpdate.class));
+        }
         setResult(1); // end activity and reload Main activity
 
         finish(); // Leave the Update screen once the update has been started
@@ -130,7 +168,8 @@ public class Update extends MizActivity {
     @Override
     public void onStart() {
         super.onStart();
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getSupportActionBar() != null)
+            getSupportActionBar().setDisplayHomeAsUpEnabled(true);
     }
 
     @Override
@@ -142,11 +181,6 @@ public class Update extends MizActivity {
             default:
                 return super.onOptionsItemSelected(item);
         }
-    }
-
-    @Override
-    public void onPause() {
-        super.onPause();
     }
 
     public void selectSources(View v) {

@@ -50,10 +50,9 @@ public class TvShowDetails extends MizActivity {
     }
 
     public void onCreate(Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-
-        // Set theme
+        // Set theme before super.onCreate
         setTheme(R.style.Mizuu_Theme_NoBackground);
+        super.onCreate(savedInstanceState);
 
         ViewUtils.setupWindowFlagsForStatusbarOverlay(getWindow(), true);
 

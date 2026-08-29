@@ -102,7 +102,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
                 mSwatchColor = sw.getRgb();
                 mContrastTextColor = getContrastColor(mSwatchColor);
                 
-                // Standout accent color for the Play Button
+                // Standout accent color
                 Palette.Swatch accentSw = result.getVibrantSwatch();
                 if (accentSw == null || accentSw == sw) accentSw = result.getLightVibrantSwatch();
                 
@@ -116,7 +116,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
                 // Color the views
                 colorViews();
 
-                mOnPaletteLoadedCallback.onPaletteLoaded(getSwatchColor());
+                mOnPaletteLoadedCallback.onPaletteLoaded(mSwatchColor, mAccentColor);
             }
         }
     }
@@ -217,6 +217,6 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
     }
 
     public interface OnPaletteLoadedCallback {
-        void onPaletteLoaded(int swatchColor);
+        void onPaletteLoaded(int swatchColor, int accentColor);
     }
 }

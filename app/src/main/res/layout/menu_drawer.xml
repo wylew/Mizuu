@@ -3,22 +3,24 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@android:color/transparent">
-
-    <com.google.android.material.appbar.AppBarLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:background="@android:color/transparent"
-        app:elevation="0dp">
-
-        <include layout="@layout/toolbar_layout" />
-
-    </com.google.android.material.appbar.AppBarLayout>
+    android:background="?attr/colorSurface">
 
     <FrameLayout
         android:id="@+id/content_frame"
         android:layout_width="match_parent"
-        android:layout_height="match_parent" />
+        android:layout_height="match_parent"
+        app:layout_behavior="@string/appbar_scrolling_view_behavior" />
+
+    <com.google.android.material.appbar.AppBarLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="?attr/colorSurface"
+        app:elevation="8dp"
+        app:liftOnScroll="true">
+
+        <include layout="@layout/toolbar_layout" />
+
+    </com.google.android.material.appbar.AppBarLayout>
 
     <!-- Floating bottom controls -->
     <androidx.constraintlayout.widget.ConstraintLayout
@@ -32,7 +34,7 @@
         android:clipToPadding="false"
         android:clipChildren="false">
 
-        <!-- Search Bar Area (Hidden by default) -->
+        <!-- Search Bar Area -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/search_card"
             android:layout_width="0dp"
@@ -41,7 +43,7 @@
             app:cardCornerRadius="28dp"
             app:cardElevation="8dp"
             app:strokeWidth="0dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent">
@@ -57,24 +59,13 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Search Button -->
+        <!-- Search Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_search"
-            style="?attr/materialIconButtonFilledTonalStyle"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             app:icon="@drawable/ic_search_white_24dp"
-            app:iconSize="24dp"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            android:elevation="8dp"
             app:backgroundTint="?attr/colorSecondaryContainer"
             app:iconTint="?attr/colorOnSecondaryContainer"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintStart_toStartOf="parent" />
 
@@ -88,7 +79,7 @@
             app:cardCornerRadius="28dp"
             app:cardElevation="8dp"
             app:strokeWidth="0dp"
-            app:cardBackgroundColor="?attr/colorSurface"
+            app:cardBackgroundColor="?attr/colorSurfaceContainer"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toStartOf="@+id/fab_menu"
             app:layout_constraintStart_toEndOf="@+id/fab_search">
@@ -161,24 +152,13 @@
 
         </com.google.android.material.card.MaterialCardView>
 
-        <!-- Menu Button (Standard 56dp size) -->
+        <!-- Menu Button - Sustainable Implementation -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/fab_menu"
-            style="?attr/materialIconButtonFilledTonalStyle"
-            android:layout_width="56dp"
-            android:layout_height="56dp"
-            android:insetTop="0dp"
-            android:insetBottom="0dp"
-            android:insetLeft="0dp"
-            android:insetRight="0dp"
+            style="@style/Widget.Mizuu.Button.IconOnly"
             app:icon="@drawable/ic_more_vert_white_24dp"
-            app:iconSize="24dp"
-            app:iconGravity="textStart"
-            app:iconPadding="0dp"
-            android:elevation="8dp"
-            app:backgroundTint="?attr/colorSurface"
+            app:backgroundTint="?attr/colorSurfaceContainer"
             app:iconTint="?attr/colorOnSurface"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.Material3.Corner.Full"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent" />
 

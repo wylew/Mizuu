@@ -131,7 +131,6 @@ public class TvShowDetailsFragment extends Fragment {
         setRetainInstance(true);
 
         mContext = getActivity();
-
         mBus = MizuuApplication.getBus();
 
         mMediumItalic = TypefaceUtils.getRobotoMediumItalic(mContext);
@@ -142,7 +141,22 @@ public class TvShowDetailsFragment extends Fragment {
         // Create and open database
         dbHelper = MizuuApplication.getTvDbAdapter();
 
-        Cursor cursor = dbHelper.getShow(getArguments().getString("showId"));
+        loadShowDetails();
+
+        if (thisShow == null) {
+            getActivity().finish();
+            return;
+        }
+
+        mPicasso = MizuuApplication.getPicasso(getActivity());
+        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
+    }
+
+    private void loadShowDetails() {
+        String showId = getArguments().getString("showId");
+        if (TextUtils.isEmpty(showId)) return;
+
+        Cursor cursor = dbHelper.getShow(showId);
         try {
             if (cursor != null && cursor.moveToFirst()) {
                 thisShow = new TvShow(getActivity(),
@@ -156,7 +170,7 @@ public class TvShowDetailsFragment extends Fragment {
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_FIRST_AIRDATE)),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_RUNTIME)),
                         cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_FAVOURITE)),
-                        MizuuApplication.getTvEpisodeDbAdapter().getLatestEpisodeAirdate(cursor.getString(cursor.getColumnIndex(DbAdapterTvShows.KEY_SHOW_ID)))
+                        MizuuApplication.getTvEpisodeDbAdapter().getLatestEpisodeAirdate(showId)
                 );
             }
         } catch (Exception e) {
@@ -164,15 +178,6 @@ public class TvShowDetailsFragment extends Fragment {
             if (cursor != null)
                 cursor.close();
         }
-
-        if (thisShow == null) {
-            getActivity().finish();
-            return;
-        }
-
-        mPicasso = MizuuApplication.getPicasso(getActivity());
-
-        LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
     }
 
     private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -185,8 +190,7 @@ public class TvShowDetailsFragment extends Fragment {
     @Override
     public void onResume() {
         super.onResume();
-
-        mBus.register(getActivity());
+        mContext = getActivity();
     }
 
     @Override
@@ -211,10 +215,13 @@ public class TvShowDetailsFragment extends Fragment {
         mToolbar.setBackgroundResource(android.R.color.transparent);
         ViewUtils.setProperToolbarSize(mContext, mToolbar);
 
-        ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
-        ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+        if (getActivity() instanceof MizActivity) {
+            ((MizActivity) getActivity()).setSupportActionBar(mToolbar);
+            if (((AppCompatActivity) getActivity()).getSupportActionBar() != null) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+            }
+        }
 
-        // This needs to be re-initialized here and not in onCreate()
         mImageThumbSize = getResources().getDimensionPixelSize(R.dimen.horizontal_grid_item_width);
         mImageThumbSpacing = getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing);
 
@@ -236,28 +243,19 @@ public class TvShowDetailsFragment extends Fragment {
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
         mFab = (FloatingActionButton) v.findViewById(R.id.fab);
 
-        mFab.setOnClickListener(new OnClickListener() {
+        mFab.setOnClickListener(v1 -> ViewUtils.animateFabJump(v1, new SimpleAnimatorListener() {
             @Override
-            public void onClick(View v) {
-                ViewUtils.animateFabJump(v, new SimpleAnimatorListener() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        playFirstEpisode();
-                    }
-                });
+            public void onAnimationEnd(Animator animation) {
+                playFirstEpisode();
             }
-        });
+        }));
 
         final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
 
-        mScrollView.setOnScrollChangedListener(new OnScrollChangedListener() {
-            @Override
-            public void onScrollChanged(ScrollView who, int l, int t, int oldl, int oldt) {
-                ViewUtils.handleOnScrollChangedEvent(
-                        getActivity(), v, background, thisShow.getTitle(),
-                        height, t, mToolbar, mToolbarColor);
-            }
-        });
+        mScrollView.setOnScrollChangedListener((who, l, t, oldl, oldt) -> ViewUtils.handleOnScrollChangedEvent(
+                getActivity(), v, background, thisShow.getTitle(),
+                height, t, mToolbar, mToolbarColor));
+        
         mScrollView.getViewTreeObserver().addOnGlobalLayoutListener(new ViewTreeObserver.OnGlobalLayoutListener() {
             @Override
             public void onGlobalLayout() {
@@ -266,7 +264,6 @@ public class TvShowDetailsFragment extends Fragment {
             }
         });
 
-        // Set the show title
         textTitle.setVisibility(View.VISIBLE);
         textTitle.setText(thisShow.getTitle());
         textTitle.setTypeface(mCondensedRegular);
@@ -276,30 +273,16 @@ public class TvShowDetailsFragment extends Fragment {
         textRating.setTypeface(mMedium);
         textCertification.setTypeface(mMedium);
 
-        textRuntime.setTypeface(mMedium);
-        textCertification.setTypeface(mMedium);
-        textRating.setTypeface(mMedium);
-
-        // Set the show plot
         textPlot.setBackgroundResource(R.drawable.selectable_background);
         textPlot.setMaxLines(getActivity().getResources().getInteger(R.integer.show_details_max_lines));
-        textPlot.setTag(true); // true = collapsed
-        textPlot.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if (((Boolean) textPlot.getTag())) {
-                    // Animate
-                    ViewUtils.animateTextViewMaxLines(textPlot, 50); // It seems highly unlikely that there would every be more than 50 lines
-
-                    // Reverse the tag
-                    textPlot.setTag(false);
-                } else {
-                    // Animate
-                    ViewUtils.animateTextViewMaxLines(textPlot, getResources().getInteger(R.integer.show_details_max_lines));
-
-                    // Reverse the tag
-                    textPlot.setTag(true);
-                }
+        textPlot.setTag(true);
+        textPlot.setOnClickListener(v12 -> {
+            if (((Boolean) textPlot.getTag())) {
+                ViewUtils.animateTextViewMaxLines(textPlot, 50);
+                textPlot.setTag(false);
+            } else {
+                ViewUtils.animateTextViewMaxLines(textPlot, getResources().getInteger(R.integer.show_details_max_lines));
+                textPlot.setTag(true);
             }
         });
         textPlot.setEllipsize(TextUtils.TruncateAt.END);
@@ -310,7 +293,6 @@ public class TvShowDetailsFragment extends Fragment {
 
         textPlot.setText(thisShow.getDescription());
 
-        // Set the show genres
         textGenre.setTypeface(mMediumItalic);
         if (!TextUtils.isEmpty(thisShow.getGenres())) {
             textGenre.setText(thisShow.getGenres());
@@ -318,26 +300,27 @@ public class TvShowDetailsFragment extends Fragment {
             textGenre.setVisibility(View.GONE);
         }
 
-        // Set the show runtime
-        textRuntime.setText(MizLib.getPrettyRuntime(getActivity(), Integer.parseInt(thisShow.getRuntime())));
+        String runtime = thisShow.getRuntime();
+        if (!TextUtils.isEmpty(runtime) && MizLib.isNumber(runtime)) {
+            textRuntime.setText(MizLib.getPrettyRuntime(getActivity(), Integer.parseInt(runtime)));
+        } else {
+            textRuntime.setVisibility(View.GONE);
+        }
 
-        // Set the show release date
         textReleaseDate.setTypeface(mMedium);
         textReleaseDate.setText(MizLib.getPrettyDate(getActivity(), thisShow.getFirstAirdate()));
 
-        // Set the show rating
         if (!thisShow.getRating().equals("0.0")) {
             try {
                 int rating = (int) (Double.parseDouble(thisShow.getRating()) * 10);
                 textRating.setText(Html.fromHtml(rating + "<small> %</small>"));
-            } catch (NumberFormatException e) {
+            } catch (Exception e) {
                 textRating.setText(thisShow.getRating());
             }
         } else {
             textRating.setText(R.string.stringNA);
         }
 
-        // Set the show certification
         if (!TextUtils.isEmpty(thisShow.getCertification())) {
             textCertification.setText(thisShow.getCertification());
         } else {
@@ -351,7 +334,8 @@ public class TvShowDetailsFragment extends Fragment {
                     @Override
                     public void onGlobalLayout() {
                         if (mSeasonsLayout.getWidth() > 0) {
-                            final int numColumns = (int) Math.floor(mSeasonsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            int numColumns = (int) Math.floor(mSeasonsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            if (numColumns <= 0) numColumns = 1;
                             mImageThumbSize = (mSeasonsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
                             loadSeasons(numColumns);
@@ -359,12 +343,7 @@ public class TvShowDetailsFragment extends Fragment {
                         }
                     }
                 });
-        mSeasonsLayout.setSeeMoreOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(IntentUtils.getTvShowSeasonsIntent(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor));
-            }
-        });
+        mSeasonsLayout.setSeeMoreOnClickListener(v13 -> startActivity(IntentUtils.getTvShowSeasonsIntent(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor)));
 
         mActorsLayout.setTitle(R.string.detailsActors);
         mActorsLayout.setSeeMoreVisibility(true);
@@ -373,7 +352,8 @@ public class TvShowDetailsFragment extends Fragment {
                     @Override
                     public void onGlobalLayout() {
                         if (mActorsLayout.getWidth() > 0) {
-                            final int numColumns = (int) Math.floor(mActorsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            int numColumns = (int) Math.floor(mActorsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
+                            if (numColumns <= 0) numColumns = 1;
                             mImageThumbSize = (mActorsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
 
                             loadActors(numColumns);
@@ -381,12 +361,7 @@ public class TvShowDetailsFragment extends Fragment {
                         }
                     }
                 });
-        mActorsLayout.setSeeMoreOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                startActivity(IntentUtils.getActorBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor));
-            }
-        });
+        mActorsLayout.setSeeMoreOnClickListener(v14 -> startActivity(IntentUtils.getActorBrowserTvShows(mContext, thisShow.getTitle(), thisShow.getId(), mToolbarColor)));
 
         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, thisShow.getTitle(), mToolbarColor);
 
@@ -394,47 +369,33 @@ public class TvShowDetailsFragment extends Fragment {
     }
 
     private void loadImages() {
-        if (thisShow == null)
-            return;
+        if (thisShow == null) return;
 
         mPicasso.load(thisShow.getCoverPhoto()).error(R.drawable.loading_image).placeholder(R.drawable.loading_image).into(cover, new Callback() {
             @Override
             public void onSuccess() {
                 if (mPaletteLoader == null) {
-                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.fromFile(thisShow.getCoverPhoto()), new PaletteLoader.OnPaletteLoadedCallback() {
-                        @Override
-                        public void onPaletteLoaded(int swatchColor) {
-                            mToolbarColor = swatchColor;
-                            ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, thisShow.getTitle(), mToolbarColor);
-                        }
+                    mPaletteLoader = new PaletteLoader(mPicasso, Uri.fromFile(thisShow.getCoverPhoto()), (swatchColor, accentColor) -> {
+                        mToolbarColor = swatchColor;
+                        mActorsLayout.setTitleColor(accentColor);
+                        mSeasonsLayout.setTitleColor(accentColor);
+                        ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, thisShow.getTitle(), mToolbarColor);
                     });
 
                     mPaletteLoader.addView(mDetailsArea);
                     mPaletteLoader.addView(mTextContainerCard);
-                    mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
-                    mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
-
                     mPaletteLoader.execute();
                 } else {
-                    // Clear old views after configuration change
                     mPaletteLoader.clearViews();
-
-                    // Add views after configuration change
                     mPaletteLoader.addView(mDetailsArea);
                     mPaletteLoader.addView(mTextContainerCard);
-                    mPaletteLoader.addView(mActorsLayout.getSeeMoreView());
-                    mPaletteLoader.addView(mSeasonsLayout.getSeeMoreView());
                     mPaletteLoader.setFab(mFab);
-
-                    // Re-color the views
                     mPaletteLoader.colorViews();
                 }
             }
 
-            @Override
-            public void onError(Exception e) {
-            }
+            @Override public void onError(Exception e) {}
         });
 
         if (!MizLib.isPortrait(getActivity())) {
@@ -443,67 +404,52 @@ public class TvShowDetailsFragment extends Fragment {
             mPicasso.load(new File(thisShow.getBackdrop())).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).into(background, new Callback() {
                 @Override
                 public void onError(Exception e) {
-                    if (!isAdded())
-                        return;
-
-                    mPicasso.load(thisShow.getThumbnail()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
+                    if (isAdded())
+                        mPicasso.load(thisShow.getThumbnail()).memoryPolicy(MemoryPolicy.NO_CACHE, MemoryPolicy.NO_STORE).placeholder(R.drawable.bg).error(R.drawable.bg).into(background);
                 }
-
-                @Override
-                public void onSuccess() {}
+                @Override public void onSuccess() {}
             });
         }
     }
 
     private void loadActors(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<Actor> mActors;
-
+        new AsyncTask<Void, Void, List<Actor>>() {
             @Override
-            protected Void doInBackground(Void... params) {
-                TMDbTvShowService service = TMDbTvShowService.getInstance(mContext);
-                mActors = service.getActors(thisShow.getId());
-
-                return null;
+            protected List<Actor> doInBackground(Void... params) {
+                return TMDbTvShowService.getInstance(mContext).getActors(thisShow.getId());
             }
 
             @Override
-            protected void onPostExecute(Void result) {
+            protected void onPostExecute(List<Actor> actors) {
                 if (isAdded())
-                    mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mActors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                    mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, actors, HorizontalCardLayout.ACTORS, mToolbarColor);
             }
         }.execute();
     }
 
     private void loadSeasons(final int capacity) {
-        // Show ProgressBar
-        new AsyncTask<Void, Void, Void>() {
-            private List<GridSeason> mSeasons = new ArrayList<GridSeason>();
-
+        new AsyncTask<Void, Void, List<GridSeason>>() {
             @Override
-            protected Void doInBackground(Void... params) {
-
+            protected List<GridSeason> doInBackground(Void... params) {
+                List<GridSeason> seasonsList = new ArrayList<>();
                 HashMap<String, EpisodeCounter> seasons = MizuuApplication.getTvEpisodeDbAdapter().getSeasons(thisShow.getId());
 
                 for (String key : seasons.keySet()) {
                     File temp = FileUtils.getTvShowSeason(mContext, thisShow.getId(), key);
-                    mSeasons.add(new GridSeason(mContext, thisShow.getId(), Integer.valueOf(key), seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
-                            temp.exists() ? temp :
-                                    FileUtils.getTvShowThumb(mContext, thisShow.getId())));
+                    int seasonNum = 0;
+                    try { seasonNum = Integer.parseInt(key); } catch (Exception ignored) {}
+                    
+                    seasonsList.add(new GridSeason(mContext, thisShow.getId(), seasonNum, seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
+                            temp.exists() ? temp : FileUtils.getTvShowThumb(mContext, thisShow.getId())));
                 }
-
-                seasons.clear();
-
-                Collections.sort(mSeasons);
-
-                return null;
+                Collections.sort(seasonsList);
+                return seasonsList;
             }
 
             @Override
-            protected void onPostExecute(Void result) {
+            protected void onPostExecute(List<GridSeason> results) {
                 if (isAdded()) {
-                    mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, mSeasons, HorizontalCardLayout.SEASONS, mToolbarColor);
+                    mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, results, HorizontalCardLayout.SEASONS, mToolbarColor);
                     mSeasonsLayout.setSeeMoreVisibility(true);
                 }
             }
@@ -512,70 +458,53 @@ public class TvShowDetailsFragment extends Fragment {
 
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
-        if (thisShow == null)
-            return;
-
+        if (thisShow == null) return;
         inflater.inflate(R.menu.tv_show_details, menu);
 
-        // If this is a tablet, we have more room to display icons
         if (MizLib.isTablet(mContext)) {
             MenuItem shareItem = menu.findItem(R.id.share);
-            if (shareItem != null)
-                shareItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
+            if (shareItem != null) shareItem.setShowAsAction(MenuItem.SHOW_AS_ACTION_ALWAYS);
         }
 
-        // Favourite
         MenuItem favItem = menu.findItem(R.id.show_fav);
         if (favItem != null) {
-            favItem.setIcon(thisShow.isFavorite() ?
-                    R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
-                    .setTitle(thisShow.isFavorite() ?
-                            R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
+            favItem.setIcon(thisShow.isFavorite() ? R.drawable.ic_favorite_white_24dp : R.drawable.ic_favorite_outline_white_24dp)
+                    .setTitle(thisShow.isFavorite() ? R.string.menuFavouriteTitleRemove : R.string.menuFavouriteTitle);
         }
     }
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
-        switch (item.getItemId()) {
-            case R.id.show_fav:
-                favAction();
-                break;
-            case R.id.menuDeleteShow:
-                deleteShow();
-                break;
-            case R.id.change_cover:
-                searchCover();
-                break;
-            case R.id.identify_show:
-                identifyShow();
-                break;
-            case R.id.editTvShow:
-                editTvShow();
-                break;
-            case R.id.share:
-                Intent intent = new Intent(Intent.ACTION_SEND);
-                intent.setType("text/plain");
-                intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/tv/" + thisShow.getId());
-                startActivity(intent);
-                break;
+        int id = item.getItemId();
+        if (id == R.id.show_fav) {
+            favAction();
+        } else if (id == R.id.menuDeleteShow) {
+            deleteShow();
+        } else if (id == R.id.change_cover) {
+            searchCover();
+        } else if (id == R.id.identify_show) {
+            identifyShow();
+        } else if (id == R.id.editTvShow) {
+            editTvShow();
+        } else if (id == R.id.share) {
+            Intent intent = new Intent(Intent.ACTION_SEND);
+            intent.setType("text/plain");
+            intent.putExtra(Intent.EXTRA_TEXT, "http://www.themoviedb.org/tv/" + thisShow.getId());
+            startActivity(intent);
         }
-
         return super.onOptionsItemSelected(item);
     }
 
     private void identifyShow() {
-        ArrayList<String> files = new ArrayList<String>();
-
+        ArrayList<String> files = new ArrayList<>();
         Cursor cursor = MizuuApplication.getTvShowEpisodeMappingsDbAdapter().getAllFilepaths(thisShow.getId());
         if (cursor != null) {
             while (cursor.moveToNext())
                 files.add(cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodeMappings.KEY_FILEPATH)));
-
             cursor.close();
         }
 
-        Intent i = new Intent();
-        i.setClass(mContext, IdentifyTvShow.class);
+        Intent i = new Intent(mContext, IdentifyTvShow.class);
         i.putExtra("showTitle", thisShow.getTitle());
         i.putExtra("showId", thisShow.getId());
         i.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
@@ -590,58 +519,44 @@ public class TvShowDetailsFragment extends Fragment {
     }
 
     public void favAction() {
-        // Create and open database
-        thisShow.setFavorite(!thisShow.isFavorite()); // Reverse the favourite boolean
-
+        thisShow.setFavorite(!thisShow.isFavorite());
         if (dbHelper.updateShowSingleItem(thisShow.getId(), DbAdapterTvShows.KEY_SHOW_FAVOURITE, thisShow.getFavorite())) {
             getActivity().invalidateOptionsMenu();
-
             Toast.makeText(mContext, getString(thisShow.isFavorite() ? R.string.addedToFavs : R.string.removedFromFavs), Toast.LENGTH_SHORT).show();
-
             LocalBroadcastUtils.updateTvShowLibrary(mContext);
-
         } else Toast.makeText(mContext, getString(R.string.errorOccured), Toast.LENGTH_SHORT).show();
 
-        new Thread() {
-            @Override
-            public void run() {
-                ArrayList<TvShow> show = new ArrayList<TvShow>();
+        new Thread(() -> {
+            if (getActivity() != null) {
+                ArrayList<TvShow> show = new ArrayList<>();
                 show.add(thisShow);
                 Trakt.tvShowFavorite(show, getActivity().getApplicationContext());
             }
-        }.start();
+        }).start();
     }
 
     private void searchCover() {
-        Intent i = new Intent();
-        i.setClass(mContext, ShowCoverFanartBrowser.class);
+        Intent i = new Intent(mContext, ShowCoverFanartBrowser.class);
         i.putExtra("id", thisShow.getId());
         i.putExtra(IntentKeys.TOOLBAR_COLOR, mToolbarColor);
         startActivity(i);
     }
 
     private void deleteShow() {
-        AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-        builder.setMessage(getString(R.string.areYouSure))
-                .setTitle(getString(R.string.removeShow))
+        new AlertDialog.Builder(mContext)
+                .setMessage(R.string.areYouSure)
+                .setTitle(R.string.removeShow)
                 .setCancelable(false)
-                .setPositiveButton(getString(android.R.string.yes), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        MizLib.deleteShow(getActivity().getApplicationContext(), thisShow, true);
-                        LocalBroadcastUtils.updateTvShowLibrary(getActivity().getApplicationContext());
-                        getActivity().finish();
-                    }
+                .setPositiveButton(android.R.string.yes, (dialog, id) -> {
+                    MizLib.deleteShow(getActivity().getApplicationContext(), thisShow, true);
+                    LocalBroadcastUtils.updateTvShowLibrary(getActivity().getApplicationContext());
+                    getActivity().finish();
                 })
-                .setNegativeButton(getString(android.R.string.no), new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                })
-                .create().show();
+                .setNegativeButton(android.R.string.no, (dialog, id) -> dialog.cancel())
+                .show();
     }
 
     private void playFirstEpisode() {
-
         DbAdapterTvShowEpisodes dbAdapter = MizuuApplication.getTvEpisodeDbAdapter();
         Cursor cursor = dbAdapter.getEpisodes(thisShow.getId());
         TvShowEpisode episode = null;
@@ -649,11 +564,7 @@ public class TvShowDetailsFragment extends Fragment {
         if (cursor != null) {
             try {
                 while (cursor.moveToNext()) {
-
-                    // We want to avoid specials
                     if (MizLib.getInteger(cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_SEASON))) > 0) {
-
-                        // Set the initial episode as a fallback if all episodes have been watched
                         if (episode == null) {
                             episode = new TvShowEpisode(getActivity(),
                                     cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_SHOW_ID)),
@@ -677,8 +588,6 @@ public class TvShowDetailsFragment extends Fragment {
                             ));
                         }
 
-                        // Check if the episode has been watched - if not, add
-                        // it as our episode to watch, and break the while loop
                         if (cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_HAS_WATCHED)).equals("0")) {
                             episode = new TvShowEpisode(getActivity(),
                                     cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_SHOW_ID)),
@@ -700,13 +609,11 @@ public class TvShowDetailsFragment extends Fragment {
                                     cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_SEASON)),
                                     cursor.getString(cursor.getColumnIndex(DbAdapterTvShowEpisodes.KEY_EPISODE))
                             ));
-
                             break;
                         }
                     }
-
                 }
-            } catch (Exception e) {} finally {
+            } catch (Exception ignored) {} finally {
                 cursor.close();
             }
 
@@ -717,8 +624,7 @@ public class TvShowDetailsFragment extends Fragment {
             } else {
                 Toast.makeText(mContext, R.string.no_episodes_to_play, Toast.LENGTH_SHORT).show();
             }
-        };
-
+        }
     }
 
     private void play(final TvShowEpisode episode) {
@@ -726,13 +632,11 @@ public class TvShowDetailsFragment extends Fragment {
         if (paths.size() == 1) {
             Filepath path = paths.get(0);
             if (episode.hasOfflineCopy(path)) {
-                boolean playbackStarted = VideoUtils.playVideo(getActivity(), episode.getOfflineCopyUri(path), FileSource.FILE, episode);
-                if (playbackStarted) {
+                if (VideoUtils.playVideo(getActivity(), episode.getOfflineCopyUri(path), FileSource.FILE, episode)) {
                     checkIn(episode);
                 }
             } else {
-                boolean playbackStarted = VideoUtils.playVideo(getActivity(), path.getFilepath(), path.getType(), episode);
-                if (playbackStarted) {
+                if (VideoUtils.playVideo(getActivity(), path.getFilepath(), path.getType(), episode)) {
                     checkIn(episode);
                 }
             }
@@ -740,25 +644,19 @@ public class TvShowDetailsFragment extends Fragment {
             boolean hasOfflineCopy = false;
             for (Filepath path : paths) {
                 if (episode.hasOfflineCopy(path)) {
-                    boolean playbackStarted = VideoUtils.playVideo(getActivity(), episode.getOfflineCopyUri(path), FileSource.FILE, episode);
-                    if (playbackStarted) {
+                    if (VideoUtils.playVideo(getActivity(), episode.getOfflineCopyUri(path), FileSource.FILE, episode)) {
                         checkIn(episode);
                     }
-
                     hasOfflineCopy = true;
                     break;
                 }
             }
 
             if (!hasOfflineCopy) {
-                MizLib.showSelectFileDialog(getActivity(), episode.getFilepaths(), new Dialog.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        Filepath path = episode.getFilepaths().get(which);
-                        boolean playbackStarted = VideoUtils.playVideo(getActivity(), path.getFilepath(), path.getType(), episode);
-                        if (playbackStarted) {
-                            checkIn(episode);
-                        }
+                MizLib.showSelectFileDialog(getActivity(), episode.getFilepaths(), (dialog, which) -> {
+                    Filepath path = episode.getFilepaths().get(which);
+                    if (VideoUtils.playVideo(getActivity(), path.getFilepath(), path.getType(), episode)) {
+                        checkIn(episode);
                     }
                 });
             }
@@ -766,12 +664,10 @@ public class TvShowDetailsFragment extends Fragment {
     }
 
     private void checkIn(final TvShowEpisode episode) {
-        new Thread() {
-            @Override
-            public void run() {
+        new Thread(() -> {
+            if (getActivity() != null)
                 Trakt.performEpisodeCheckin(episode, getActivity());
-            }
-        }.start();
+        }).start();
     }
 
     public TvShow getShow() {

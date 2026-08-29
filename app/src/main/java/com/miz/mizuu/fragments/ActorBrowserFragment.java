@@ -20,15 +20,11 @@ import android.content.Context;
 import android.graphics.Bitmap.Config;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import androidx.core.app.ActivityCompat;
-import androidx.core.app.ActivityOptionsCompat;
 import androidx.fragment.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewTreeObserver;
-import android.widget.AdapterView;
-import android.widget.AdapterView.OnItemClickListener;
 import android.widget.BaseAdapter;
 import android.widget.GridView;
 import android.widget.ImageView;
@@ -40,7 +36,6 @@ import com.miz.functions.Actor;
 import com.miz.functions.CoverItem;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
-import com.miz.utils.IntentUtils;
 import com.miz.utils.TypefaceUtils;
 import com.squareup.picasso.Picasso;
 
@@ -106,6 +101,7 @@ public class ActorBrowserFragment extends Fragment {
 				new ViewTreeObserver.OnGlobalLayoutListener() {
 					@Override
 					public void onGlobalLayout() {
+						if (mGridView == null) return;
 						final int numColumns = (int) Math.floor(
 								mGridView.getWidth() / (mImageThumbSize + mImageThumbSpacing));
 						if (numColumns > 0) {
@@ -113,13 +109,9 @@ public class ActorBrowserFragment extends Fragment {
 						}
 					}
 				});
-		mGridView.setOnItemClickListener(new OnItemClickListener() {
-			@Override
-			public void onItemClick(AdapterView<?> arg0, View arg1, int arg2, long arg3) {
-                ActivityOptionsCompat options = ActivityOptionsCompat.makeSceneTransitionAnimation(getActivity(), arg1.findViewById(R.id.cover), "cover");
-                ActivityCompat.startActivity(getActivity(), IntentUtils.getActorIntent(getActivity(), mActors.get(arg2)), options.toBundle());
-			}
-		});
+		
+		// Disable item clicks for actors as per request
+		mGridView.setOnItemClickListener(null);
 
 		// "No actors" message
 		TextView title = (TextView) v.findViewById(R.id.empty_library_title);
@@ -182,16 +174,24 @@ public class ActorBrowserFragment extends Fragment {
 			CoverItem holder;
 
 			if (convertView == null) {
-				convertView = mInflater.inflate(R.layout.grid_cover_two_line, container, false);
+				// Use the standard card container design: horizontal_grid_item_small
+				convertView = mInflater.inflate(R.layout.horizontal_grid_item_small, container, false);
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);
 				holder.text = (TextView) convertView.findViewById(R.id.text);
-				holder.text.setSingleLine(true);
-				holder.subtext = (TextView) convertView.findViewById(R.id.sub_text);
-				holder.subtext.setSingleLine(true);
+				holder.subtext = (TextView) convertView.findViewById(R.id.gridCoverSubtitle);
 
 				holder.text.setTypeface(TypefaceUtils.getRobotoMedium(mContext));
+				
+				// Disable interactions on the card as per user request
+				convertView.setClickable(false);
+				convertView.setFocusable(false);
+                View cardLayout = convertView.findViewById(R.id.card_layout);
+                if (cardLayout != null) {
+                    cardLayout.setClickable(false);
+                    cardLayout.setFocusable(false);
+                }
 
 				convertView.setTag(holder);
 			} else {
@@ -203,10 +203,8 @@ public class ActorBrowserFragment extends Fragment {
 			holder.text.setText(mActors.get(position).getName());
 			holder.subtext.setText(mActors.get(position).getCharacter());
 
-			// Finally load the image asynchronously into the ImageView, this also takes care of
-			// setting a placeholder image while the background thread runs
 			if (!mActors.get(position).getUrl().endsWith("null"))
-				mPicasso.load(mActors.get(position).getUrl()).error(R.drawable.noactor).config(mConfig).into(holder);
+				mPicasso.load(mActors.get(position).getUrl()).error(R.drawable.noactor).config(mConfig).into(holder.cover);
 			else
 				holder.cover.setImageResource(R.drawable.noactor);
 

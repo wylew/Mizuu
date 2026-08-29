@@ -16,7 +16,7 @@
 
 package com.miz.mizuu.fragments;
 
-import android.app.AlertDialog;
+import android.app.Activity;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -28,7 +28,7 @@ import android.os.Bundle;
 import android.preference.PreferenceManager;
 import androidx.fragment.app.Fragment;
 import androidx.localbroadcastmanager.content.LocalBroadcastManager;
-import androidx.appcompat.widget.SwitchCompat;
+import androidx.appcompat.app.AlertDialog;
 import android.view.ActionMode;
 import android.view.LayoutInflater;
 import android.view.Menu;
@@ -42,7 +42,6 @@ import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.AdapterView.OnItemLongClickListener;
 import android.widget.BaseAdapter;
-import android.widget.CompoundButton;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -110,7 +109,7 @@ public class TvShowEpisodesFragment extends Fragment {
 
         setHasOptionsMenu(true);
 
-		mContext = getActivity().getApplicationContext();
+		mContext = getActivity();
 
 		mPicasso = MizuuApplication.getPicasso(mContext);
 		mConfig = MizuuApplication.getBitmapConfig();
@@ -140,24 +139,6 @@ public class TvShowEpisodesFragment extends Fragment {
     @Override
     public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
         inflater.inflate(R.menu.episodes_overview, menu);
-
-        int padding = MizLib.convertDpToPixels(getActivity(), 16);
-
-        SwitchCompat switchCompat = (SwitchCompat) menu.findItem(R.id.switch_button).getActionView();
-        switchCompat.setChecked(mEpisodeLoader != null ? mEpisodeLoader.showAvailableFiles() : false);
-        switchCompat.setText(R.string.choiceAvailableFiles);
-        switchCompat.setSwitchPadding(padding);
-        switchCompat.setPadding(0, 0, padding, 0);
-
-        switchCompat.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-            @Override
-            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-                mEpisodeLoader.setShowAvailableFiles(isChecked);
-                mEpisodeLoader.load();
-                showProgressBar();
-            }
-        });
-
         super.onCreateOptionsMenu(menu, inflater);
     }
 
@@ -225,7 +206,7 @@ public class TvShowEpisodesFragment extends Fragment {
 			v.findViewById(R.id.container).setBackgroundColor(Color.parseColor("#05FFFFFF"));
 		}
 
-		mAdapter = new ImageAdapter(mContext);
+		mAdapter = new ImageAdapter(getActivity());
 
 		mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
 
@@ -454,13 +435,11 @@ public class TvShowEpisodesFragment extends Fragment {
 
 	private class ImageAdapter extends BaseAdapter {
 
-		private LayoutInflater inflater;
 		private final Context mContext;
 		private int mNumColumns = 0;
 
 		public ImageAdapter(Context context) {
 			mContext = context;
-			inflater = (LayoutInflater) mContext.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
 		}
 
 		@Override
@@ -496,15 +475,16 @@ public class TvShowEpisodesFragment extends Fragment {
 		}
 
 		@Override
-		public View getView(final int position, View convertView, ViewGroup container) {
+		public View getView(final int position, View convertView, ViewGroup parent) {
 			final CoverItem holder;
 			final GridEpisode episode = getItem(position);
 
 			if (convertView == null) {
+                LayoutInflater inflater = LayoutInflater.from(mContext);
 				if (mUseGridView)
-					convertView = inflater.inflate(R.layout.grid_episode, container, false);
+					convertView = inflater.inflate(R.layout.grid_episode, parent, false);
 				else
-					convertView = inflater.inflate(R.layout.list_episode, container, false);
+					convertView = inflater.inflate(R.layout.list_episode, parent, false);
 				holder = new CoverItem();
 
 				holder.cover = (ImageView) convertView.findViewById(R.id.cover);

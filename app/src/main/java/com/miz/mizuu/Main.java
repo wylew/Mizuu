@@ -76,7 +76,12 @@ public class Main extends MizActivity {
         super.onCreate(savedInstanceState);
 
         SharedPreferences settings = PreferenceManager.getDefaultSharedPreferences(this);
-        mStartup = Integer.valueOf(settings.getString(STARTUP_SELECTION, "1"));
+        // Default to "0" (ALL)
+        try {
+            mStartup = Integer.parseInt(settings.getString(STARTUP_SELECTION, "0"));
+        } catch (NumberFormatException e) {
+            mStartup = ALL;
+        }
 
         mBottomControls = findViewById(R.id.bottom_controls);
         mLibraryToggleGroup = findViewById(R.id.library_toggle_group);
@@ -155,10 +160,15 @@ public class Main extends MizActivity {
 
         if (savedInstanceState != null && savedInstanceState.containsKey("selectedIndex")) {
             selectedIndex = savedInstanceState.getInt("selectedIndex");
-        } else if (getIntent().getExtras() != null && getIntent().getExtras().containsKey("startup")) {
-            selectedIndex = Integer.parseInt(getIntent().getExtras().getString("startup"));
         } else {
-            selectedIndex = mStartup;
+            Object startupExtra = getIntent().hasExtra("startup") ? getIntent().getExtras().get("startup") : null;
+            if (startupExtra instanceof String) {
+                selectedIndex = Integer.parseInt((String) startupExtra);
+            } else if (startupExtra instanceof Integer) {
+                selectedIndex = (Integer) startupExtra;
+            } else {
+                selectedIndex = mStartup;
+            }
         }
 
         // Sync toggle group state
@@ -166,8 +176,13 @@ public class Main extends MizActivity {
         if (selectedIndex == MOVIES) checkId = R.id.btn_movies;
         else if (selectedIndex == SHOWS) checkId = R.id.btn_tv;
         
+        int targetIndex = selectedIndex;
+        selectedIndex = -1; // Reset to ensure the listener triggers loadFragment
         mLibraryToggleGroup.check(checkId);
-        loadFragment(selectedIndex);
+        
+        if (selectedIndex == -1) {
+            loadFragment(targetIndex);
+        }
 
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
         LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
@@ -244,12 +259,21 @@ public class Main extends MizActivity {
         setIntent(newIntent);
 
         if (newIntent.hasExtra("startup")) {
-            int type = Integer.parseInt(newIntent.getStringExtra("startup"));
+            Object startupExtra = newIntent.getExtras().get("startup");
+            int type = ALL;
+            if (startupExtra instanceof String) {
+                type = Integer.parseInt((String) startupExtra);
+            } else if (startupExtra instanceof Integer) {
+                type = (Integer) startupExtra;
+            }
+
             int checkId = R.id.btn_all;
             if (type == MOVIES) checkId = R.id.btn_movies;
             else if (type == SHOWS) checkId = R.id.btn_tv;
             mLibraryToggleGroup.check(checkId);
-            loadFragment(type);
+            if (selectedIndex != type) {
+                loadFragment(type);
+            }
         }
     }
 
@@ -305,6 +329,8 @@ public class Main extends MizActivity {
             ((MovieLibraryFragment) frag).onMenuAction(id);
         } else if (frag instanceof TvShowLibraryFragment) {
             ((TvShowLibraryFragment) frag).onMenuAction(id);
+        } else if (frag instanceof AllLibraryFragment) {
+            ((AllLibraryFragment) frag).onMenuAction(id);
         }
 
         return super.onOptionsItemSelected(item);

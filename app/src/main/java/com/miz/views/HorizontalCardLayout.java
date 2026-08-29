@@ -22,6 +22,7 @@ import android.util.AttributeSet;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.Button;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -41,8 +42,8 @@ public class HorizontalCardLayout extends LinearLayout {
 	public static final int MOVIES = 1000, TV_SHOWS = 1100, PHOTOS = 1200,
 			TAGGED_PHOTOS = 1300, RELATED_MOVIES = 1400, ACTORS = 1500, SEASONS = 1600;
 
-	private final View mTitleLayout;
-	private final TextView mTitleTextView, mSeeMoreTextView;
+	private final TextView mTitleTextView;
+	private final Button mSeeMoreButton;
 	private LinearLayout mCardContent;
 	private ProgressBar mProgressBar;
 	private TextView mErrorTextView;
@@ -61,36 +62,36 @@ public class HorizontalCardLayout extends LinearLayout {
 		setOrientation(VERTICAL);
 		LayoutInflater.from(context).inflate(R.layout.horizontal_grid_items, this, true);
 
-		mTitleLayout = getChildAt(0);
-		mTitleLayout.setClickable(true);
-		mTitleLayout.setFocusable(true);
-
-		mTitleTextView = (TextView) mTitleLayout.findViewById(R.id.title);
+		mTitleTextView = (TextView) findViewById(R.id.title);
 		if (!isInEditMode())
 			mTitleTextView.setTypeface(TypefaceUtils.getRobotoMedium(context));
 
-		mSeeMoreTextView = (TextView) mTitleLayout.findViewById(R.id.see_more);
+		mSeeMoreButton = (Button) findViewById(R.id.see_more);
 		if (!isInEditMode())
-			mSeeMoreTextView.setTypeface(TypefaceUtils.getRobotoCondensedRegular(context));
+			mSeeMoreButton.setTypeface(TypefaceUtils.getRobotoCondensedRegular(context));
 
 		if (!isInEditMode()) {
-			mCardContent = (LinearLayout) getChildAt(1).findViewById(R.id.linear_layout);
-			mProgressBar = (ProgressBar) getChildAt(1).findViewById(R.id.progress_bar);
-			mErrorTextView = (TextView) getChildAt(1).findViewById(R.id.error_message);
+			mCardContent = (LinearLayout) findViewById(R.id.linear_layout);
+			mProgressBar = (ProgressBar) findViewById(R.id.progress_bar);
+			mErrorTextView = (TextView) findViewById(R.id.error_message);
 		}
 	}
 
 	public void setSeeMoreVisibility(boolean visible) {
-		mSeeMoreTextView.setVisibility(visible ? VISIBLE : GONE);
+		mSeeMoreButton.setVisibility(visible ? VISIBLE : GONE);
 	}
 
 	public void setSeeMoreOnClickListener(OnClickListener listener) {
-		mTitleLayout.setOnClickListener(listener);
+		mSeeMoreButton.setOnClickListener(listener);
 	}
 
 	public View getSeeMoreView() {
-		return mSeeMoreTextView;
+		return mSeeMoreButton;
 	}
+
+    public TextView getTitleView() {
+        return mTitleTextView;
+    }
 
 	public void setTitle(CharSequence title) {
 		mTitleTextView.setText(title);
@@ -98,6 +99,10 @@ public class HorizontalCardLayout extends LinearLayout {
 
 	public void setTitle(int titleResId) {
 		setTitle(getResources().getString(titleResId));
+	}
+
+	public void setTitleColor(int color) {
+		mTitleTextView.setTextColor(color);
 	}
 
 	public void setProgressBarVisibility(boolean visible) {
@@ -128,6 +133,8 @@ public class HorizontalCardLayout extends LinearLayout {
 	@SuppressWarnings("unchecked")
 	public void loadItems(Activity context, Picasso picasso, int capacity, int width, List<?> items, int type, int toolbarColor) {
 		if (items.size() > 0) {
+            mCardContent.removeAllViews();
+
 			LinearLayout.LayoutParams lp = new LinearLayout.LayoutParams(width, LayoutParams.WRAP_CONTENT);
 			lp.setMargins(0, 0, getResources().getDimensionPixelSize(R.dimen.image_thumbnail_spacing), 0);
 

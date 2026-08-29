@@ -1862,7 +1862,7 @@ public class MizLib {
         return false;
     }
 
-    public static int getFileSize(URL url) {
+    public static int getFileSizeSize(URL url) {
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection) url.openConnection();
@@ -1883,8 +1883,8 @@ public class MizLib {
         try {
             int hours = (minutes / 60);
             minutes = (minutes % 60);
-            String hours_string = hours + " " + context.getResources().getQuantityString(R.plurals.hour, hours, hours);
-            String minutes_string = minutes + " " + context.getResources().getQuantityString(R.plurals.minute, minutes, minutes);
+            String hours_string = context.getResources().getQuantityString(R.plurals.hour, hours, hours);
+            String minutes_string = context.getResources().getQuantityString(R.plurals.minute, minutes, minutes);
             if (hours > 0) {
                 if (minutes == 0)
                     return hours_string;
@@ -1910,12 +1910,12 @@ public class MizLib {
 
         if (hours > 0) {
             if (minutes == 0) {
-                return hours + " " + context.getResources().getQuantityString(R.plurals.hour, hours, hours);
+                return context.getResources().getQuantityString(R.plurals.hour, hours, hours);
             } else {
-                return hours + " " + context.getResources().getQuantityString(R.plurals.hour_short, hours, hours) + " " + minutes + " " + context.getResources().getQuantityString(R.plurals.minute_short, minutes, minutes);
+                return context.getResources().getQuantityString(R.plurals.hour_short, hours, hours) + " " + context.getResources().getQuantityString(R.plurals.minute_short, minutes, minutes);
             }
         } else {
-            return minutes + " " + context.getResources().getQuantityString(R.plurals.minute, minutes, minutes);
+            return context.getResources().getQuantityString(R.plurals.minute, minutes, minutes);
         }
     }
 

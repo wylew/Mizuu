@@ -68,7 +68,8 @@ public class ViewUtils {
     private ViewUtils() {} // No instantiation
 
     /**
-     * Returns an actor card with name, character, image and click listener.
+     * Returns an actor card with name, character, and image.
+     * Click interaction is disabled as per user request.
      */
     @SuppressLint("InflateParams")
     public static View setupActorCard(final Activity context, Picasso picasso, final Actor actor, int width, int height) {
@@ -91,13 +92,17 @@ public class ViewUtils {
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setText(actor.getCharacter());
         ((TextView) v.findViewById(R.id.gridCoverSubtitle)).setSingleLine(true);
 
-        // Set click listener
-        v.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                context.startActivity(IntentUtils.getActorIntent(context, actor));
-            }
-        });
+        // Disable click interactions for actors
+        v.setOnClickListener(null);
+        v.setClickable(false);
+        v.setFocusable(false);
+        
+        View cardLayout = v.findViewById(R.id.card_layout);
+        if (cardLayout != null) {
+            cardLayout.setOnClickListener(null);
+            cardLayout.setClickable(false);
+            cardLayout.setFocusable(false);
+        }
 
         return v;
     }
@@ -292,6 +297,8 @@ public class ViewUtils {
      */
     public static void updateToolbarBackground(Activity activity, Toolbar toolbar,
                                                int alpha, String title, int color) {
+        if (activity == null || toolbar == null) return;
+
         if (defaultTitleTextColor == -1) {
             try {
                 TypedValue typedValue = new TypedValue();
@@ -328,8 +335,10 @@ public class ViewUtils {
             Insets insets = windowInsets.getInsets(WindowInsetsCompat.Type.systemBars());
             v.setPadding(v.getPaddingLeft(), insets.top, v.getPaddingRight(), v.getPaddingBottom());
             ViewGroup.LayoutParams lp = v.getLayoutParams();
-            lp.height = MizLib.getActionBarHeight(context) + insets.top;
-            v.setLayoutParams(lp);
+            if (lp != null) {
+                lp.height = MizLib.getActionBarHeight(context) + insets.top;
+                v.setLayoutParams(lp);
+            }
             return windowInsets;
         });
     }
@@ -337,7 +346,10 @@ public class ViewUtils {
     public static void setLayoutParamsForDetailsEmptyView(Context context, View layout, ImageView background, ObservableScrollView scrollView, ViewTreeObserver.OnGlobalLayoutListener listener) {
         if (!MizLib.isPortrait(context)) {
             View empty = layout.findViewById(R.id.empty_view);
-            if (empty == null) return;
+            if (empty == null) {
+                MizLib.removeViewTreeObserver(scrollView.getViewTreeObserver(), listener);
+                return;
+            }
             
             // If backdrop is inside the layout, background height might be 0 until measured
             int backdropHeight = background != null ? background.getHeight() : 0;
@@ -350,20 +362,26 @@ public class ViewUtils {
     }
 
     public static void handleOnScrollChangedEvent(Activity activity, View layout, View background, String title, int height, int t, Toolbar toolbar, int toolbarColor) {
+        if (activity == null || toolbar == null) return;
+
         // Robust calculation for unified layouts
         int baseHeaderHeight = 0;
         if (MizLib.isPortrait(activity)) {
             if (background != null) baseHeaderHeight = background.getHeight();
         } else {
             View empty = layout.findViewById(R.id.empty_view);
-            if (empty != null) baseHeaderHeight = empty.getHeight();
+            if (empty != null) {
+                baseHeaderHeight = empty.getHeight();
+            } else if (background != null) {
+                baseHeaderHeight = background.getHeight();
+            }
         }
         
         // Fallback to a sensible default if heights aren't available yet
-        if (baseHeaderHeight == 0) baseHeaderHeight = 300; 
+        if (baseHeaderHeight == 0) baseHeaderHeight = MizLib.convertDpToPixels(activity, 300);
 
         final int headerHeight = baseHeaderHeight - height;
-        final float ratio = (float) Math.min(Math.max(t, 0), headerHeight) / headerHeight;
+        final float ratio = headerHeight > 0 ? (float) Math.min(Math.max(t, 0), headerHeight) / headerHeight : 1.0f;
         final int newAlpha = (int) (ratio * 255);
 
         updateToolbarBackground(activity, toolbar, newAlpha, title, toolbarColor);

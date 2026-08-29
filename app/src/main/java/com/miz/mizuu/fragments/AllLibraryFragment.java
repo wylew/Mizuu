@@ -16,17 +16,19 @@
 
 package com.miz.mizuu.fragments;
 
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.graphics.Bitmap.Config;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.BaseAdapter;
+import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.ProgressBar;
@@ -37,16 +39,23 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.app.ActivityOptionsCompat;
 import androidx.core.util.Pair;
 import androidx.fragment.app.Fragment;
+import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.github.ksoichiro.android.observablescrollview.ObservableGridView;
+import com.miz.functions.AsyncTask;
 import com.miz.functions.CoverItem;
 import com.miz.functions.MediumMovie;
+import com.miz.functions.MizLib;
+import com.miz.mizuu.AddFileSource;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.MovieDetails;
 import com.miz.mizuu.R;
 import com.miz.mizuu.TvShow;
 import com.miz.mizuu.TvShowDetails;
+import com.miz.mizuu.Update;
+import com.miz.utils.LocalBroadcastUtils;
+import com.miz.utils.TypefaceUtils;
 import com.miz.utils.ViewUtils;
 import com.squareup.picasso.Picasso;
 
@@ -54,6 +63,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Locale;
 
 import static com.miz.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.miz.functions.PreferenceKeys.SHOW_TITLES_IN_GRID;
@@ -65,12 +75,15 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
     private LoaderAdapter mAdapter;
     private ObservableGridView mGridView;
     private ProgressBar mProgressBar;
-    private boolean mShowTitles;
+    private boolean mShowTitles, mLoading = true;
     private Picasso mPicasso;
     private Config mConfig;
     private List<Object> mFullResults = new ArrayList<>();
     private List<Object> mResults = new ArrayList<>();
     private String mSearchQuery = "";
+    private View mEmptyLibraryLayout;
+    private TextView mEmptyLibraryTitle, mEmptyLibraryDescription;
+    private Button mAddFileSourceButton, mUpdateLibraryButton;
 
     public AllLibraryFragment() {}
 
@@ -87,7 +100,17 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
         mShowTitles = mSharedPreferences.getBoolean(SHOW_TITLES_IN_GRID, true);
         mPicasso = MizuuApplication.getPicasso(mContext);
         mConfig = MizuuApplication.getBitmapConfig();
+
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
+        LocalBroadcastManager.getInstance(mContext).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
     }
+
+    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            loadData();
+        }
+    };
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
@@ -95,6 +118,31 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
 
         mProgressBar = (ProgressBar) v.findViewById(R.id.progress);
         mGridView = (ObservableGridView) v.findViewById(R.id.gridView);
+        
+        mEmptyLibraryLayout = v.findViewById(R.id.empty_library_layout);
+        mEmptyLibraryTitle = (TextView) v.findViewById(R.id.empty_library_title);
+        mEmptyLibraryTitle.setTypeface(TypefaceUtils.getRobotoCondensedRegular(mContext));
+        mEmptyLibraryDescription = (TextView) v.findViewById(R.id.empty_library_description);
+        mEmptyLibraryDescription.setTypeface(TypefaceUtils.getRobotoLight(mContext));
+
+        mAddFileSourceButton = (Button) v.findViewById(R.id.add_file_source_button);
+        mAddFileSourceButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Intent i = new Intent(getActivity(), AddFileSource.class);
+                i.putExtra("isMovie", true);
+                startActivity(i);
+            }
+        });
+
+        mUpdateLibraryButton = (Button) v.findViewById(R.id.update_library_button);
+        mUpdateLibraryButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                onMenuAction(R.id.update);
+            }
+        });
+
         mAdapter = new LoaderAdapter();
         mGridView.setAdapter(mAdapter);
         updateGridViewColumns();
@@ -137,9 +185,10 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
             mResults = new ArrayList<>(mFullResults);
         } else {
             mResults = new ArrayList<>();
+            String query = mSearchQuery.toLowerCase(Locale.getDefault());
             for (Object obj : mFullResults) {
                 String title = (obj instanceof MediumMovie) ? ((MediumMovie) obj).getTitle() : ((TvShow) obj).getTitle();
-                if (title.toLowerCase().contains(mSearchQuery.toLowerCase())) {
+                if (title.toLowerCase(Locale.getDefault()).contains(query)) {
                     mResults.add(obj);
                 }
             }
@@ -153,8 +202,7 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
         new AsyncTask<Void, Void, List<Object>>() {
             @Override
             protected void onPreExecute() {
-                mProgressBar.setVisibility(View.VISIBLE);
-                mGridView.setVisibility(View.GONE);
+                showProgressBar();
             }
 
             @Override
@@ -181,18 +229,74 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
 
             @Override
             protected void onPostExecute(List<Object> objects) {
-                mFullResults = objects;
+                mFullResults = (objects != null) ? objects : new ArrayList<>();
+                mLoading = false;
                 filterResults();
-                mProgressBar.setVisibility(View.GONE);
-                mGridView.setVisibility(View.VISIBLE);
+                hideProgressBar();
             }
         }.execute();
+    }
+
+    private void showProgressBar() {
+        mGridView.setVisibility(View.GONE);
+        mProgressBar.setVisibility(View.VISIBLE);
+        mLoading = true;
+    }
+
+    private void hideProgressBar() {
+        mProgressBar.setVisibility(View.GONE);
+        mLoading = false;
+        
+        if (mAdapter.getCount() == 0) {
+            showEmptyView();
+        } else {
+            hideEmptyView();
+            mGridView.setVisibility(View.VISIBLE);
+        }
+    }
+
+    private void showEmptyView() {
+        mGridView.setVisibility(View.GONE);
+        mEmptyLibraryLayout.setVisibility(View.VISIBLE);
+
+        if (!mSearchQuery.isEmpty()) {
+            mEmptyLibraryTitle.setText(R.string.no_search_results);
+            mEmptyLibraryDescription.setText(R.string.no_search_results_description);
+            mAddFileSourceButton.setVisibility(View.GONE);
+            mUpdateLibraryButton.setVisibility(View.GONE);
+        } else {
+            mEmptyLibraryTitle.setText(R.string.no_content);
+            mEmptyLibraryDescription.setText(MizLib.isTablet(mContext) ?
+                    R.string.no_movies_description_tablet : R.string.no_movies_description);
+            
+            if (MizLib.getFileSources(MizLib.TYPE_MOVIE, false).isEmpty() && 
+                MizLib.getFileSources(MizLib.TYPE_SHOWS, false).isEmpty()) {
+                mAddFileSourceButton.setVisibility(View.VISIBLE);
+                mUpdateLibraryButton.setVisibility(View.GONE);
+            } else {
+                mAddFileSourceButton.setVisibility(View.GONE);
+                mUpdateLibraryButton.setVisibility(View.VISIBLE);
+            }
+        }
+    }
+
+    private void hideEmptyView() {
+        mEmptyLibraryLayout.setVisibility(View.GONE);
     }
 
     private void updateGridViewColumns() {
         if (mGridView != null) {
             mGridView.setNumColumns(ViewUtils.getGridViewNumColumns(mContext));
             mGridView.setColumnWidth(ViewUtils.getGridViewThumbSize(mContext));
+        }
+    }
+
+    public void onMenuAction(int id) {
+        if (id == R.id.update) {
+            Intent intent = new Intent();
+            intent.setClass(getActivity(), Update.class);
+            intent.putExtra("isAll", true);
+            startActivityForResult(intent, 0);
         }
     }
 
@@ -239,9 +343,23 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
             }
 
             holder.cover.setImageResource(R.color.card_background_dark);
-            mPicasso.load(thumb).placeholder(R.drawable.bg).config(mConfig).into(holder.cover);
+            mPicasso.load(thumb).placeholder(R.drawable.bg).config(mConfig).into(holder);
 
             return convertView;
+        }
+        
+        @Override
+        public void notifyDataSetChanged() {
+            super.notifyDataSetChanged();
+            
+            if (!mLoading) {
+                if (getCount() == 0) {
+                    showEmptyView();
+                } else {
+                    hideEmptyView();
+                    mGridView.setVisibility(View.VISIBLE);
+                }
+            }
         }
     }
 
@@ -259,6 +377,7 @@ public class AllLibraryFragment extends Fragment implements SharedPreferences.On
     @Override
     public void onDestroy() {
         super.onDestroy();
+        LocalBroadcastManager.getInstance(mContext).unregisterReceiver(mMessageReceiver);
         mSharedPreferences.unregisterOnSharedPreferenceChangeListener(this);
     }
 }

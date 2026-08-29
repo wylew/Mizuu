@@ -70,7 +70,6 @@ import java.util.List;
 import java.util.Locale;
 
 import static com.miz.functions.PreferenceKeys.LANGUAGE_PREFERENCE;
-import static com.miz.functions.PreferenceKeys.STARTUP_SELECTION;
 
 public class IdentifyMovieFragment extends Fragment {
 
@@ -237,7 +236,7 @@ public class IdentifyMovieFragment extends Fragment {
 
             // Go back to the library overview and clear the back stack
             Intent libraryOverview = new Intent(getActivity().getApplicationContext(), Main.class);
-            libraryOverview.putExtra(STARTUP_SELECTION, "1"); // Movies
+            libraryOverview.putExtra("startup", "1"); // Movies
             libraryOverview.setFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP);
             startActivity(libraryOverview);
         } else
