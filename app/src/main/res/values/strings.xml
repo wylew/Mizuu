@@ -51,6 +51,7 @@
     <string name="selectLogin">Select user login</string>
     <string name="browseSources">Browse sources</string>
     <string name="playPart">Play part</string>
+    <string name="playMovie">Play</string>
     <string name="part">Part</string>
     <string name="failedToLogin">Failed to log in!</string>
     <string name="loginSucceeded">Log in succeeded!</string>

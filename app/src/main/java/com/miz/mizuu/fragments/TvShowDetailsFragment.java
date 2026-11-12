@@ -49,7 +49,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.tmdb.TMDbTvShowService;
 import com.miz.apis.trakt.Trakt;
 import com.miz.base.MizActivity;
@@ -107,7 +106,7 @@ public class TvShowDetailsFragment extends Fragment {
     private HorizontalCardLayout mSeasonsLayout, mActorsLayout;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
-    private FloatingActionButton mFab;
+    private View mFab;
     private PaletteLoader mPaletteLoader;
 
     /**
@@ -241,7 +240,7 @@ public class TvShowDetailsFragment extends Fragment {
         mActorsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
         mActorsLayout.setVisibility(View.VISIBLE);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+        mFab = v.findViewById(R.id.fab);
 
         mFab.setOnClickListener(v1 -> ViewUtils.animateFabJump(v1, new SimpleAnimatorListener() {
             @Override

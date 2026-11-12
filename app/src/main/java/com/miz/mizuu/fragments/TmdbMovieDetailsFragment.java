@@ -41,7 +41,6 @@ import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.tmdb.Movie;
 import com.miz.apis.tmdb.TMDbMovieService;
 import com.miz.apis.trakt.Trakt;
@@ -76,7 +75,7 @@ public class TmdbMovieDetailsFragment extends Fragment {
     private HorizontalCardLayout mActorsLayout, mSimilarMoviesLayout;
     private int mImageThumbSize, mImageThumbSpacing, mToolbarColor = 0;
     private Toolbar mToolbar;
-    private FloatingActionButton mFab;
+    private View mFab;
     private PaletteLoader mPaletteLoader;
 
     /**
@@ -146,19 +145,21 @@ public class TmdbMovieDetailsFragment extends Fragment {
         mActorsLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout);
         mSimilarMoviesLayout = (HorizontalCardLayout) v.findViewById(R.id.horizontal_card_layout_extra);
         mScrollView = (ObservableScrollView) v.findViewById(R.id.observableScrollView);
-        mFab = (FloatingActionButton) v.findViewById(R.id.fab);
+        mFab = v.findViewById(R.id.fab);
 
-        mFab.setOnClickListener(new OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                ViewUtils.animateFabJump(v, new SimpleAnimatorListener() {
-                    @Override
-                    public void onAnimationEnd(Animator animation) {
-                        watchTrailer();
-                    }
-                });
-            }
-        });
+        if (mFab != null) {
+            mFab.setOnClickListener(new OnClickListener() {
+                @Override
+                public void onClick(View v) {
+                    ViewUtils.animateFabJump(v, new SimpleAnimatorListener() {
+                        @Override
+                        public void onAnimationEnd(Animator animation) {
+                            watchTrailer();
+                        }
+                    });
+                }
+            });
+        }
 
         // Get rid of these...
         v.findViewById(R.id.textView3).setVisibility(View.GONE); // File

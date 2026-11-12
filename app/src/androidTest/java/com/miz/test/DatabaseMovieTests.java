@@ -23,6 +23,8 @@ import com.miz.db.DbAdapterMovies;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.utils.MovieDatabaseUtils;
 
+import static org.junit.Assert.assertEquals;
+
 /**
  * Tests various movie database queries.
  * Do not use this on a non-debug build, as

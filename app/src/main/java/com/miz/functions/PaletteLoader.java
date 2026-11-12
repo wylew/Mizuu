@@ -12,6 +12,7 @@ import android.widget.TextView;
 
 import androidx.palette.graphics.Palette;
 
+import com.google.android.material.button.MaterialButton;
 import com.google.android.material.card.MaterialCardView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.mizuu.MizuuApplication;
@@ -28,7 +29,7 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
     private final List<View> mViews;
     private final OnPaletteLoadedCallback mOnPaletteLoadedCallback;
 
-    private FloatingActionButton mFab;
+    private View mFab;
     private int mSwatchColor = 0xFF333333; // Default dark grey
     private int mContrastTextColor = Color.WHITE;
     private int mAccentColor = 0xFFE91E63; // Default standout color
@@ -59,11 +60,11 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
         return mViews;
     }
 
-    public void setFab(FloatingActionButton fab) {
+    public void setFab(View fab) {
         mFab = fab;
     }
 
-    private FloatingActionButton getFab() {
+    private View getFab() {
         return mFab;
     }
 
@@ -128,8 +129,14 @@ public class PaletteLoader extends AsyncTask<Void, Void, Palette> {
 
         // Color the Play Button with the accent color
         if (getFab() != null) {
-            mFab.setBackgroundTintList(ColorStateList.valueOf(mAccentColor));
-            mFab.setImageTintList(ColorStateList.valueOf(getContrastColor(mAccentColor)));
+            if (mFab instanceof FloatingActionButton) {
+                ((FloatingActionButton) mFab).setBackgroundTintList(ColorStateList.valueOf(mAccentColor));
+                ((FloatingActionButton) mFab).setImageTintList(ColorStateList.valueOf(getContrastColor(mAccentColor)));
+            } else if (mFab instanceof MaterialButton) {
+                ((MaterialButton) mFab).setBackgroundTintList(ColorStateList.valueOf(mAccentColor));
+                ((MaterialButton) mFab).setIconTint(ColorStateList.valueOf(getContrastColor(mAccentColor)));
+                ((MaterialButton) mFab).setTextColor(getContrastColor(mAccentColor));
+            }
         }
     }
 

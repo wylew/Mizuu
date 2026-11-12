@@ -45,7 +45,6 @@ import android.widget.ImageView;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import com.miz.apis.tmdb.TMDbMovieService;
 import com.miz.apis.trakt.Trakt;
 import com.miz.base.MizActivity;
@@ -92,7 +91,7 @@ public class MovieDetailsFragment extends Fragment {
     private Typeface mLight, mMedium, mCondensedRegular;
     private int mToolbarColor = 0;
     private Toolbar mToolbar;
-    private FloatingActionButton mFab;
+    private View mFab;
     private int mImageThumbSize, mImageThumbSpacing;
     private PaletteLoader mPaletteLoader;
 
@@ -203,7 +202,7 @@ public class MovieDetailsFragment extends Fragment {
         mScrollView = view.findViewById(R.id.observableScrollView);
         mFab = view.findViewById(R.id.fab);
 
-        mFab.setOnClickListener(v -> playMovie());
+        if (mFab != null) mFab.setOnClickListener(v -> playMovie());
 
         final int height = MizLib.getActionBarAndStatusBarHeight(mContext);
         mScrollView.setOnScrollChangedListener((who, l, t, oldl, oldt) ->
@@ -217,25 +216,29 @@ public class MovieDetailsFragment extends Fragment {
         });
 
         // UI Setup
-        mTitle.setText(mMovie.getTitle());
-        mGenre.setVisibility(View.GONE);
+        if (mTitle != null) mTitle.setText(mMovie.getTitle());
+        if (mGenre != null) mGenre.setVisibility(View.GONE);
 
         String rawRuntime = mMovie.getRuntime().replaceAll("[^0-9]", "");
-        if (!TextUtils.isEmpty(rawRuntime)) {
-            mRuntime.setText(MizLib.getPrettyRuntime(mContext, Integer.parseInt(rawRuntime)));
-        } else {
-            mRuntime.setVisibility(View.GONE);
+        if (mRuntime != null) {
+            if (!TextUtils.isEmpty(rawRuntime)) {
+                mRuntime.setText(MizLib.getPrettyRuntime(mContext, Integer.parseInt(rawRuntime)));
+            } else {
+                mRuntime.setVisibility(View.GONE);
+            }
         }
 
-        mReleaseDate.setText(mMovie.getReleasedate());
-        mRating.setText(Html.fromHtml(mMovie.getRawRating() + "<small>/10</small>"));
-        mTagline.setText(mMovie.getTagline());
-        mCertification.setText(mMovie.getCertification());
+        if (mReleaseDate != null) mReleaseDate.setText(mMovie.getReleasedate());
+        if (mRating != null) mRating.setText(Html.fromHtml(mMovie.getRawRating() + "<small>/10</small>"));
+        if (mTagline != null) mTagline.setText(mMovie.getTagline());
+        if (mCertification != null) mCertification.setText(mMovie.getCertification());
 
-        if (TextUtils.isEmpty(mMovie.getPlot())) {
-            mPlot.setText("No plot available.");
-        } else {
-            mPlot.setText(mMovie.getPlot());
+        if (mPlot != null) {
+            if (TextUtils.isEmpty(mMovie.getPlot())) {
+                mPlot.setText("No plot available.");
+            } else {
+                mPlot.setText(mMovie.getPlot());
+            }
         }
 
         loadImages();
@@ -271,14 +274,14 @@ public class MovieDetailsFragment extends Fragment {
                         ViewUtils.updateToolbarBackground(getActivity(), mToolbar, 0, mMovie.getTitle(), mToolbarColor);
                     });
 
-                    mPaletteLoader.addView(mDetailsArea);
-                    mPaletteLoader.addView(mTextContainerCard);
+                    if (mDetailsArea != null) mPaletteLoader.addView(mDetailsArea);
+                    if (mTextContainerCard != null) mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.setFab(mFab);
                     mPaletteLoader.execute();
                 } else {
                     mPaletteLoader.clearViews();
-                    mPaletteLoader.addView(mDetailsArea);
-                    mPaletteLoader.addView(mTextContainerCard);
+                    if (mDetailsArea != null) mPaletteLoader.addView(mDetailsArea);
+                    if (mTextContainerCard != null) mPaletteLoader.addView(mTextContainerCard);
                     mPaletteLoader.setFab(mFab);
                     mPaletteLoader.colorViews();
                 }

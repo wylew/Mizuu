@@ -22,6 +22,7 @@
         android:layout_gravity="center_vertical"
         android:textSize="14sp"
         android:gravity="center_vertical"
-        android:textColor="#212121" />
+        android:textColor="#212121"
+        android:visibility="gone" />
 
 </LinearLayout>

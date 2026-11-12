@@ -37,7 +37,8 @@
                 android:maxLines="2"
                 android:minLines="2"
                 android:textAppearance="?attr/textAppearanceTitleSmall"
-                android:textColor="?attr/colorOnSurface" />
+                android:textColor="?attr/colorOnSurface"
+                android:visibility="gone" />
 
             <TextView
                 android:id="@+id/gridCoverSubtitle"
