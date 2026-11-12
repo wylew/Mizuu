@@ -91,7 +91,12 @@ public class FileTvShow extends TvShowFileSource<File> {
 
         int count = dbEpisodes.size();
         for (int i = 0; i < dbEpisodes.size(); i++) {
-            if (!new File(dbEpisodes.get(i).getFilepath()).exists()) {
+            DbEpisode dbEpisode = dbEpisodes.get(i);
+            // Network / UPnP paths are never "files", so File.exists() would wrongly report them missing
+            if (dbEpisode.isNetworkFile() || dbEpisode.isUpnpFile())
+                continue;
+
+            if (!new File(dbEpisode.getFilepath()).exists()) {
                 boolean deleted = db.deleteEpisode(dbEpisodes.get(i).getShowId(), MizLib.getInteger(dbEpisodes.get(i).getSeason()), MizLib.getInteger(dbEpisodes.get(i).getEpisode()));
                 if (deleted)
                     removedEpisodes.add(dbEpisodes.get(i));

@@ -388,4 +388,21 @@
     <string name="prefsDynamicColorsSummary">Apply colors matching your wallpaper.</string>
 
     <string name="all">All</string>
+
+    <!-- Library update banner -->
+    <string name="library_update_running_movies">Updating movies…</string>
+    <string name="library_update_running_shows">Updating TV shows…</string>
+    <string name="library_update_running_both">Updating your library…</string>
+    <string name="library_update_finished">Library updated</string>
+    <string name="library_update_cancelled">Library update cancelled</string>
+    <string name="library_update_no_changes">No changes found</string>
+    <string name="library_update_offline">No internet connection</string>
+    <string name="library_update_preparing">Getting ready…</string>
+    <!-- %1$s is e.g. "3 movies" -->
+    <string name="library_update_added">Added %1$s</string>
+    <!-- %1$s is e.g. "2 episodes" -->
+    <string name="library_update_removed">removed %1$s</string>
+    <string name="library_update_section_movies">Movies</string>
+    <string name="library_update_section_shows">TV</string>
+    <string name="library_update_dismiss">Dismiss</string>
 </resources>

@@ -28,7 +28,7 @@ public class DbEpisode {
 
 	public DbEpisode(Context context, String filepath, String showId, String season, String episode) {
 		mContext = context;
-		mFilepath = filepath;
+		mFilepath = filepath != null ? filepath : ""; // A missing mapping would otherwise NPE in getFilepath()
 		mShowId = showId;
 		mSeason = season;
 		mEpisode = episode;

@@ -36,6 +36,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 import android.text.Html;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -93,6 +94,8 @@ import java.util.List;
 
 public class TvShowDetailsFragment extends Fragment {
 
+    private static final String LOG_TAG = "TvShowDetailsFragment";
+
     private Activity mContext;
     private DbAdapterTvShows dbHelper;
     private TvShow thisShow;
@@ -140,14 +143,17 @@ public class TvShowDetailsFragment extends Fragment {
         // Create and open database
         dbHelper = MizuuApplication.getTvDbAdapter();
 
+        mPicasso = MizuuApplication.getPicasso(getActivity());
+
         loadShowDetails();
 
         if (thisShow == null) {
+            Log.e(LOG_TAG, "Could not load TV show with id: " + getArguments().getString("showId"));
+            Toast.makeText(mContext, R.string.errorOccured, Toast.LENGTH_SHORT).show();
             getActivity().finish();
             return;
         }
 
-        mPicasso = MizuuApplication.getPicasso(getActivity());
         LocalBroadcastManager.getInstance(getActivity()).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.CLEAR_IMAGE_CACHE));
     }
 
@@ -173,6 +179,7 @@ public class TvShowDetailsFragment extends Fragment {
                 );
             }
         } catch (Exception e) {
+            Log.e(LOG_TAG, "Failed to read TV show " + showId + " from the database", e);
         } finally {
             if (cursor != null)
                 cursor.close();
@@ -332,12 +339,10 @@ public class TvShowDetailsFragment extends Fragment {
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        if (mSeasonsLayout.getWidth() > 0) {
-                            int numColumns = (int) Math.floor(mSeasonsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-                            if (numColumns <= 0) numColumns = 1;
-                            mImageThumbSize = (mSeasonsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
-
-                            loadSeasons(numColumns);
+                        int width = mSeasonsLayout.getWidth();
+                        if (width > 0) {
+                            int numColumns = getColumnCount(width);
+                            loadSeasons(numColumns, getCardWidth(width, numColumns));
                             MizLib.removeViewTreeObserver(mSeasonsLayout.getViewTreeObserver(), this);
                         }
                     }
@@ -350,12 +355,10 @@ public class TvShowDetailsFragment extends Fragment {
                 new ViewTreeObserver.OnGlobalLayoutListener() {
                     @Override
                     public void onGlobalLayout() {
-                        if (mActorsLayout.getWidth() > 0) {
-                            int numColumns = (int) Math.floor(mActorsLayout.getWidth() / (mImageThumbSize + mImageThumbSpacing));
-                            if (numColumns <= 0) numColumns = 1;
-                            mImageThumbSize = (mActorsLayout.getWidth() - (numColumns * mImageThumbSpacing)) / numColumns;
-
-                            loadActors(numColumns);
+                        int width = mActorsLayout.getWidth();
+                        if (width > 0) {
+                            int numColumns = getColumnCount(width);
+                            loadActors(numColumns, getCardWidth(width, numColumns));
                             MizLib.removeViewTreeObserver(mActorsLayout.getViewTreeObserver(), this);
                         }
                     }
@@ -411,45 +414,89 @@ public class TvShowDetailsFragment extends Fragment {
         }
     }
 
-    private void loadActors(final int capacity) {
+    /**
+     * Number of cards that fit in a horizontal card row of the given width.
+     */
+    private int getColumnCount(int rowWidth) {
+        int numColumns = rowWidth / Math.max(1, mImageThumbSize + mImageThumbSpacing);
+        return Math.max(1, numColumns);
+    }
+
+    /**
+     * Card width that fills a row of the given width with {@code numColumns} cards.
+     * Computed per row, so the seasons and actors rows don't overwrite each other's size.
+     */
+    private int getCardWidth(int rowWidth, int numColumns) {
+        return Math.max(1, (rowWidth - (numColumns * mImageThumbSpacing)) / numColumns);
+    }
+
+    private void loadActors(final int capacity, final int cardWidth) {
+        final String showId = thisShow.getId();
+        final android.content.Context appContext = mContext.getApplicationContext();
         new AsyncTask<Void, Void, List<Actor>>() {
             @Override
             protected List<Actor> doInBackground(Void... params) {
-                return TMDbTvShowService.getInstance(mContext).getActors(thisShow.getId());
+                try {
+                    return TMDbTvShowService.getInstance(appContext).getActors(showId);
+                } catch (Exception e) {
+                    // Never let a network / parsing problem take down the whole app
+                    Log.e(LOG_TAG, "Failed to load actors for show " + showId, e);
+                    return new ArrayList<>();
+                }
             }
 
             @Override
             protected void onPostExecute(List<Actor> actors) {
-                if (isAdded())
-                    mActorsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, actors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                if (!isAdded() || mActorsLayout == null)
+                    return;
+
+                if (actors != null && !actors.isEmpty()) {
+                    mActorsLayout.loadItems(mContext, mPicasso, capacity, cardWidth, actors, HorizontalCardLayout.ACTORS, mToolbarColor);
+                } else {
+                    mActorsLayout.setVisibility(View.GONE);
+                }
             }
         }.execute();
     }
 
-    private void loadSeasons(final int capacity) {
+    private void loadSeasons(final int capacity, final int cardWidth) {
+        final String showId = thisShow.getId();
+        final android.content.Context appContext = mContext.getApplicationContext();
         new AsyncTask<Void, Void, List<GridSeason>>() {
             @Override
             protected List<GridSeason> doInBackground(Void... params) {
                 List<GridSeason> seasonsList = new ArrayList<>();
-                HashMap<String, EpisodeCounter> seasons = MizuuApplication.getTvEpisodeDbAdapter().getSeasons(thisShow.getId());
+                try {
+                    HashMap<String, EpisodeCounter> seasons = MizuuApplication.getTvEpisodeDbAdapter().getSeasons(showId);
 
-                for (String key : seasons.keySet()) {
-                    File temp = FileUtils.getTvShowSeason(mContext, thisShow.getId(), key);
-                    int seasonNum = 0;
-                    try { seasonNum = Integer.parseInt(key); } catch (Exception ignored) {}
-                    
-                    seasonsList.add(new GridSeason(mContext, thisShow.getId(), seasonNum, seasons.get(key).getEpisodeCount(), seasons.get(key).getWatchedCount(),
-                            temp.exists() ? temp : FileUtils.getTvShowThumb(mContext, thisShow.getId())));
+                    for (String key : seasons.keySet()) {
+                        EpisodeCounter counter = seasons.get(key);
+                        if (counter == null)
+                            continue;
+
+                        File temp = FileUtils.getTvShowSeason(appContext, showId, key);
+                        int seasonNum = MizLib.getInteger(key);
+
+                        seasonsList.add(new GridSeason(appContext, showId, seasonNum, counter.getEpisodeCount(), counter.getWatchedCount(),
+                                temp.exists() ? temp : FileUtils.getTvShowThumb(appContext, showId)));
+                    }
+                    Collections.sort(seasonsList);
+                } catch (Exception e) {
+                    Log.e(LOG_TAG, "Failed to load seasons for show " + showId, e);
                 }
-                Collections.sort(seasonsList);
                 return seasonsList;
             }
 
             @Override
             protected void onPostExecute(List<GridSeason> results) {
-                if (isAdded()) {
-                    mSeasonsLayout.loadItems(mContext, mPicasso, capacity, mImageThumbSize, results, HorizontalCardLayout.SEASONS, mToolbarColor);
+                if (!isAdded() || mSeasonsLayout == null)
+                    return;
+
+                if (results != null && !results.isEmpty()) {
+                    mSeasonsLayout.loadItems(mContext, mPicasso, capacity, cardWidth, results, HorizontalCardLayout.SEASONS, mToolbarColor);
                     mSeasonsLayout.setSeeMoreVisibility(true);
+                } else {
+                    mSeasonsLayout.setVisibility(View.GONE);
                 }
             }
         }.execute();

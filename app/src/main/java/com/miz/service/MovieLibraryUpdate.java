@@ -52,6 +52,7 @@ import com.miz.mizuu.CancelLibraryUpdate;
 import com.miz.mizuu.Main;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
+import com.miz.utils.LibraryUpdateStatus;
 import com.miz.utils.LocalBroadcastUtils;
 import com.miz.utils.MovieDatabaseUtils;
 
@@ -70,7 +71,8 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 	private ArrayList<MovieFileSource<?>> mMovieFileSources;
 	private ArrayList<MovieStructure> mMovieQueue = new ArrayList<MovieStructure>();
 	private boolean mClearLibrary, mClearUnavailable, mSyncLibraries, mStopUpdate;
-	private int mTotalFiles, mCount;
+	private int mTotalFiles, mCount, mMoviesAdded, mMoviesRemoved;
+	private long mMovieCountBeforeSearch = -1;
 	private SharedPreferences mSettings;
 	private Editor mEditor;
 	private final int NOTIFICATION_ID = 200, POST_UPDATE_NOTIFICATION = 213;
@@ -98,7 +100,17 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		mNotificationManager.cancel(NOTIFICATION_ID);
 
 		reloadLibrary();
-		
+
+		// Work out what actually changed, using the database rather than the identification
+		// counter (which also counts files that couldn't be identified)
+		if (mMovieCountBeforeSearch >= 0) {
+			long now = MizuuApplication.getMovieAdapter().countAll();
+			mMoviesAdded = (int) Math.max(0, now - mMovieCountBeforeSearch);
+		}
+
+		// Let the in-app banner know we're done (and what changed)
+		LibraryUpdateStatus.finished(this, LibraryUpdateStatus.TYPE_MOVIES, mStopUpdate, mMoviesAdded, mMoviesRemoved, 0);
+
 		showPostUpdateNotification();
 
 		LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
@@ -169,8 +181,11 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 
 			log("removeUnavailableFiles()");
 
-			// Remove all unavailable files from the database
+			// Remove all unavailable files from the database, and keep track of how many went away
+			long before = MizuuApplication.getMovieAdapter().countAll();
 			removeUnavailableFiles();
+			long after = MizuuApplication.getMovieAdapter().countAll();
+			mMoviesRemoved = (int) Math.max(0, before - after);
 		}
 
 		log("searchFolders()");
@@ -179,6 +194,8 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 			return;
 		
 		reloadLibrary();
+
+		mMovieCountBeforeSearch = MizuuApplication.getMovieAdapter().countAll();
 
 		// Search all folders
 		searchFolders();
@@ -331,6 +348,8 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		mClearLibrary = mSettings.getBoolean(CLEAR_LIBRARY_MOVIES, false);
 		mClearUnavailable = mSettings.getBoolean(REMOVE_UNAVAILABLE_FILES_MOVIES, false);
 		mSyncLibraries = mSettings.getBoolean(SYNC_WITH_TRAKT, true);
+
+		LibraryUpdateStatus.started(this, LibraryUpdateStatus.TYPE_MOVIES);
 	}
 
 	private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
@@ -364,6 +383,10 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		mEditor = null;
 		mSettings = null;
 		mTotalFiles = 0;
+		mCount = 0;
+		mMoviesAdded = 0;
+		mMoviesRemoved = 0;
+		mMovieCountBeforeSearch = -1;
 		mNotificationManager = null;
 		mBuilder = null;
 	}
@@ -381,8 +404,12 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 
 	private void updateMovieAddedNotification(String title, Bitmap cover, Bitmap backdrop) {
 		mBuilder.setLargeIcon(cover);
-		mBuilder.setContentTitle(getString(R.string.updatingMovies) + " (" + (int) ((100.0 / (double) mTotalFiles) * (double) mCount) + "%)");
+		int percent = mTotalFiles > 0 ? (int) Math.min(100, (100.0 * mCount) / mTotalFiles) : 0;
+		mBuilder.setContentTitle(getString(R.string.updatingMovies) + " (" + percent + "%)");
 		mBuilder.setContentText(getString(R.string.stringJustAdded) + ": " + title);
+
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_MOVIES, getString(R.string.stringJustAdded) + ": " + title,
+				percent, mCount, 0);
 		mBuilder.setStyle(
 				new NotificationCompat.BigPictureStyle()
 				.setSummaryText(getString(R.string.stringJustAdded) + ": " + title)
@@ -397,6 +424,9 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		mBuilder.setSmallIcon(R.drawable.ic_sync_white_24dp);
 		mBuilder.setContentTitle(getString(R.string.updatingMovies));
 		mBuilder.setContentText(getString(R.string.scanning) + ": " + filesource);
+
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_MOVIES, getString(R.string.scanning) + ": " + filesource,
+				LibraryUpdateStatus.PROGRESS_UNKNOWN, 0, 0);
 
 		// Show the updated notification
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
@@ -423,12 +453,12 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 			mBuilder.setSmallIcon(R.drawable.ic_done_white_24dp);
 			mBuilder.setTicker(getString(R.string.finishedMovieLibraryUpdate));
 			mBuilder.setContentTitle(getString(R.string.finishedMovieLibraryUpdate));
-			mBuilder.setContentText(getString(R.string.stringJustAdded) + " " + mCount + " " + getResources().getQuantityString(R.plurals.moviesInLibrary, mCount));
+			mBuilder.setContentText(getUpdateSummary());
 		} else {
 			mBuilder.setSmallIcon(R.drawable.ic_cancel_white_24dp);
 			mBuilder.setTicker(getString(R.string.stringUpdateCancelled));
 			mBuilder.setContentTitle(getString(R.string.stringUpdateCancelled));
-			mBuilder.setContentText(getString(R.string.stringJustAdded) + " " + mCount + " " + getResources().getQuantityString(R.plurals.moviesInLibrary, mCount, mCount));
+			mBuilder.setContentText(getUpdateSummary());
 		}
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
@@ -439,7 +469,17 @@ public class MovieLibraryUpdate extends IntentService implements MovieLibraryUpd
 		// Show the notification
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 		
-		if (mCount > 0)
+		if (mMoviesAdded > 0 || mMoviesRemoved > 0)
 			mNotificationManager.notify(POST_UPDATE_NOTIFICATION, updateNotification);
+	}
+
+	/**
+	 * E.g. "Added 3 movies · removed 1 movie"
+	 */
+	private String getUpdateSummary() {
+		String summary = getString(R.string.library_update_added, getResources().getQuantityString(R.plurals.moviesInLibrary, mMoviesAdded, mMoviesAdded));
+		if (mMoviesRemoved > 0)
+			summary += " · " + getString(R.string.library_update_removed, getResources().getQuantityString(R.plurals.moviesInLibrary, mMoviesRemoved, mMoviesRemoved));
+		return summary;
 	}
 }

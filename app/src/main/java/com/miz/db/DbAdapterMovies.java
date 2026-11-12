@@ -19,6 +19,7 @@ package com.miz.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 import android.database.sqlite.SQLiteException;
 import android.text.TextUtils;
@@ -349,5 +350,12 @@ public class DbAdapterMovies extends AbstractDbAdapter {
         }
 
         return list;
+    }
+
+    /**
+     * Number of identified entries, used to work out what a library update changed.
+     */
+    public long countAll() {
+        return DatabaseUtils.queryNumEntries(mDatabase, DATABASE_TABLE, "NOT(" + KEY_TMDB_ID + " = '" + UNIDENTIFIED_ID + "')");
     }
 }

@@ -206,13 +206,13 @@ public class ScheduledUpdatesFragment extends Fragment {
 				String minutes_string = "", hours_string = "", days_string = "";
 
 				if (minutes > 0)
-					minutes_string = minutes + " " + getResources().getQuantityString(R.plurals.minute, (int) minutes, (int) minutes);
+					minutes_string = getResources().getQuantityString(R.plurals.minute, (int) minutes, (int) minutes);
 
 				if (hours > 0)
-					hours_string = hours + " " + getResources().getQuantityString(R.plurals.hour, (int) hours, (int) hours);
+					hours_string = getResources().getQuantityString(R.plurals.hour, (int) hours, (int) hours);
 
 				if (days > 0)
-					days_string = days + " " + getResources().getQuantityString(R.plurals.day, (int) days, (int) days);
+					days_string = getResources().getQuantityString(R.plurals.day, (int) days, (int) days);
 
 				nextMovieUpdate.setText(getString(R.string.nextUpdateIn) + " " + ((days > 0) ? days_string + ", " : "") + ((hours > 0) ? hours_string + ", " : "") + ((minutes > 0) ? minutes_string : ""));
 			} else {
@@ -240,13 +240,13 @@ public class ScheduledUpdatesFragment extends Fragment {
 				String minutes_string = "", hours_string = "", days_string = "";
 
 				if (minutes > 0)
-					minutes_string = minutes + " " + getResources().getQuantityString(R.plurals.minute, (int) minutes, (int) minutes);
+					minutes_string = getResources().getQuantityString(R.plurals.minute, (int) minutes, (int) minutes);
 
 				if (hours > 0)
-					hours_string = hours + " " + getResources().getQuantityString(R.plurals.hour, (int) hours, (int) hours);
+					hours_string = getResources().getQuantityString(R.plurals.hour, (int) hours, (int) hours);
 
 				if (days > 0)
-					days_string = days + " " + getResources().getQuantityString(R.plurals.day, (int) days, (int) days);
+					days_string = getResources().getQuantityString(R.plurals.day, (int) days, (int) days);
 
 				nextShowsUpdate.setText(getString(R.string.nextUpdateIn) + " " + ((days > 0) ? days_string + ", " : "") + ((hours > 0) ? hours_string + ", " : "") + ((minutes > 0) ? minutes_string : ""));
 			} else {
