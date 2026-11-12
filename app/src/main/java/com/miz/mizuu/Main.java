@@ -17,10 +17,8 @@
 package com.miz.mizuu;
 
 import android.annotation.SuppressLint;
-import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
-import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.view.Menu;
@@ -36,7 +34,6 @@ import androidx.core.view.ViewCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
-import androidx.localbroadcastmanager.content.LocalBroadcastManager;
 import androidx.preference.PreferenceManager;
 
 import com.google.android.material.button.MaterialButton;
@@ -49,7 +46,7 @@ import com.miz.loader.TvShowLoader;
 import com.miz.mizuu.fragments.AllLibraryFragment;
 import com.miz.mizuu.fragments.MovieLibraryFragment;
 import com.miz.mizuu.fragments.TvShowLibraryFragment;
-import com.miz.utils.LocalBroadcastUtils;
+import com.miz.views.LibraryUpdateBanner;
 
 import static com.miz.functions.PreferenceKeys.GRID_ITEM_SIZE;
 import static com.miz.functions.PreferenceKeys.STARTUP_SELECTION;
@@ -64,6 +61,7 @@ public class Main extends MizActivity {
     private MaterialButton mSearchButton, mMenuButton;
     private MaterialCardView mSearchCard, mToggleCard;
     private SearchView mSearchView;
+    private LibraryUpdateBanner mUpdateBanner;
 
     @Override
     protected int getLayoutResource() {
@@ -90,6 +88,7 @@ public class Main extends MizActivity {
         mSearchCard = findViewById(R.id.search_card);
         mToggleCard = findViewById(R.id.toggle_card);
         mSearchView = findViewById(R.id.bottom_search_view);
+        mUpdateBanner = new LibraryUpdateBanner(findViewById(R.id.library_update_banner));
 
         mLibraryToggleGroup.addOnButtonCheckedListener((group, checkedId, isChecked) -> {
             if (isChecked) {
@@ -183,9 +182,6 @@ public class Main extends MizActivity {
         if (selectedIndex == -1) {
             loadFragment(targetIndex);
         }
-
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_MOVIE_LIBRARY));
-        LocalBroadcastManager.getInstance(this).registerReceiver(mMessageReceiver, new IntentFilter(LocalBroadcastUtils.UPDATE_TV_SHOW_LIBRARY));
     }
 
     private void toggleSearch(boolean show) {
@@ -278,22 +274,21 @@ public class Main extends MizActivity {
     }
 
     @Override
+    protected void onStart() {
+        super.onStart();
+        mUpdateBanner.start();
+    }
+
+    @Override
+    protected void onStop() {
+        mUpdateBanner.stop();
+        super.onStop();
+    }
+
+    @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
         outState.putInt("selectedIndex", selectedIndex);
-    }
-
-    private BroadcastReceiver mMessageReceiver = new BroadcastReceiver() {
-        @Override
-        public void onReceive(Context context, Intent intent) {
-            // Library updated
-        }
-    };
-
-    @Override
-    public void onDestroy() {
-        LocalBroadcastManager.getInstance(this).unregisterReceiver(mMessageReceiver);
-        super.onDestroy();
     }
 
     @Override

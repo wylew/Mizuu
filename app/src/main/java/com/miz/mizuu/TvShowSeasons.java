@@ -50,7 +50,7 @@ public class TvShowSeasons extends MizActivity {
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 
         int count = MizuuApplication.getTvEpisodeDbAdapter().getSeasonCount(mShowId);
-        getSupportActionBar().setSubtitle(count + " " + getResources().getQuantityString(R.plurals.seasons, count, count));
+        getSupportActionBar().setSubtitle(getResources().getQuantityString(R.plurals.seasons, count, count));
 
         Fragment frag = getSupportFragmentManager().findFragmentByTag(TAG);
         if (frag == null) {

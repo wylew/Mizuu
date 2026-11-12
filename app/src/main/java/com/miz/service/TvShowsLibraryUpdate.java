@@ -54,6 +54,7 @@ import com.miz.mizuu.Main;
 import com.miz.mizuu.MizuuApplication;
 import com.miz.mizuu.R;
 import com.miz.utils.FileUtils;
+import com.miz.utils.LibraryUpdateStatus;
 import com.miz.utils.LocalBroadcastUtils;
 
 import java.util.ArrayList;
@@ -74,7 +75,8 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 	private ArrayList<ShowStructure> mFiles;
 	private HashSet<String> mUniqueShowIds = new HashSet<String>();
 	private boolean mClearLibrary, mClearUnavailable, mSyncLibraries, mStopUpdate;
-	private int mTotalFiles, mShowCount, mEpisodeCount;
+	private int mTotalFiles, mShowCount, mEpisodeCount, mEpisodesRemoved;
+	private boolean mOffline;
 	private SharedPreferences mSettings;
 	private Editor mEditor;
 	private final int NOTIFICATION_ID = 300, POST_UPDATE_NOTIFICATION = 313;
@@ -102,6 +104,11 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		mNotificationManager.cancel(NOTIFICATION_ID);
 
 		LocalBroadcastUtils.updateTvShowLibrary(this);
+
+		// Let the in-app banner know we're done (and what changed)
+		LibraryUpdateStatus.finished(this, LibraryUpdateStatus.TYPE_SHOWS, mStopUpdate,
+				mEpisodeCount, mEpisodesRemoved, mUniqueShowIds.size(),
+				mOffline ? getString(R.string.library_update_offline) : null);
 
 		showPostUpdateNotification();
 
@@ -173,8 +180,15 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 
 			log("removeUnavailableFiles()");
 
-			// Remove all unavailable files from the database
+			// Remove all unavailable files from the database, and keep track of how many went away
+			long before = MizuuApplication.getTvEpisodeDbAdapter().countAllEpisodes();
 			removeUnavailableFiles();
+			long after = MizuuApplication.getTvEpisodeDbAdapter().countAllEpisodes();
+			mEpisodesRemoved = (int) Math.max(0, before - after);
+
+			// Removed episodes should disappear from the library right away
+			if (mEpisodesRemoved > 0)
+				LocalBroadcastUtils.updateTvShowLibrary(getApplicationContext());
 		}
 
 		log("searchFolders()");
@@ -292,11 +306,6 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 	}
 
 	private void setup() {
-		if (!MizLib.isOnline(this)) {
-			mStopUpdate = true;
-			return;
-		}
-
 		LocalBroadcastManager.getInstance(getApplicationContext()).registerReceiver(mMessageReceiver, new IntentFilter(STOP_TVSHOW_LIBRARY_UPDATE));
 
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -345,6 +354,18 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		}
 
 		mSettings = PreferenceManager.getDefaultSharedPreferences(getApplicationContext());
+
+		// This check has to happen *after* startForeground(). If the service was started with
+		// startForegroundService() (scheduled updates), bailing out before startForeground()
+		// makes Android kill the app with ForegroundServiceDidNotStartInTimeException.
+		if (!MizLib.isOnline(this)) {
+			mOffline = true;
+			mStopUpdate = true;
+			return;
+		}
+
+		LibraryUpdateStatus.started(this, LibraryUpdateStatus.TYPE_SHOWS);
+
 		mClearLibrary = mSettings.getBoolean(CLEAR_LIBRARY_TVSHOWS, false);
 		mClearUnavailable = mSettings.getBoolean(REMOVE_UNAVAILABLE_FILES_TVSHOWS, false);
 		mSyncLibraries = mSettings.getBoolean(SYNC_WITH_TRAKT, true);
@@ -387,6 +408,9 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		mSettings = null;
 		mTotalFiles = 0;
 		mShowCount = 0;
+		mEpisodeCount = 0;
+		mEpisodesRemoved = 0;
+		mOffline = false;
 		mNotificationManager = null;
 		mBuilder = null;
 	}
@@ -419,8 +443,11 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 			contentText = getString(R.string.stringJustAdded) + ": " + title;
 
 		mBuilder.setLargeIcon(cover);
-		mBuilder.setContentTitle(getString(R.string.updatingTvShows) + " (" + (int) ((100.0 / (double) mTotalFiles) * (double) mEpisodeCount) + "%)");
+		mBuilder.setContentTitle(getString(R.string.updatingTvShows) + " (" + getProgressPercent() + "%)");
 		mBuilder.setContentText(contentText);
+
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_SHOWS, contentText,
+				getProgressPercent(), mEpisodeCount, mUniqueShowIds.size());
 		mBuilder.setStyle(
 				new NotificationCompat.BigPictureStyle()
 				.setSummaryText(contentText)
@@ -434,13 +461,16 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 	private void updateTvShowAddedNotification(String showId, String title, Bitmap cover, Bitmap backdrop, int count) {
 		String contentText;
 		if (showId.isEmpty() || showId.equalsIgnoreCase(DbAdapterTvShows.UNIDENTIFIED_ID))
-			contentText = getString(R.string.unidentified) + ": " + title + " (" + count + " " + getResources().getQuantityString(R.plurals.episodes, count, count) + ")";
+			contentText = getString(R.string.unidentified) + ": " + title + " (" + getResources().getQuantityString(R.plurals.episodes, count, count) + ")";
 		else
-			contentText = getString(R.string.stringJustAdded) + ": " + title + " (" + count + " " + getResources().getQuantityString(R.plurals.episodes, count, count) + ")";
+			contentText = getString(R.string.stringJustAdded) + ": " + title + " (" + getResources().getQuantityString(R.plurals.episodes, count, count) + ")";
 
 		mBuilder.setLargeIcon(cover);
-		mBuilder.setContentTitle(getString(R.string.updatingTvShows) + " (" + (int) ((100.0 / (double) mTotalFiles) * (double) mEpisodeCount) + "%)");
+		mBuilder.setContentTitle(getString(R.string.updatingTvShows) + " (" + getProgressPercent() + "%)");
 		mBuilder.setContentText(contentText);
+
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_SHOWS, contentText,
+				getProgressPercent(), mEpisodeCount, mUniqueShowIds.size());
 		mBuilder.setStyle(
 				new NotificationCompat.BigPictureStyle()
 				.setSummaryText(contentText)
@@ -456,6 +486,9 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		mBuilder.setContentTitle(getString(R.string.updatingTvShows));
 		mBuilder.setContentText(getString(R.string.scanning) + ": " + filesource);
 
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_SHOWS, getString(R.string.scanning) + ": " + filesource,
+				LibraryUpdateStatus.PROGRESS_UNKNOWN, mEpisodeCount, mUniqueShowIds.size());
+
 		// Show the updated notification
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
 	}
@@ -464,6 +497,9 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		mBuilder.setSmallIcon(R.drawable.ic_sync_white_24dp);
 		mBuilder.setContentTitle(getString(R.string.updatingTvShows));
 		mBuilder.setContentText(getString(R.string.analyzing_files));
+
+		LibraryUpdateStatus.progress(this, LibraryUpdateStatus.TYPE_SHOWS, getString(R.string.analyzing_files),
+				LibraryUpdateStatus.PROGRESS_UNKNOWN, mEpisodeCount, mUniqueShowIds.size());
 
 		// Show the updated notification
 		mNotificationManager.notify(NOTIFICATION_ID, mBuilder.build());
@@ -492,12 +528,12 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 			mBuilder.setSmallIcon(R.drawable.ic_done_white_24dp);
 			mBuilder.setTicker(getString(R.string.finishedTvShowsLibraryUpdate));
 			mBuilder.setContentTitle(getString(R.string.finishedTvShowsLibraryUpdate));
-			mBuilder.setContentText(getString(R.string.stringJustAdded) + " " + mShowCount + " " + getResources().getQuantityString(R.plurals.showsInLibrary, mShowCount, mShowCount) + " (" + mEpisodeCount + " " + getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount) + ")");
+			mBuilder.setContentText(getUpdateSummary());
 		} else {
 			mBuilder.setSmallIcon(R.drawable.ic_cancel_white_24dp);
 			mBuilder.setTicker(getString(R.string.stringUpdateCancelled));
 			mBuilder.setContentTitle(getString(R.string.stringUpdateCancelled));
-			mBuilder.setContentText(getString(R.string.stringJustAdded) + " " + mShowCount + " " + getResources().getQuantityString(R.plurals.showsInLibrary, mShowCount, mShowCount) + " (" + mEpisodeCount + " " + getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount) + ")");
+			mBuilder.setContentText(getUpdateSummary());
 		}
 		mBuilder.setContentIntent(contentIntent);
 		mBuilder.setAutoCancel(true);
@@ -508,7 +544,26 @@ public class TvShowsLibraryUpdate extends IntentService implements TvShowLibrary
 		// Show the notification
 		mNotificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-		if (mEpisodeCount > 0)
+		if (mEpisodeCount > 0 || mEpisodesRemoved > 0)
 			mNotificationManager.notify(POST_UPDATE_NOTIFICATION, updateNotification);
+	}
+
+	private int getProgressPercent() {
+		if (mTotalFiles <= 0)
+			return 0;
+		return (int) Math.min(100, (100.0 * mEpisodeCount) / mTotalFiles);
+	}
+
+	/**
+	 * E.g. "Added 3 episodes (1 show) · removed 2 episodes"
+	 */
+	private String getUpdateSummary() {
+		StringBuilder sb = new StringBuilder();
+		sb.append(getString(R.string.library_update_added, getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount)));
+		if (mShowCount > 0)
+			sb.append(" (").append(getResources().getQuantityString(R.plurals.showsInLibrary, mShowCount, mShowCount)).append(")");
+		if (mEpisodesRemoved > 0)
+			sb.append(" · ").append(getString(R.string.library_update_removed, getResources().getQuantityString(R.plurals.episodes, mEpisodesRemoved, mEpisodesRemoved)));
+		return sb.toString();
 	}
 }

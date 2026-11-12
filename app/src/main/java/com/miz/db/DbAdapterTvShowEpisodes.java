@@ -19,6 +19,7 @@ package com.miz.db;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
+import android.database.DatabaseUtils;
 import android.database.SQLException;
 
 import com.miz.functions.ColumnIndexCache;
@@ -252,9 +253,22 @@ public class DbAdapterTvShowEpisodes extends AbstractDbAdapter {
 		return s;
 	}
 
+	/**
+	 * Total number of episodes in the database, used to work out how many
+	 * episodes a library update removed.
+	 */
+	public long countAllEpisodes() {
+		return DatabaseUtils.queryNumEntries(mDatabase, DATABASE_TABLE,
+				"IFNULL(" + KEY_EPISODE_TITLE + ", '') != 'MIZ_REMOVED_EPISODE'");
+	}
+
 	public boolean hasUnwatchedEpisodes(String showId) {
-		Cursor c = mDatabase.query(DATABASE_TABLE, ALL_COLUMNS, KEY_SHOW_ID + " = ? AND " + KEY_HAS_WATCHED + " = '0'", new String[]{showId}, null, null, null);
-		return c.getCount() > 0;
+		Cursor c = mDatabase.query(DATABASE_TABLE, new String[]{KEY_SHOW_ID}, KEY_SHOW_ID + " = ? AND " + KEY_HAS_WATCHED + " = '0'", new String[]{showId}, null, null, null, "1");
+		try {
+			return c.getCount() > 0;
+		} finally {
+			c.close(); // This is called once per show, so leaking it eventually crashes with CursorWindowAllocationException
+		}
 	}
 
     public boolean setShowWatchStatus(String showId, boolean watched) {

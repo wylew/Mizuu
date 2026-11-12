@@ -79,7 +79,7 @@ public class TvShowEpisodes extends MizActivity {
 			@Override
 			public void onPageSelected(int position) {
 				int episodeCount = mItems.get(position).getEpisodeCount();
-                getSupportActionBar().setSubtitle(getString(R.string.showSeason) + " " + mItems.get(position).getSeason() + " (" + episodeCount + " " + getResources().getQuantityString(R.plurals.episodes, episodeCount, episodeCount) + ")");
+                getSupportActionBar().setSubtitle(getString(R.string.showSeason) + " " + mItems.get(position).getSeason() + " (" + getResources().getQuantityString(R.plurals.episodes, episodeCount, episodeCount) + ")");
 			}
 		});
 		
@@ -90,7 +90,7 @@ public class TvShowEpisodes extends MizActivity {
         mToolbarColor = getIntent().getExtras().getInt(IntentKeys.TOOLBAR_COLOR);
 		
 		setTitle(mTitle);
-		getSupportActionBar().setSubtitle(getString(R.string.showSeason) + " " + mSeason + " (" + mEpisodeCount + " " + getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount) + ")");
+		getSupportActionBar().setSubtitle(getString(R.string.showSeason) + " " + mSeason + " (" + getResources().getQuantityString(R.plurals.episodes, mEpisodeCount, mEpisodeCount) + ")");
 		
 		loadSeasons();
 	}

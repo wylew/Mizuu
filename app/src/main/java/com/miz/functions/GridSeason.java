@@ -48,7 +48,8 @@ public class GridSeason implements Comparable<GridSeason> {
 
 		// Subtitle text
 		StringBuilder sb = new StringBuilder();
-		sb.append(getEpisodeCount()).append(" ").append(mContext.getResources().getQuantityString(R.plurals.episodes, getEpisodeCount(), getEpisodeCount()));
+		// The plural resource already contains the number ("%d episodes")
+		sb.append(mContext.getResources().getQuantityString(R.plurals.episodes, getEpisodeCount(), getEpisodeCount()));
 		
 		// Change the text depending on the available space
 		if (getUnwatchedCount() > 0) {
@@ -69,7 +70,7 @@ public class GridSeason implements Comparable<GridSeason> {
 
 		mSubtitleText = sb.toString();
 
-        mSubtitleTextSimple = getEpisodeCount() + " " + mContext.getResources().getQuantityString(R.plurals.episodes, getEpisodeCount(), getEpisodeCount());
+        mSubtitleTextSimple = mContext.getResources().getQuantityString(R.plurals.episodes, getEpisodeCount(), getEpisodeCount());
 	}
 
 	public int getSeason() {
@@ -119,16 +120,11 @@ public class GridSeason implements Comparable<GridSeason> {
 	 */
 	@Override
 	public int compareTo(GridSeason another) {
-		if (getSeason() == 0)
-			return 1;
-		if (another.getSeason() == 0)
-			return -1;
-		
-		// Regular sorting
-		if (getSeason() < another.getSeason())
-			return -1;
-		if (getSeason() > another.getSeason())
-			return 1;
-		return 0;
+		boolean thisIsSpecials = getSeason() == 0, otherIsSpecials = another.getSeason() == 0;
+		if (thisIsSpecials != otherIsSpecials)
+			return thisIsSpecials ? 1 : -1; // Specials go last
+
+		// Regular sorting (also keeps the contract symmetric when both are specials)
+		return Integer.compare(getSeason(), another.getSeason());
 	}
 }

@@ -21,6 +21,7 @@ import android.app.PendingIntent;
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
+import android.os.Build;
 import android.content.SharedPreferences.Editor;
 import android.preference.PreferenceManager;
 
@@ -38,9 +39,7 @@ public class ScheduledUpdatesAlarmManager {
 		try {
 			AlarmManager alarmMan = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
 
-			Intent defineIntent = new Intent(context, (type == MOVIES) ? MovieLibraryUpdate.class : TvShowsLibraryUpdate.class);
-			defineIntent.setFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-			PendingIntent piWakeUp = PendingIntent.getService(context,0, defineIntent, PendingIntent.FLAG_NO_CREATE);
+			PendingIntent piWakeUp = getUpdatePendingIntent(context, type, PendingIntent.FLAG_NO_CREATE);
 
 			if(piWakeUp != null)
 				alarmMan.cancel(piWakeUp);
@@ -64,9 +63,7 @@ public class ScheduledUpdatesAlarmManager {
 			if (MizLib.isTvShowLibraryBeingUpdated(context))
 				return;
 		}
-		Intent defineIntent = new Intent(context, (type == MOVIES) ? MovieLibraryUpdate.class : TvShowsLibraryUpdate.class);
-		defineIntent.addFlags(Intent.FLAG_ACTIVITY_SINGLE_TOP);
-		PendingIntent piWakeUp = PendingIntent.getService(context,0, defineIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+		PendingIntent piWakeUp = getUpdatePendingIntent(context, type, PendingIntent.FLAG_UPDATE_CURRENT);
 
 		if (when > -1) {
 			alarmMan.set(AlarmManager.RTC_WAKEUP, System.currentTimeMillis() + when, piWakeUp);
@@ -76,5 +73,24 @@ public class ScheduledUpdatesAlarmManager {
 			editor.putLong((type == MOVIES) ? NEXT_SCHEDULED_MOVIE_UPDATE : NEXT_SCHEDULED_TVSHOWS_UPDATE, System.currentTimeMillis() + when);
 			editor.apply();
 		}
+	}
+
+	/**
+	 * Builds the PendingIntent that starts a library update service.
+	 *
+	 * - On Android 12+ every PendingIntent must say whether it's mutable; without FLAG_IMMUTABLE
+	 *   this throws IllegalArgumentException (it used to crash at the end of every library update
+	 *   when scheduled updates were enabled, because the services reschedule from onDestroy()).
+	 * - On Android 8+ an alarm can't start a regular background service, so it has to be started
+	 *   as a foreground service (the update services call startForeground() straight away).
+	 */
+	private static PendingIntent getUpdatePendingIntent(Context context, int type, int flags) {
+		Intent intent = new Intent(context, (type == MOVIES) ? MovieLibraryUpdate.class : TvShowsLibraryUpdate.class);
+		int requestCode = type; // MOVIES = 1, SHOWS = 2
+		flags |= PendingIntent.FLAG_IMMUTABLE;
+
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+			return PendingIntent.getForegroundService(context, requestCode, intent, flags);
+		return PendingIntent.getService(context, requestCode, intent, flags);
 	}
 }

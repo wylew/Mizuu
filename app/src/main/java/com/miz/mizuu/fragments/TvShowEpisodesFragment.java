@@ -308,7 +308,7 @@ public class TvShowEpisodesFragment extends Fragment {
 					mCheckedEpisodes.remove(mEpisodeLoader.getResults().get(position).getEpisode());
 
 				int count = mCheckedEpisodes.size();
-				mode.setTitle(count + " " + getResources().getQuantityString(R.plurals.episodes_selected, count, count));
+				mode.setTitle(getResources().getQuantityString(R.plurals.episodes_selected, count, count));
 
 				// Nasty hack to update the selected items highlight...
 				mAdapter.notifyDataSetChanged();
